@@ -369,10 +369,21 @@ class OnafriqService {
                 INSERT INTO payment_transactions 
                 (booking_id, user_id, amount, currency, payment_method, payment_reference, transaction_id, status, metadata, created_at)
                 VALUES (?, ?, ?, ?, 'Onafriq', ?, ?, 'pending', ?, NOW())
+                ON DUPLICATE KEY UPDATE
+                    id = LAST_INSERT_ID(id),
+                    booking_id = VALUES(booking_id),
+                    user_id = COALESCE(VALUES(user_id), user_id),
+                    amount = VALUES(amount),
+                    currency = VALUES(currency),
+                    payment_method = VALUES(payment_method),
+                    payment_reference = COALESCE(VALUES(payment_reference), payment_reference),
+                    status = CASE WHEN status = 'completed' THEN status ELSE VALUES(status) END,
+                    metadata = VALUES(metadata),
+                    updated_at = NOW()
             ");
             $stmt->execute([
                 $booking['id'],
-                $booking['user_id'] ?? 0,
+                $booking['user_id'] ?? null,
                 $amount,
                 $currency,
                 $bookingReference,

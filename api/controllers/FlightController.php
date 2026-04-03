@@ -17,7 +17,7 @@ class FlightController {
         $date = $_GET['date'] ?? date('Y-m-d');
 
         if (empty($from) || empty($to)) {
-            Response::json(['status' => false, 'message' => 'Origin and destination are required'], 400);
+            Response::fail(400, 'Origin and destination are required', 'FLIGHT_SEARCH_INPUT_INVALID');
             return;
         }
 
@@ -93,7 +93,7 @@ class FlightController {
         if ($flight) {
             Response::json(['status' => true, 'data' => $flight]);
         } else {
-            Response::json(['status' => false, 'message' => 'Flight not found'], 404);
+            Response::fail(404, 'Flight not found', 'FLIGHT_NOT_FOUND');
         }
     }
 }

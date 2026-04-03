@@ -18,7 +18,7 @@ class AirlineUserController {
             $response = $this->userModel->register($data);
             echo json_encode($response);
         } else {
-            Response::json(['status' => false, 'message' => 'Incomplete data'], 400);
+            Response::fail(400, 'Incomplete data', 'AUTH_REGISTER_INCOMPLETE_DATA');
         }
     }
 
@@ -28,7 +28,7 @@ class AirlineUserController {
             $response = $this->userModel->login($data['identifier'], $data['password']);
             echo json_encode($response);
         } else {
-            Response::json(['status' => false, 'message' => 'Missing credentials'], 400);
+            Response::fail(400, 'Missing credentials', 'AUTH_LOGIN_MISSING_CREDENTIALS');
         }
     }
 
@@ -38,7 +38,7 @@ class AirlineUserController {
         $user_id = $this->userModel->validateToken($token);
 
         if (!$user_id) {
-            Response::json(['status' => false, 'message' => 'Unauthorized'], 401);
+            Response::fail(401, 'Unauthorized', 'AUTH_UNAUTHORIZED');
             exit();
         }
 
@@ -49,7 +49,7 @@ class AirlineUserController {
             if ($profile) {
                 echo json_encode(['status' => true, 'data' => $profile]);
             } else {
-                echo json_encode(['status' => false, 'message' => 'User not found']);
+                Response::fail(404, 'User not found', 'USER_NOT_FOUND');
             }
         }
         elseif ($request_method == 'PUT') {
@@ -65,19 +65,19 @@ class AirlineUserController {
         $user_id = $this->userModel->validateToken($token);
 
         if (!$user_id) {
-            Response::json(['status' => false, 'message' => 'Unauthorized'], 401);
+            Response::fail(401, 'Unauthorized', 'AUTH_UNAUTHORIZED');
             exit();
         }
 
         $data = request_json();
         
         if (empty($data['current_password']) || empty($data['new_password'])) {
-            Response::json(['status' => false, 'message' => 'Current and new password are required'], 400);
+            Response::fail(400, 'Current and new password are required', 'AUTH_PASSWORD_MISSING_FIELDS');
             return;
         }
 
         if (strlen($data['new_password']) < 8) {
-            Response::json(['status' => false, 'message' => 'New password must be at least 8 characters'], 400);
+            Response::fail(400, 'New password must be at least 8 characters', 'AUTH_PASSWORD_WEAK');
             return;
         }
 
@@ -91,13 +91,13 @@ class AirlineUserController {
         $user_id = $this->userModel->validateToken($token);
 
         if (!$user_id) {
-            Response::json(['status' => false, 'message' => 'Unauthorized'], 401);
+            Response::fail(401, 'Unauthorized', 'AUTH_UNAUTHORIZED');
             exit();
         }
 
         $data = request_json();
         if (empty($data['device_token'])) {
-            Response::json(['status' => false, 'message' => 'Device token is required'], 400);
+            Response::fail(400, 'Device token is required', 'DEVICE_TOKEN_REQUIRED');
             return;
         }
 
@@ -108,7 +108,7 @@ class AirlineUserController {
         $data = request_json();
         
         if (empty($data['email'])) {
-            Response::json(['status' => false, 'message' => 'Email is required'], 400);
+            Response::fail(400, 'Email is required', 'AUTH_EMAIL_REQUIRED');
             return;
         }
         
@@ -143,7 +143,7 @@ class AirlineUserController {
             if ($emailSent) {
                 Response::json(['status' => true, 'message' => 'Password reset code sent to your email']);
             } else {
-                Response::json(['status' => false, 'message' => 'Failed to send email. Please try again later.'], 500);
+                Response::fail(500, 'Failed to send email. Please try again later.', 'PASSWORD_RESET_DELIVERY_FAILED');
             }
         } else {
             // If email doesn't exist, we should potentially return success anyway to prevent user enumeration.
@@ -153,7 +153,7 @@ class AirlineUserController {
             // The user requested MVP, so let's just say "If that email exists, we sent a code."
             // However, the mobile app expects a success/fail. 
             // Let's be explicit for now as per "MVP".
-            Response::json(['status' => false, 'message' => 'Email address not found'], 404);
+            Response::fail(404, 'Email address not found', 'PASSWORD_RESET_EMAIL_NOT_FOUND');
         }
     }
 
@@ -161,12 +161,12 @@ class AirlineUserController {
         $data = request_json();
         
         if (empty($data['email']) || empty($data['code']) || empty($data['new_password'])) {
-            Response::json(['status' => false, 'message' => 'Email, code, and new password are required'], 400);
+            Response::fail(400, 'Email, code, and new password are required', 'PASSWORD_RESET_MISSING_FIELDS');
             return;
         }
         
         if (strlen($data['new_password']) < 8) {
-            Response::json(['status' => false, 'message' => 'Password must be at least 8 characters'], 400);
+            Response::fail(400, 'Password must be at least 8 characters', 'AUTH_PASSWORD_WEAK');
             return;
         }
         
@@ -175,7 +175,7 @@ class AirlineUserController {
         if ($response['status']) {
             echo json_encode($response);
         } else {
-            Response::json($response, 400);
+            Response::fail(400, (string)($response['message'] ?? 'Failed to reset password'), 'PASSWORD_RESET_FAILED');
         }
     }
     public function uploadProfilePhoto() {
@@ -184,14 +184,14 @@ class AirlineUserController {
         $user_id = $this->userModel->validateToken($token);
 
         if (!$user_id) {
-            Response::json(['status' => false, 'message' => 'Unauthorized'], 401);
+            Response::fail(401, 'Unauthorized', 'AUTH_UNAUTHORIZED');
             exit();
         }
 
         if (!isset($_FILES['photo']) || $_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
             error_log("Photo Upload Error: " . json_encode($_FILES));
             error_log("POST data: " . json_encode($_POST));
-            Response::json(['status' => false, 'message' => 'No file uploaded or upload error'], 400);
+            Response::fail(400, 'No file uploaded or upload error', 'PROFILE_PHOTO_UPLOAD_MISSING');
             return;
         }
 
@@ -199,7 +199,7 @@ class AirlineUserController {
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
         
         if (!in_array($file['type'], $allowed_types)) {
-            Response::json(['status' => false, 'message' => 'Invalid file type. Only JPG, PNG, and GIF allowed.'], 400);
+            Response::fail(400, 'Invalid file type. Only JPG, PNG, and GIF allowed.', 'PROFILE_PHOTO_TYPE_INVALID');
             return;
         }
 
@@ -221,10 +221,10 @@ class AirlineUserController {
                     'data' => $updatedUser
                 ]);
             } else {
-                Response::json($result, 500);
+                Response::fail(500, (string)($result['message'] ?? 'Failed to update profile photo'), 'PROFILE_PHOTO_UPDATE_FAILED');
             }
         } else {
-            Response::json(['status' => false, 'message' => 'Failed to upload photo to Cloudinary'], 500);
+            Response::fail(500, 'Failed to upload photo to Cloudinary', 'PROFILE_PHOTO_UPLOAD_FAILED');
         }
     }
 
@@ -235,7 +235,7 @@ class AirlineUserController {
         $user_id = $this->userModel->validateToken($token);
 
         if (!$user_id) {
-            Response::json(['status' => false, 'message' => 'Unauthorized'], 401);
+            Response::fail(401, 'Unauthorized', 'AUTH_UNAUTHORIZED');
             exit();
         }
 
@@ -244,7 +244,7 @@ class AirlineUserController {
         if ($result['status']) {
             Response::json($result);
         } else {
-            Response::json($result, 500);
+            Response::fail(500, (string)($result['message'] ?? 'Failed to delete account'), 'ACCOUNT_DELETE_FAILED');
         }
     }
 }

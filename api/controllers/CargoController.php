@@ -23,7 +23,7 @@ class CargoController {
         $requiredFields = ['flight_series_id', 'shipper_name', 'consignee_name', 'weight_kg', 'total_amount'];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
-                Response::json(['status' => false, 'message' => "Field $field is required"], 400);
+                Response::fail(400, "Field $field is required", 'CARGO_BOOKING_MISSING_FIELD', ['field' => $field]);
                 return;
             }
         }
@@ -42,7 +42,7 @@ class CargoController {
                 'id' => $result['id']
             ]);
         } else {
-            Response::json(['status' => false, 'message' => $result['message']], 500);
+            Response::fail(500, (string)($result['message'] ?? 'Failed to create cargo booking'), 'CARGO_BOOKING_CREATE_FAILED');
         }
     }
 
@@ -52,7 +52,7 @@ class CargoController {
         if ($booking) {
             Response::json(['status' => true, 'data' => $booking]);
         } else {
-            Response::json(['status' => false, 'message' => 'Cargo booking not found'], 404);
+            Response::fail(404, 'Cargo booking not found', 'CARGO_BOOKING_NOT_FOUND');
         }
     }
 
@@ -68,12 +68,12 @@ class CargoController {
         $commodity = $_GET['commodity'] ?? 'general';
 
         if (empty($from) || empty($to)) {
-            Response::json(['status' => false, 'message' => 'Origin and destination are required'], 400);
+            Response::fail(400, 'Origin and destination are required', 'CARGO_AVAILABILITY_INPUT_INVALID');
             return;
         }
 
         if ($weight <= 0) {
-            Response::json(['status' => false, 'message' => 'Valid weight is required'], 400);
+            Response::fail(400, 'Valid weight is required', 'CARGO_AVAILABILITY_WEIGHT_INVALID');
             return;
         }
 

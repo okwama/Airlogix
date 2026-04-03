@@ -41,7 +41,7 @@ class NotificationController {
         if ($this->notification->markAsRead($id, $user_id)) {
             Response::json(['status' => true, 'message' => "Notification marked as read"]);
         } else {
-            Response::json(['status' => false, 'message' => "Failed to mark as read"], 500);
+            Response::fail(500, 'Failed to mark as read', 'NOTIFICATION_MARK_READ_FAILED');
         }
     }
 
@@ -53,7 +53,7 @@ class NotificationController {
         if ($this->notification->markAllAsRead($user_id)) {
             Response::json(['status' => true, 'message' => "All notifications marked as read"]);
         } else {
-            Response::json(['status' => false, 'message' => "Failed to mark all as read"], 500);
+            Response::fail(500, 'Failed to mark all as read', 'NOTIFICATION_MARK_ALL_READ_FAILED');
         }
     }
 
@@ -65,12 +65,12 @@ class NotificationController {
         if ($this->notification->delete($id, $user_id)) {
             Response::json(['status' => true, 'message' => "Notification deleted"]);
         } else {
-            Response::json(['status' => false, 'message' => "Failed to delete notification"], 500);
+            Response::fail(500, 'Failed to delete notification', 'NOTIFICATION_DELETE_FAILED');
         }
     }
 
     private function getAuthenticatedUserId() {
-        $headers = getallheaders();
+        $headers = request_headers();
         $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
         
         if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
@@ -84,7 +84,7 @@ class NotificationController {
             }
         }
         
-        Response::json(['status' => false, 'message' => "Unauthorized"], 401);
+        Response::fail(401, 'Unauthorized', 'AUTH_UNAUTHORIZED');
         return null;
     }
 }

@@ -25,7 +25,8 @@ class CabinClassController {
             }
             Response::json(['status' => true, 'data' => $classes]);
         } catch (Exception $e) {
-            Response::error($e->getMessage(), 500);
+            error_log('Cabin class list failed: ' . $e->getMessage());
+            Response::fail(500, 'Failed to list cabin classes', 'CABIN_CLASS_LIST_FAILED');
         }
     }
 }

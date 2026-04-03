@@ -142,7 +142,7 @@ class BookingController {
 
         // Validate required fields
         if (empty($data['flight_series_id']) || empty($passengers) || empty($data['total_amount'])) {
-            Response::json(['status' => false, 'message' => 'Missing required booking details'], 400);
+            Response::fail(400, 'Missing required booking details', 'BOOKING_CREATE_MISSING_FIELDS');
             return;
         }
 
@@ -152,7 +152,7 @@ class BookingController {
         $flight = $flightModel->getById($data['flight_series_id']);
         
         if (!$flight) {
-            Response::json(['status' => false, 'message' => 'Flight not found'], 404);
+            Response::fail(404, 'Flight not found', 'FLIGHT_NOT_FOUND');
             return;
         }
 
@@ -305,10 +305,7 @@ class BookingController {
             // Rollback transaction on error
             $db->rollBack();
             error_log("Booking creation error: " . $e->getMessage());
-            Response::json([
-                'status' => false,
-                'message' => 'Failed to create booking: ' . $e->getMessage()
-            ], 500);
+            Response::fail(500, 'Failed to create booking', 'BOOKING_CREATE_FAILED');
         }
     }
 
@@ -665,7 +662,7 @@ class BookingController {
         $data = request_json();
 
         if (empty($data['reference']) || empty($data['last_name'])) {
-            Response::json(['status' => false, 'message' => 'Missing reference or last name'], 400);
+            Response::fail(400, 'Missing reference or last name', 'BOOKING_FIND_INPUT_INVALID');
             return;
         }
         
@@ -675,14 +672,14 @@ class BookingController {
         // 1. Find booking
         $booking = $this->bookingModel->getByReference($reference);
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
 
         // 2. Verify Name Match (Case insensitive check if last name is part of passenger name)
         // Note: passenger_name in DB is "Title First Last" e.g., "Mr John Doe"
         if (stripos($booking['passenger_name'], $lastName) === false) {
-             Response::json(['status' => false, 'message' => 'Booking found but name does not match.'], 403);
+             Response::fail(403, 'Booking found but name does not match.', 'BOOKING_FIND_NAME_MISMATCH');
              return;
         }
 
@@ -696,7 +693,7 @@ class BookingController {
             $booking['user_id'] = $userId; // Update local copy
              Response::json(['status' => true, 'message' => 'Trip found and added to your account', 'data' => $booking]);
         } else {
-             Response::json(['status' => false, 'message' => 'Failed to link booking to account'], 500);
+             Response::fail(500, 'Failed to link booking to account', 'BOOKING_LINK_FAILED');
         }
     }
 

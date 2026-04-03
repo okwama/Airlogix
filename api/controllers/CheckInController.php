@@ -23,7 +23,7 @@ class CheckInController {
         $user_id = $this->userModel->validateToken($token);
 
         if (!$user_id) {
-            Response::json(['status' => false, 'message' => 'Unauthorized'], 401);
+            Response::fail(401, 'Unauthorized', 'AUTH_UNAUTHORIZED');
             exit();
         }
         return $user_id;
@@ -34,7 +34,7 @@ class CheckInController {
         $data = request_json();
 
         if (empty($data['booking_id']) || empty($data['seat_number'])) {
-            Response::json(['status' => false, 'message' => 'Missing check-in details'], 400);
+            Response::fail(400, 'Missing check-in details', 'CHECKIN_MISSING_FIELDS');
             return;
         }
 

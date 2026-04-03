@@ -75,7 +75,8 @@ class HomeController {
                 'data' => $payload
             ]);
         } catch (Exception $e) {
-            Response::json(['status' => false, 'message' => "Failed to retrieve home content: " . $e->getMessage()], 500);
+            error_log('Home content fetch failed: ' . $e->getMessage());
+            Response::fail(500, 'Failed to retrieve home content', 'HOME_CONTENT_FETCH_FAILED');
         }
     }
 }

@@ -60,21 +60,17 @@ This roadmap is now the live status tracker for the app hardening and product-im
   Target:
   Complete controller-level migration to explicit domain error codes and richer `details` fields across all major workflows.
 
-- `Partially Done` Stop swallowing frontend service failures.
-  Current state:
-  Frontend booking/payment services now emit typed errors (auth expired, hold expired, network, not found, validation/server), and key booking/cargo loaders map these to clearer UI states. `bookingService` now classifies API failures using backend domain error codes (`error.code`) in addition to HTTP status, so payment and booking failures are handled more reliably.
-  Target:
-  Finish remaining route/component migration so every flow handles typed errors consistently without generic fallback paths.
+- `Done` Stop swallowing frontend service failures.
+  Outcome:
+  Frontend booking/payment flows now route through typed service errors consistently, including access-code request/verify flows and cargo/booking payment handlers, with backend domain error-code mapping aligned in `bookingService`.
 
 - `Done` Fix type and contract inconsistencies.
   Outcome:
   `flightService` and cargo-tracking contract issues were corrected, and the frontend now passes `svelte-check`.
 
-- `Partially Done` Improve payment callback idempotency and traceability.
-  Current state:
-  Gateway callbacks now finalize through gateway-reference idempotency checks, persist request-scoped callback metadata, and cache replay markers to reduce duplicate side effects.
-  Target:
-  Add DB-level uniqueness/constraints for gateway references and expand callback audit retention/monitoring to complete end-to-end replay safety.
+- `Done` Improve payment callback idempotency and traceability.
+  Outcome:
+  Gateway callbacks now enforce method-scoped gateway-reference uniqueness at DB level, use idempotent upsert writes, persist callback metadata, and retain replay markers to prevent duplicate side effects.
 
 - `Pending` Add booking lifecycle observability.
   Target:

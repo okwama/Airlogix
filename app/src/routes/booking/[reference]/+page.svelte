@@ -5,7 +5,7 @@
   import PaymentPicker from '$lib/features/payment/PaymentPicker.svelte';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { bookingStore } from '$lib/stores/bookingStore.svelte';
-  import { bookingService, type Passenger } from '$lib/services/booking/bookingService';
+  import { bookingService, ServiceError, type Passenger } from '$lib/services/booking/bookingService';
   import { appConfig } from '$lib/config/appConfig';
   import { Lock, Check, Plane, ChevronLeft, Loader2 } from 'lucide-svelte';
 
@@ -63,7 +63,19 @@
       step = 'payment';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      errorMessage = err instanceof Error ? err.message : 'Failed to secure booking space.';
+      if (err instanceof ServiceError) {
+        if (err.type === 'HOLD_EXPIRED') {
+          errorMessage = 'The reservation hold has expired. Please search again and create a new booking.';
+        } else if (err.type === 'VALIDATION') {
+          errorMessage = 'Booking details are invalid or fare changed. Please review and try again.';
+        } else if (err.type === 'NETWORK') {
+          errorMessage = 'Network issue while securing seats. Please retry.';
+        } else {
+          errorMessage = err.message;
+        }
+      } else {
+        errorMessage = err instanceof Error ? err.message : 'Failed to secure booking space.';
+      }
     } finally {
       isSubmitting = false;
     }

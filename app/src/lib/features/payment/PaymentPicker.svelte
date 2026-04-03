@@ -21,6 +21,7 @@
   let mpesaStatus = $state<'idle' | 'polling' | 'success' | 'failed'>('idle');
   let mpesaError = $state('');
   let stripeError = $state('');
+  let bankError = $state('');
   let checkoutRequestId = $state<string | null>(null);
 
   async function handleMpesaPayment(e: SubmitEvent) {
@@ -138,8 +139,26 @@
 
   async function handleBankTransferComplete() {
     isProcessing = true;
-    await bookingService.updatePaymentStatus(reference, 'bank_transfer');
-    goto(`/booking/${reference}/success`);
+    bankError = '';
+    try {
+      await bookingService.updatePaymentStatus(reference, 'bank_transfer');
+      goto(`/booking/${reference}/success`);
+    } catch (err) {
+      isProcessing = false;
+      if (err instanceof ServiceError) {
+        if (err.type === 'AUTH_EXPIRED') {
+          bankError = 'Access session expired. Verify booking access again on Manage Booking.';
+        } else if (err.type === 'HOLD_EXPIRED') {
+          bankError = 'This reservation hold has expired. Please search and rebook.';
+        } else if (err.type === 'NETWORK') {
+          bankError = 'Network issue while confirming bank transfer. Please retry.';
+        } else {
+          bankError = err.message;
+        }
+      } else {
+        bankError = err instanceof Error ? err.message : 'Failed to update payment status.';
+      }
+    }
   }
 </script>
 
@@ -178,6 +197,12 @@
   <div class="bg-surface border-[0.5px] border-border rounded-[12px] p-6 lg:p-10 shadow-md relative overflow-hidden">
     {#if selectedMethod === 'bank'}
       <BankTransfer {amount} {reference} onComplete={handleBankTransferComplete} />
+      {#if bankError}
+        <div class="bg-red-50 text-red-600 p-4 rounded-md text-[13px] border border-red-200 mt-4 flex gap-3 items-start">
+          <AlertCircle size={16} class="shrink-0 mt-0.5" />
+          <span>{bankError}</span>
+        </div>
+      {/if}
       
       {#if isProcessing}
         <div class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">

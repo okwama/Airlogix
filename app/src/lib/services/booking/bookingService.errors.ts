@@ -72,7 +72,12 @@ export function classifyError(
       normalizedCode
     );
   }
-  if (normalizedCode === 'BOOKING_NOT_FOUND' || normalizedCode === 'PAYMENT_TRANSACTION_NOT_FOUND') {
+  if (
+    normalizedCode === 'BOOKING_NOT_FOUND' ||
+    normalizedCode === 'PAYMENT_TRANSACTION_NOT_FOUND' ||
+    normalizedCode === 'CARGO_BOOKING_NOT_FOUND' ||
+    normalizedCode === 'FLIGHT_NOT_FOUND'
+  ) {
     return buildServiceError(message || 'Booking not found.', 'NOT_FOUND', status, details, normalizedCode);
   }
   if (normalizedCode === 'BOOKING_ACCESS_RATE_LIMITED') {
@@ -85,6 +90,13 @@ export function classifyError(
     normalizedCode === 'BOOKING_AMOUNT_INVALID' ||
     normalizedCode === 'PAYMENT_METHOD_UNSUPPORTED' ||
     normalizedCode === 'CURRENCY_INVALID' ||
+    normalizedCode === 'BOOKING_CREATE_MISSING_FIELDS' ||
+    normalizedCode === 'BOOKING_FIND_INPUT_INVALID' ||
+    normalizedCode === 'BOOKING_FIND_NAME_MISMATCH' ||
+    normalizedCode === 'CARGO_BOOKING_MISSING_FIELD' ||
+    normalizedCode === 'CARGO_AVAILABILITY_INPUT_INVALID' ||
+    normalizedCode === 'CARGO_AVAILABILITY_WEIGHT_INVALID' ||
+    normalizedCode === 'FLIGHT_SEARCH_INPUT_INVALID' ||
     normalizedCode === 'BOOKING_ACCESS_INPUT_INVALID' ||
     normalizedCode === 'BOOKING_ACCESS_CODE_INVALID' ||
     normalizedCode === 'BOOKING_ALREADY_PAID' ||
@@ -97,6 +109,9 @@ export function classifyError(
     normalizedCode === 'PAYMENT_VERIFY_FAILED' ||
     normalizedCode === 'PAYMENT_UPDATE_FAILED' ||
     normalizedCode === 'BOOKING_ACCESS_DELIVERY_FAILED' ||
+    normalizedCode === 'BOOKING_CREATE_FAILED' ||
+    normalizedCode === 'BOOKING_LINK_FAILED' ||
+    normalizedCode === 'CARGO_BOOKING_CREATE_FAILED' ||
     normalizedCode === 'CURRENCY_CONVERSION_UNAVAILABLE' ||
     normalizedCode === 'PDF_NOT_CONFIGURED' ||
     normalizedCode === 'PDF_GENERATION_FAILED'

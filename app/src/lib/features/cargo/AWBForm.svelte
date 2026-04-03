@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { bookingService } from '$lib/services/booking/bookingService';
+  import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
   import { appConfig } from '$lib/config/appConfig';
   import { AlertCircle, Loader2 } from 'lucide-svelte';
 
@@ -81,7 +81,17 @@
 
       await goto(`/cargo-booking/${awb}/success`);
     } catch (err: unknown) {
-      errorMessage = err instanceof Error ? err.message : 'Booking failed. Please try again.';
+      if (err instanceof ServiceError) {
+        if (err.type === 'VALIDATION') {
+          errorMessage = 'Please check all cargo details and try again.';
+        } else if (err.type === 'NETWORK') {
+          errorMessage = 'Network issue while submitting cargo booking. Please retry.';
+        } else {
+          errorMessage = err.message;
+        }
+      } else {
+        errorMessage = err instanceof Error ? err.message : 'Booking failed. Please try again.';
+      }
     } finally {
       isSubmitting = false;
     }

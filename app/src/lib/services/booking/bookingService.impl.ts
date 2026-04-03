@@ -61,6 +61,43 @@ async function createBooking(payload: BookingPayload) {
   }
 }
 
+async function requestBookingAccessCode(reference: string, email: string) {
+  try {
+    const response = await fetch(`${BASE_URL}/bookings/access/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reference: reference.trim().toUpperCase(), email: email.trim() })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.status) {
+      const meta = extractErrorMeta(result);
+      throw classifyError(response.status, meta.message || 'Failed to send access code', meta.details, meta.code);
+    }
+    return result;
+  } catch (error) {
+    throw asServiceError(error, 'Failed to send access code');
+  }
+}
+
+async function verifyBookingAccessCode(reference: string, email: string, code: string) {
+  try {
+    const cleanRef = reference.trim().toUpperCase();
+    const response = await fetch(`${BASE_URL}/bookings/access/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reference: cleanRef, email: email.trim(), code: code.trim() })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.status) {
+      const meta = extractErrorMeta(result);
+      throw classifyError(response.status, meta.message || 'Invalid or expired access code', meta.details, meta.code);
+    }
+    return result;
+  } catch (error) {
+    throw asServiceError(error, 'Verification failed');
+  }
+}
+
 async function getBooking(reference: string) {
   try {
     const cacheKey = `booking:${reference}`;
@@ -344,6 +381,8 @@ export const bookingService = {
   getAccessHeaders,
   setAccessToken,
   clearAccessToken,
+  requestBookingAccessCode,
+  verifyBookingAccessCode,
   createBooking,
   getBooking,
   updatePaymentStatus,

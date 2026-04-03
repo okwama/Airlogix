@@ -7,7 +7,7 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
 
-  import { BASE_URL, bookingService } from '$lib/services/booking/bookingService';
+  import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
   import { authStore } from '$lib/stores/authStore.svelte';
   import { authService } from '$lib/services/auth/authService';
   import { appConfig } from '$lib/config/appConfig';
@@ -38,7 +38,17 @@
     try {
       myBookings = await bookingService.listMyBookings(() => authService.getToken());
     } catch (e) {
-      myBookingsError = e instanceof Error ? e.message : 'Failed to load your bookings.';
+      if (e instanceof ServiceError) {
+        if (e.type === 'AUTH_EXPIRED') {
+          myBookingsError = 'Your session expired. Please sign in again.';
+        } else if (e.type === 'NETWORK') {
+          myBookingsError = 'Network issue while loading bookings. Please retry.';
+        } else {
+          myBookingsError = e.message;
+        }
+      } else {
+        myBookingsError = e instanceof Error ? e.message : 'Failed to load your bookings.';
+      }
       myBookings = [];
     } finally {
       myBookingsLoading = false;
@@ -175,17 +185,22 @@
     loading = true;
     
     try {
-      const cleanRef = reference.trim().toUpperCase();
-      const res = await fetch(`${BASE_URL}/bookings/access/request`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reference: cleanRef, email: email.trim() })
-      });
-      const result = await res.json();
-      if (!res.ok || !result.status) throw new Error(result.message || 'Failed to send access code.');
+      await bookingService.requestBookingAccessCode(reference, email);
       stage = 'verify';
     } catch (err) {
-      error = err instanceof Error ? err.message : 'An error occurred during lookup.';
+      if (err instanceof ServiceError) {
+        if (err.type === 'NOT_FOUND') {
+          error = 'Booking not found. Please confirm your reference and email.';
+        } else if (err.type === 'RATE_LIMITED') {
+          error = 'Too many access-code requests. Please wait and try again.';
+        } else if (err.type === 'NETWORK') {
+          error = 'Network issue while sending code. Please retry.';
+        } else {
+          error = err.message;
+        }
+      } else {
+        error = err instanceof Error ? err.message : 'An error occurred during lookup.';
+      }
     } finally {
       loading = false;
     }
@@ -201,13 +216,7 @@
     loading = true;
     try {
       const cleanRef = reference.trim().toUpperCase();
-      const res = await fetch(`${BASE_URL}/bookings/access/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reference: cleanRef, email: email.trim(), code: accessCode.trim() })
-      });
-      const result = await res.json();
-      if (!res.ok || !result.status) throw new Error(result.message || 'Invalid or expired code.');
+      const result = await bookingService.verifyBookingAccessCode(cleanRef, email, accessCode);
       
       // Store the session token for guest access
       if (result.access_token) {
@@ -216,7 +225,19 @@
       
       goto(`/my-bookings/${cleanRef}`);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Verification failed.';
+      if (err instanceof ServiceError) {
+        if (err.type === 'VALIDATION') {
+          error = 'Invalid or expired code. Request a new one and try again.';
+        } else if (err.type === 'NOT_FOUND') {
+          error = 'Booking not found. Please confirm your details.';
+        } else if (err.type === 'NETWORK') {
+          error = 'Network issue during verification. Please retry.';
+        } else {
+          error = err.message;
+        }
+      } else {
+        error = err instanceof Error ? err.message : 'Verification failed.';
+      }
     } finally {
       loading = false;
     }

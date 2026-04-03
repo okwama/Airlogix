@@ -153,7 +153,7 @@ class PaymentController {
 
         $existingTrace = null;
         if ($gatewayReference !== '') {
-            $existingTrace = $this->paymentModel->findByGatewayReference($gatewayReference);
+            $existingTrace = $this->paymentModel->findByGatewayReference($gatewayReference, $method);
             if (
                 is_array($existingTrace)
                 && (($existingTrace['status'] ?? '') === 'completed')
