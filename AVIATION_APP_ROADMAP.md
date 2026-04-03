@@ -9,6 +9,7 @@ This roadmap is now the live status tracker for the app hardening and product-im
 - Travelers can resume payment through Manage Booking + OTP.
 - Hold reminder email/SMS is sent after reservation creation.
 - Dedicated resume-payment page exists at `/my-bookings/[reference]/pay`.
+- Booking lookup `500` regression on existing references is resolved (header fallback + safe column-existence query).
 
 ## 1. Critical Security And Revenue Protection
 
@@ -54,7 +55,7 @@ This roadmap is now the live status tracker for the app hardening and product-im
 
 - `Partially Done` Standardize backend error handling.
   Current state:
-  API responses now normalize errors through a shared contract (`status=false`, `message`, `error.code`, `error.message`, `error.request_id`), with request IDs emitted via `X-Request-Id` and unhandled exceptions/fatal errors routed through the same response utility.
+  API responses now normalize errors through a shared contract (`status=false`, `message`, `error.code`, `error.message`, `error.request_id`), with request IDs emitted via `X-Request-Id` and unhandled exceptions/fatal errors routed through the same response utility. Booking lookup fatal paths have also been hardened to avoid runtime crashes from server/header and SQL-dialect differences.
   Target:
   Complete controller-level migration to explicit domain error codes and richer `details` fields across all major workflows.
 

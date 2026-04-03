@@ -16,8 +16,18 @@ class Booking {
             return $this->columnCache[$column];
         }
 
-        $stmt = $this->conn->prepare("SHOW COLUMNS FROM {$this->table_name} LIKE :column");
-        $stmt->execute([':column' => $column]);
+        $stmt = $this->conn->prepare("
+            SELECT 1
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = :table_name
+              AND COLUMN_NAME = :column_name
+            LIMIT 1
+        ");
+        $stmt->execute([
+            ':table_name' => $this->table_name,
+            ':column_name' => $column
+        ]);
         $this->columnCache[$column] = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
         return $this->columnCache[$column];
     }
@@ -152,8 +162,8 @@ class Booking {
                          ac.name as aircraft_name,
                          cc.name as cabin_name, cc.baggage_allowance_kg, cc.meal_service
                   FROM " . $this->table_name . " b
-                  JOIN flight_series fs ON b.flight_series_id = fs.id
-                  JOIN destinations d1 ON fs.from_destination_id = d1.id
+                  LEFT JOIN flight_series fs ON b.flight_series_id = fs.id
+                  LEFT JOIN destinations d1 ON fs.from_destination_id = d1.id
                   LEFT JOIN destinations d2 ON fs.to_destination_id = d2.id
                   LEFT JOIN aircrafts ac ON fs.aircraft_id = ac.id
                   LEFT JOIN cabin_classes cc ON b.cabin_class_id = cc.id
@@ -187,8 +197,8 @@ class Booking {
                          d2.name as to_city, d2.code as to_code,
                          fs.std as departure_time, fs.sta as arrival_time
                   FROM " . $this->table_name . " b
-                  JOIN flight_series fs ON b.flight_series_id = fs.id
-                  JOIN destinations d1 ON fs.from_destination_id = d1.id
+                  LEFT JOIN flight_series fs ON b.flight_series_id = fs.id
+                  LEFT JOIN destinations d1 ON fs.from_destination_id = d1.id
                   LEFT JOIN destinations d2 ON fs.to_destination_id = d2.id
                   WHERE b.booking_reference = :ref";
         

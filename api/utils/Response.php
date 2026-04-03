@@ -14,17 +14,26 @@ class Response {
     }
 
     private static function defaultErrorCodeForStatus(int $status): string {
-        return match ($status) {
-            400 => 'BAD_REQUEST',
-            401 => 'UNAUTHORIZED',
-            403 => 'FORBIDDEN',
-            404 => 'NOT_FOUND',
-            409 => 'CONFLICT',
-            422 => 'VALIDATION_ERROR',
-            429 => 'RATE_LIMITED',
-            503 => 'SERVICE_UNAVAILABLE',
-            default => ($status >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_FAILED')
-        };
+        switch ($status) {
+            case 400:
+                return 'BAD_REQUEST';
+            case 401:
+                return 'UNAUTHORIZED';
+            case 403:
+                return 'FORBIDDEN';
+            case 404:
+                return 'NOT_FOUND';
+            case 409:
+                return 'CONFLICT';
+            case 422:
+                return 'VALIDATION_ERROR';
+            case 429:
+                return 'RATE_LIMITED';
+            case 503:
+                return 'SERVICE_UNAVAILABLE';
+            default:
+                return $status >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_FAILED';
+        }
     }
 
     private static function normalizeErrorPayload($data, int $status): array {
@@ -93,4 +102,3 @@ class Response {
     public static function error($msg='Internal server error', int $status = 500) { self::fail($status, (string)$msg); }
     public static function conflict($msg='Conflict') { self::fail(409, (string)$msg, 'CONFLICT'); }
 }
-

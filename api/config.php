@@ -80,6 +80,42 @@ function request_json(): array {
     return is_array($data) ? $data : [];
 }
 
+function request_headers(): array {
+    if (function_exists('apache_request_headers')) {
+        $headers = apache_request_headers();
+        if (is_array($headers)) {
+            return $headers;
+        }
+    }
+
+    if (function_exists('getallheaders')) {
+        $headers = getallheaders();
+        if (is_array($headers)) {
+            return $headers;
+        }
+    }
+
+    $headers = [];
+    foreach ($_SERVER as $key => $value) {
+        if (strpos($key, 'HTTP_') !== 0) {
+            continue;
+        }
+
+        $name = str_replace('_', ' ', strtolower(substr($key, 5)));
+        $name = str_replace(' ', '-', ucwords($name));
+        $headers[$name] = $value;
+    }
+
+    if (isset($_SERVER['CONTENT_TYPE'])) {
+        $headers['Content-Type'] = $_SERVER['CONTENT_TYPE'];
+    }
+    if (isset($_SERVER['CONTENT_LENGTH'])) {
+        $headers['Content-Length'] = $_SERVER['CONTENT_LENGTH'];
+    }
+
+    return $headers;
+}
+
 function client_ip(): string {
     return $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
 }

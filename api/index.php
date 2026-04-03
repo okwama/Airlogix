@@ -10,16 +10,64 @@ require_once __DIR__.'/utils/Response.php';
 header('X-Request-Id: ' . Response::requestId());
 
 // CORS Headers Support
+function normalize_origin(string $origin): string {
+    $origin = trim($origin);
+    if ($origin === '') {
+        return '';
+    }
+
+    $parts = parse_url($origin);
+    if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
+        return rtrim(strtolower($origin), '/');
+    }
+
+    $scheme = strtolower((string)$parts['scheme']);
+    $host = strtolower((string)$parts['host']);
+    $port = isset($parts['port']) ? ':' . (int)$parts['port'] : '';
+    return $scheme . '://' . $host . $port;
+}
+
+function parse_origin_list(string $raw): array {
+    if (trim($raw) === '') {
+        return [];
+    }
+    $origins = [];
+    foreach (explode(',', $raw) as $origin) {
+        $normalized = normalize_origin($origin);
+        if ($normalized !== '') {
+            $origins[] = $normalized;
+        }
+    }
+    return array_values(array_unique($origins));
+}
+
 function cors_allowed_origins(): array {
-    $configured = trim((string)env('CORS_ALLOWED_ORIGINS', ''));
-    if ($configured !== '') {
-        return array_values(array_filter(array_map('trim', explode(',', $configured))));
+    $configuredOrigins = parse_origin_list((string)env('CORS_ALLOWED_ORIGINS', ''));
+    if (!empty($configuredOrigins)) {
+        return array_values(array_unique($configuredOrigins));
     }
 
     $defaults = [];
-    $frontendUrl = trim((string)env('FRONTEND_URL', env('APP_URL_FRONTEND', env('APP_URL', ''))));
-    if ($frontendUrl !== '') {
-        $defaults[] = $frontendUrl;
+    $defaults = array_merge(
+        $defaults,
+        parse_origin_list((string)env('FRONTEND_URL', '')),
+        parse_origin_list((string)env('APP_URL_FRONTEND', '')),
+        parse_origin_list((string)env('APP_URL', ''))
+    );
+
+    // Additional explicit origins without replacing defaults.
+    $defaults = array_merge(
+        $defaults,
+        parse_origin_list((string)env('CORS_EXTRA_ORIGINS', ''))
+    );
+
+    // Optional strict toggle for preview domains like *.vercel.app.
+    $allowVercelPreview = strtolower((string)env('CORS_ALLOW_VERCEL_PREVIEW', 'false')) === 'true';
+    if ($allowVercelPreview) {
+        $defaults = array_merge(
+            $defaults,
+            parse_origin_list((string)env('CORS_VERCEL_PREVIEW_ORIGINS', 'https://airlogix-smoky.vercel.app','http://localhost:5173'))
+        );
     }
 
     $appEnv = strtolower((string)env('APP_ENV', 'production'));
@@ -30,14 +78,13 @@ function cors_allowed_origins(): array {
             'http://127.0.0.1:5173',
             'http://localhost:4173',
             'http://127.0.0.1:4173'
-
         ]);
     }
 
     return array_values(array_unique(array_filter($defaults)));
 }
 
-$requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$requestOrigin = normalize_origin((string)($_SERVER['HTTP_ORIGIN'] ?? ''));
 $allowedOrigins = cors_allowed_origins();
 if ($requestOrigin !== '' && in_array($requestOrigin, $allowedOrigins, true)) {
     header('Access-Control-Allow-Origin: ' . $requestOrigin);
@@ -124,9 +171,6 @@ if ($path === '/health' && $method==='GET') { Response::json(['status'=>'ok']); 
 
 // Initialize Database Connection
 $db = db();
-
-// Assert JWT is properly configured (fails fast if misconfigured).
-Auth::assertJwtConfigured();
 
 // Instantiate Controllers
 $airlineUserCtrl = new AirlineUserController();

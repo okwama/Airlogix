@@ -29,9 +29,7 @@ final class Auth
      */
     public static function bearerToken(): ?string
     {
-        $headers = function_exists('apache_request_headers')
-            ? apache_request_headers()
-            : (function_exists('getallheaders') ? getallheaders() : []);
+        $headers = request_headers();
 
         $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
         if (!$auth || stripos($auth, 'Bearer ') !== 0) {
@@ -79,7 +77,7 @@ final class Auth
             Response::unauthorized('Endpoint not available');
         }
 
-        $headers = function_exists('getallheaders') ? getallheaders() : [];
+        $headers = request_headers();
         $provided = $headers['X-Internal-Key'] ?? $headers['x-internal-key'] ?? null;
 
         if (!$provided || !hash_equals($expected, $provided)) {
@@ -87,4 +85,3 @@ final class Auth
         }
     }
 }
-

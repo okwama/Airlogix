@@ -18,7 +18,7 @@ class CheckInController {
     }
 
     private function authenticate() {
-        $headers = apache_request_headers();
+        $headers = request_headers();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
         $user_id = $this->userModel->validateToken($token);
 

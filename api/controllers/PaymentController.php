@@ -21,7 +21,7 @@ class PaymentController {
     }
 
     private function authenticate() {
-        $headers = apache_request_headers();
+        $headers = request_headers();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
         $user_id = $this->userModel->validateToken($token);
 
@@ -34,7 +34,7 @@ class PaymentController {
 
     private function canAccessBooking(array $booking): bool
     {
-        $headers = apache_request_headers();
+        $headers = request_headers();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
 
         $authUserId = $this->userModel->validateToken($token);

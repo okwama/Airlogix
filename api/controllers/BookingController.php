@@ -23,7 +23,7 @@ class BookingController {
     }
 
     private function authenticate() {
-        $headers = apache_request_headers();
+        $headers = $this->readRequestHeaders();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
         $user_id = $this->userModel->validateToken($token);
 
@@ -191,7 +191,7 @@ class BookingController {
 
         try {
             // Securely set user_id if token is present
-            $headers = apache_request_headers();
+            $headers = $this->readRequestHeaders();
             $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
             $authUserId = $this->userModel->validateToken($token);
             $userId = $authUserId ?: ($data['user_id'] ?? null);
@@ -333,7 +333,7 @@ class BookingController {
 
     private function canAccessBooking(array $booking, string $reference): bool
     {
-        $headers = apache_request_headers();
+        $headers = $this->readRequestHeaders();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
 
         // 1. Try JWT Auth
@@ -349,6 +349,42 @@ class BookingController {
         }
 
         return $isAuthorized;
+    }
+
+    private function readRequestHeaders(): array
+    {
+        if (function_exists('request_headers')) {
+            $headers = request_headers();
+            if (is_array($headers)) {
+                return $headers;
+            }
+        }
+
+        if (function_exists('apache_request_headers')) {
+            $headers = apache_request_headers();
+            if (is_array($headers)) {
+                return $headers;
+            }
+        }
+
+        if (function_exists('getallheaders')) {
+            $headers = getallheaders();
+            if (is_array($headers)) {
+                return $headers;
+            }
+        }
+
+        $headers = [];
+        foreach ($_SERVER as $key => $value) {
+            if (strpos($key, 'HTTP_') !== 0) {
+                continue;
+            }
+            $name = str_replace('_', ' ', strtolower(substr($key, 5)));
+            $name = str_replace(' ', '-', ucwords($name));
+            $headers[$name] = $value;
+        }
+
+        return $headers;
     }
 
     private function isBookingExpired(array $booking): bool
@@ -415,6 +451,13 @@ class BookingController {
             if ($this->isBookingExpired($booking)) {
                 $this->bookingModel->expireBooking((int)$booking['id']);
                 $booking = $this->bookingModel->getByReference($reference);
+                if (!$booking) {
+                    Response::json([
+                        'status' => false,
+                        'message' => 'Booking not found'
+                    ], 404);
+                    return;
+                }
             }
 
             if (!$this->canAccessBooking($booking, $reference)) {

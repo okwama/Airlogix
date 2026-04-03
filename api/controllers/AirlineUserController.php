@@ -33,7 +33,7 @@ class AirlineUserController {
     }
 
     public function profile() {
-        $headers = apache_request_headers();
+        $headers = request_headers();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
         $user_id = $this->userModel->validateToken($token);
 
@@ -60,7 +60,7 @@ class AirlineUserController {
     }
 
     public function changePassword() {
-        $headers = apache_request_headers();
+        $headers = request_headers();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
         $user_id = $this->userModel->validateToken($token);
 
@@ -86,7 +86,7 @@ class AirlineUserController {
     }
 
     public function registerDeviceToken() {
-        $headers = apache_request_headers();
+        $headers = request_headers();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
         $user_id = $this->userModel->validateToken($token);
 
@@ -179,7 +179,7 @@ class AirlineUserController {
         }
     }
     public function uploadProfilePhoto() {
-        $headers = apache_request_headers();
+        $headers = request_headers();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
         $user_id = $this->userModel->validateToken($token);
 
@@ -230,7 +230,7 @@ class AirlineUserController {
 
     // Delete account
     public function deleteAccount() {
-        $headers = apache_request_headers();
+        $headers = request_headers();
         $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
         $user_id = $this->userModel->validateToken($token);
 

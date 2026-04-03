@@ -1,8 +1,14 @@
 <script>
+  import { goto } from '$app/navigation';
   import CurrencySelector from '$lib/features/payment/CurrencySelector.svelte';
   import logo from '$lib/assets/logo.png';
   import { authStore } from '$lib/stores/authStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
+
+  function logout() {
+    authStore.logout();
+    goto('/login');
+  }
 </script>
 
 <nav class="h-[58px] bg-brand-navy flex items-center px-[28px] sticky top-0 z-100 w-full">
@@ -37,6 +43,13 @@
         >
           My trips
         </a>
+        <button
+          type="button"
+          on:click={logout}
+          class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium"
+        >
+          Logout
+        </button>
       {:else}
         <a
           href="/login"
