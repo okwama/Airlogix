@@ -7,6 +7,7 @@ require_once __DIR__ . '/../models/AirlineUser.php';
 require_once __DIR__ . '/../models/Loyalty.php';
 require_once __DIR__ . '/../utils/Response.php';
 require_once __DIR__ . '/../utils/Cache.php';
+require_once __DIR__ . '/../utils/Observability.php';
 
 class PaymentController {
     private $paymentModel;
@@ -148,6 +149,12 @@ class PaymentController {
         $method = strtolower(trim($method));
 
         if ($gatewayReference !== '' && $this->isCallbackAlreadyProcessed($method, $gatewayReference)) {
+            Observability::event('payment.callback_replay_ignored', [
+                'booking_id' => (int)($booking['id'] ?? 0),
+                'booking_reference' => (string)($booking['booking_reference'] ?? ''),
+                'method' => $method,
+                'gateway_reference' => $gatewayReference
+            ]);
             return;
         }
 
@@ -160,6 +167,12 @@ class PaymentController {
                 && (($booking['payment_status'] ?? null) === 'paid')
             ) {
                 $this->markCallbackProcessed($method, $gatewayReference);
+                Observability::event('payment.callback_replay_ignored', [
+                    'booking_id' => (int)($booking['id'] ?? 0),
+                    'booking_reference' => (string)($booking['booking_reference'] ?? ''),
+                    'method' => $method,
+                    'gateway_reference' => $gatewayReference
+                ]);
                 return;
             }
         }
@@ -192,6 +205,12 @@ class PaymentController {
                 }
             }
             $this->markCallbackProcessed($method, $gatewayReference);
+            Observability::event('payment.callback_postpaid_received', [
+                'booking_id' => (int)($booking['id'] ?? 0),
+                'booking_reference' => (string)($booking['booking_reference'] ?? ''),
+                'method' => $method,
+                'gateway_reference' => $gatewayReference
+            ]);
             return;
         }
 
@@ -245,6 +264,15 @@ class PaymentController {
         }
 
         $this->markCallbackProcessed($method, $gatewayReference);
+        Observability::event('payment.success', [
+            'booking_id' => (int)$booking['id'],
+            'booking_reference' => (string)($booking['booking_reference'] ?? ''),
+            'user_id' => $booking['user_id'] ?? null,
+            'method' => $method,
+            'gateway_reference' => $gatewayReference,
+            'amount' => (float)($booking['total_amount'] ?? 0),
+            'currency' => (string)($booking['currency'] ?? 'USD')
+        ]);
     }
 
     public function updatePayment() {
@@ -560,6 +588,14 @@ class PaymentController {
                         'failed',
                         'mpesa'
                     );
+                    Observability::event('payment.failed', [
+                        'booking_id' => (int)$booking['id'],
+                        'booking_reference' => (string)($booking['booking_reference'] ?? ''),
+                        'method' => 'mpesa',
+                        'gateway_reference' => (string)($paymentData['checkout_request_id'] ?? $paymentData['merchant_request_id'] ?? ''),
+                        'gateway_status' => (string)($result['payment_status'] ?? 'failed'),
+                        'gateway_message' => (string)($paymentData['result_desc'] ?? '')
+                    ]);
                 }
             }
             
@@ -766,12 +802,26 @@ class PaymentController {
                 'paid',
                 $transaction['payment_method']
             );
+            Observability::event('payment.success', [
+                'booking_id' => (int)$transaction['booking_id'],
+                'booking_reference' => (string)($transaction['booking_reference'] ?? ''),
+                'method' => strtolower((string)($transaction['payment_method'] ?? 'legacy')),
+                'gateway_reference' => (string)($data['transaction_id'] ?? ''),
+                'source' => 'legacy_callback'
+            ]);
         } else {
             $this->bookingModel->updatePaymentStatus(
                 $transaction['booking_id'],
                 'failed',
                 $transaction['payment_method']
             );
+            Observability::event('payment.failed', [
+                'booking_id' => (int)$transaction['booking_id'],
+                'booking_reference' => (string)($transaction['booking_reference'] ?? ''),
+                'method' => strtolower((string)($transaction['payment_method'] ?? 'legacy')),
+                'gateway_reference' => (string)($data['transaction_id'] ?? ''),
+                'source' => 'legacy_callback'
+            ]);
         }
         
         Response::json([

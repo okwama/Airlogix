@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/Booking.php';
+require_once __DIR__ . '/../utils/Observability.php';
 
 class TicketService {
     private static $instance = null;
@@ -23,12 +24,14 @@ class TicketService {
         $passengerModel = new BookingPassenger(db());
 
         $passengers = $passengerModel->getByBookingId($bookingId);
+        $issuedCount = 0;
 
         foreach ($passengers as $p) {
             if (empty($p['ticket_number'])) {
                 // Generate a 13-digit ticket number starting with 855 (Mc Aviation IATA prefix)
                 $ticketNumber = "855" . str_pad((string)mt_rand(0, 9999999999), 10, "0", STR_PAD_LEFT);
                 $passengerModel->updateTicket($p['id'], $ticketNumber, 'OPEN');
+                $issuedCount++;
             }
         }
 
@@ -36,6 +39,14 @@ class TicketService {
         $db = db();
         $stmt = $db->prepare("UPDATE bookings SET status = 1 WHERE id = ?");
         $stmt->execute([$bookingId]);
+
+        $booking = (new Booking(db()))->getById((int)$bookingId);
+        Observability::event('ticket.issued', [
+            'booking_id' => (int)$bookingId,
+            'booking_reference' => (string)($booking['booking_reference'] ?? ''),
+            'issued_count' => $issuedCount,
+            'passenger_count' => count($passengers)
+        ]);
     }
 
     /**
@@ -70,8 +81,20 @@ class TicketService {
 
         if (!$status) {
             error_log("Failed to send documents for booking " . $booking['booking_reference'] . " via EmailService.");
+            Observability::event('document.delivery_failed', [
+                'channel' => 'email',
+                'booking_id' => (int)($booking['id'] ?? 0),
+                'booking_reference' => (string)($booking['booking_reference'] ?? ''),
+                'recipient' => (string)($toEmail ?? '')
+            ]);
         } else {
             error_log("Successfully sent e-ticket & receipt to " . $toEmail . " for booking " . $booking['booking_reference']);
+            Observability::event('document.delivered', [
+                'channel' => 'email',
+                'booking_id' => (int)($booking['id'] ?? 0),
+                'booking_reference' => (string)($booking['booking_reference'] ?? ''),
+                'recipient' => (string)($toEmail ?? '')
+            ]);
         }
 
         return $status;

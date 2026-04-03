@@ -72,9 +72,11 @@ This roadmap is now the live status tracker for the app hardening and product-im
   Outcome:
   Gateway callbacks now enforce method-scoped gateway-reference uniqueness at DB level, use idempotent upsert writes, persist callback metadata, and retain replay markers to prevent duplicate side effects.
 
-- `Pending` Add booking lifecycle observability.
+- `Partially Done` Add booking lifecycle observability.
+  Current state:
+  Structured lifecycle events now emit to dedicated JSON log streams for hold creation/expiry, payment success/failure/replay handling, ticket issuance, and document delivery (API + email channel).
   Target:
-  Add structured logs and lifecycle events for hold creation, hold expiry, payment success, ticket issuance, and document delivery.
+  Add centralized aggregation/alerts and dashboards for these lifecycle events (latency, failure-rate, and replay anomaly tracking).
 
 - `Pending` Separate dev-mode behavior from production behavior.
   Target:

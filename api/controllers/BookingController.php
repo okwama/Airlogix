@@ -7,6 +7,7 @@ require_once __DIR__ . '/../models/AirlineUser.php'; // For token validation
 require_once __DIR__ . '/../models/Loyalty.php';
 require_once __DIR__ . '/../utils/Response.php';
 require_once __DIR__ . '/../utils/Cache.php';
+require_once __DIR__ . '/../utils/Observability.php';
 
 class BookingController {
     private $bookingModel;
@@ -284,6 +285,14 @@ class BookingController {
                 $this->sendReservationHoldNotifications($bookingSnapshot);
             }
 
+            Observability::event('booking.hold_created', [
+                'booking_id' => (int)$bookingId,
+                'booking_reference' => (string)$bookingReference,
+                'user_id' => $bookingSnapshot['user_id'] ?? $userId ?? null,
+                'reservation_expires_at' => $bookingResponse['data']['reservation_expires_at'] ?? $bookingData['reservation_expires_at'] ?? null,
+                'payment_status' => 'pending'
+            ]);
+
             // Return success response with all passenger details
             Response::json([
                 'status' => true,
@@ -305,6 +314,10 @@ class BookingController {
             // Rollback transaction on error
             $db->rollBack();
             error_log("Booking creation error: " . $e->getMessage());
+            Observability::event('booking.hold_create_failed', [
+                'flight_series_id' => $data['flight_series_id'] ?? null,
+                'error_message' => $e->getMessage()
+            ]);
             Response::fail(500, 'Failed to create booking', 'BOOKING_CREATE_FAILED');
         }
     }
@@ -435,10 +448,17 @@ class BookingController {
                     : "Use Manage Booking with your booking email to continue payment.";
 
                 if (!$sms->send($phone, $message)) {
-                    error_log("Failed to send reservation hold SMS for booking {$reference}");
+                error_log("Failed to send reservation hold SMS for booking {$reference}");
                 }
             }
         }
+
+        Observability::event('booking.hold_notification_sent', [
+            'booking_id' => (int)($booking['id'] ?? 0),
+            'booking_reference' => $reference,
+            'email_channel' => $email !== '',
+            'sms_channel' => $phone !== ''
+        ]);
     }
 
     public function get($reference) {
@@ -447,6 +467,11 @@ class BookingController {
         if ($booking) {
             if ($this->isBookingExpired($booking)) {
                 $this->bookingModel->expireBooking((int)$booking['id']);
+                Observability::event('booking.hold_expired', [
+                    'source' => 'booking.get',
+                    'booking_id' => (int)($booking['id'] ?? 0),
+                    'booking_reference' => (string)($booking['booking_reference'] ?? $reference)
+                ]);
                 $booking = $this->bookingModel->getByReference($reference);
                 if (!$booking) {
                     Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
@@ -813,6 +838,10 @@ class BookingController {
 
     public function expireStale() {
         $expired = $this->bookingModel->expireStaleReservations();
+        Observability::event('booking.hold_expired_batch', [
+            'source' => 'booking.expireStale',
+            'expired_count' => (int)$expired
+        ]);
         Response::json([
             'status' => true,
             'message' => 'Stale reservations processed',
@@ -852,6 +881,11 @@ class BookingController {
 
         if ($this->isBookingExpired($booking)) {
             $this->bookingModel->expireBooking((int)$booking['id']);
+            Observability::event('booking.hold_expired', [
+                'source' => 'booking.documents',
+                'booking_id' => (int)($booking['id'] ?? 0),
+                'booking_reference' => (string)($booking['booking_reference'] ?? $reference)
+            ]);
             Response::fail(
                 409,
                 'This reservation has expired and documents are no longer available for this pending booking.',
@@ -901,6 +935,13 @@ class BookingController {
         }
 
         if ($format === 'json') {
+            Observability::event('booking.document_delivered', [
+                'booking_id' => (int)$booking['id'],
+                'booking_reference' => (string)$reference,
+                'type' => $type,
+                'format' => 'json',
+                'currency' => $displayCurrency
+            ]);
             Response::json([
                 'status' => true,
                 'data' => [
@@ -933,6 +974,13 @@ class BookingController {
                 $dompdf->loadHtml($htmlForPdf, 'UTF-8');
                 $dompdf->setPaper('A4', 'portrait');
                 $dompdf->render();
+                Observability::event('booking.document_delivered', [
+                    'booking_id' => (int)$booking['id'],
+                    'booking_reference' => (string)$reference,
+                    'type' => $type,
+                    'format' => 'pdf',
+                    'currency' => $displayCurrency
+                ]);
                 header('Content-Type: application/pdf');
                 header('Content-Disposition: inline; filename="Airlogix-E-Ticket-' . $reference . '.pdf"');
                 echo $dompdf->output();
@@ -943,6 +991,13 @@ class BookingController {
             return;
         }
 
+        Observability::event('booking.document_delivered', [
+            'booking_id' => (int)$booking['id'],
+            'booking_reference' => (string)$reference,
+            'type' => $type,
+            'format' => 'html',
+            'currency' => $displayCurrency
+        ]);
         header('Content-Type: text/html; charset=utf-8');
         echo $html;
     }
