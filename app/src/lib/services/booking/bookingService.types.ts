@@ -17,4 +17,8 @@ export interface BookingPayload {
   total_amount?: number;
   contact_phone?: string;
   contact_email?: string;
+  luggage?: {
+    checked_bags?: number;
+    special_items?: number;
+  };
 }

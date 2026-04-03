@@ -109,7 +109,6 @@ class BookingController {
             && strtoupper((string)($session['reference'] ?? '')) === strtoupper($reference);
     }
 
-
     public function create() {
         // Authentication optional for bookings (guests can book)
         // $user_id = $this->authenticate();
@@ -157,7 +156,7 @@ class BookingController {
             return;
         }
 
-        // Compute expected total server-side
+        // Compute expected total server-side from DB values
         $expectedTotal = 0;
         foreach ($passengers as $p) {
             $type = strtolower($p['passenger_type'] ?? 'adult');
@@ -182,7 +181,7 @@ class BookingController {
             return;
         }
 
-        // Use the server-validated fare for the record
+        // Use server-validated fare for passenger line-items only.
         $farePerPassenger = $expectedTotal / count($passengers);
         $numPassengers = count($passengers);
 
@@ -332,10 +331,14 @@ class BookingController {
                 $db->rollBack();
             }
             error_log("Booking creation error: " . $e->getMessage() . " @ " . $e->getFile() . ":" . $e->getLine());
-            Observability::event('booking.hold_create_failed', [
-                'flight_series_id' => $data['flight_series_id'] ?? null,
-                'error_message' => $e->getMessage()
-            ]);
+            try {
+                Observability::event('booking.hold_create_failed', [
+                    'flight_series_id' => $data['flight_series_id'] ?? null,
+                    'error_message' => $e->getMessage()
+                ]);
+            } catch (Throwable $obsError) {
+                error_log('Booking failure observability emit failed: ' . $obsError->getMessage());
+            }
             Response::fail(500, 'Failed to create booking', 'BOOKING_CREATE_FAILED');
         }
     }

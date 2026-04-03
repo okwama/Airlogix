@@ -15,20 +15,26 @@ class Booking {
         if (array_key_exists($column, $this->columnCache)) {
             return $this->columnCache[$column];
         }
-
-        $stmt = $this->conn->prepare("
-            SELECT 1
-            FROM information_schema.COLUMNS
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = :table_name
-              AND COLUMN_NAME = :column_name
-            LIMIT 1
-        ");
-        $stmt->execute([
-            ':table_name' => $this->table_name,
-            ':column_name' => $column
-        ]);
-        $this->columnCache[$column] = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->conn->prepare("
+                SELECT 1
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = :table_name
+                  AND COLUMN_NAME = :column_name
+                LIMIT 1
+            ");
+            $stmt->execute([
+                ':table_name' => $this->table_name,
+                ':column_name' => $column
+            ]);
+            $this->columnCache[$column] = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (Throwable $e) {
+            // Some managed/shared MySQL users cannot query information_schema.
+            // Fail closed so writes can continue using the base schema columns.
+            error_log("Booking::hasColumn check failed for {$column}: " . $e->getMessage());
+            $this->columnCache[$column] = false;
+        }
         return $this->columnCache[$column];
     }
 

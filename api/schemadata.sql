@@ -7542,6 +7542,31 @@ ALTER TABLE `payroll`
 ALTER TABLE `seat_reservations`
   ADD CONSTRAINT `seat_reservations_ibfk_1` FOREIGN KEY (`flight_series_id`) REFERENCES `flight_series` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `seat_reservations_ibfk_2` FOREIGN KEY (`agent_id`) REFERENCES `agents` (`id`) ON DELETE SET NULL;
+
+--
+-- Luggage pricing source of truth for booking checkout
+--
+CREATE TABLE IF NOT EXISTS `luggage_pricing` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `label` varchar(120) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'USD',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_luggage_pricing_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `luggage_pricing` (`code`, `label`, `price`, `currency`, `is_active`) VALUES
+('checked_bag', 'Checked Bag', 1200.00, 'USD', 1),
+('special_item', 'Special Item', 3500.00, 'USD', 1)
+ON DUPLICATE KEY UPDATE
+  `label` = VALUES(`label`),
+  `price` = VALUES(`price`),
+  `currency` = VALUES(`currency`),
+  `is_active` = VALUES(`is_active`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

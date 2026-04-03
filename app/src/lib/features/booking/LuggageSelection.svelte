@@ -13,8 +13,10 @@
 
   let checkedBags = $state(0);
   let specialItems = $state(0);
-  const checkedBagPrice = 1200;
-  const specialItemPrice = 3500;
+  // Pricing for optional checked/special items is finalized at check-in review.
+  // Keep zero in booking checkout to avoid charging before check-in confirmation.
+  const checkedBagPrice = 0;
+  const specialItemPrice = 0;
 
   const totalLuggagePrice = $derived((checkedBags * checkedBagPrice) + (specialItems * specialItemPrice));
 
@@ -70,7 +72,7 @@
           </div>
         </div>
         <div class="flex items-center gap-6">
-          <span class="text-brand-navy text-[14px] font-medium">{currencyStore.format(checkedBagPrice)} / bag</span>
+          <span class="text-brand-navy text-[14px] font-medium">Priced at check-in</span>
           <div class="flex items-center gap-3 bg-slate-50 rounded-full p-1 border-[0.5px] border-border">
             <button 
               class="w-6 h-6 flex items-center justify-center text-text-body hover:text-brand-navy transition-all disabled:opacity-20"
@@ -100,7 +102,7 @@
           </div>
         </div>
         <div class="flex items-center gap-6">
-          <span class="text-brand-navy text-[14px] font-medium">{currencyStore.format(specialItemPrice)} / item</span>
+          <span class="text-brand-navy text-[14px] font-medium">Priced at check-in</span>
           <div class="flex items-center gap-3 bg-slate-50 rounded-full p-1 border-[0.5px] border-border">
             <button 
               class="w-6 h-6 flex items-center justify-center text-text-body hover:text-brand-navy transition-all disabled:opacity-20"
@@ -124,7 +126,7 @@
     <div class="mt-12 flex items-start gap-3 p-4 bg-status-blue-bg/40 border-[0.5px] border-status-blue rounded-lg">
       <Info size={16} class="text-status-blue-text mt-0.5 shrink-0" />
       <p class="text-status-blue-text text-[11px] leading-relaxed">
-        <strong>Luggage Policy:</strong> Any weight exceeding the allowance or items not pre-booked online will incur higher surcharges at the airport check-in counter.
+        <strong>Luggage Policy:</strong> Personal and cabin bags are free. Checked bags and special items are selected now and finalized during check-in review.
       </p>
     </div>
   </div>

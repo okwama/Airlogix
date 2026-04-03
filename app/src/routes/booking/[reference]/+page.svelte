@@ -75,7 +75,11 @@
         payment_method: 'pending',
         total_amount: finalTotal,
         contact_email: contactEmail || undefined,
-        contact_phone: contactPhone || undefined
+        contact_phone: contactPhone || undefined,
+        luggage: {
+          checked_bags: luggageData.checkedBags,
+          special_items: luggageData.specialItems
+        }
       });
 
       reference = response.reference || response.data?.reference || response.data?.booking_reference || reference;
@@ -228,7 +232,7 @@
             <div class="space-y-2 text-[13px] text-brand-navy">
               <p>Checked Bags: {luggageData.checkedBags}</p>
               <p>Special Items: {luggageData.specialItems}</p>
-              <p>Luggage Charges: {currencyStore.format(luggageData.totalLuggagePrice)}</p>
+              <p>Check-in Luggage Charges: {currencyStore.format(luggageData.totalLuggagePrice)}</p>
             </div>
           </div>
 

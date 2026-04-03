@@ -257,7 +257,7 @@
     <!-- Luggage Hint -->
     <div class="flex items-center gap-3">
       <div class="text-status-green-text bg-status-green-bg px-3 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-2">
-        <span>✓ 7 kg cabin bag free + Checked bags from {currencyStore.format(1200)}</span>
+        <span>7 kg cabin bag free. Extra luggage finalized at check-in.</span>
       </div>
       
       <button 
@@ -282,4 +282,5 @@
     </button>
   </div>
 </div>
+
 

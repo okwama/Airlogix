@@ -138,14 +138,14 @@
           <div class="flex items-start gap-4">
             <div class="w-2 h-2 rounded-full bg-border mt-1.5 shrink-0"></div>
             <div class="flex flex-col">
-              <span class="text-brand-navy text-[13px] font-medium leading-none mb-1">Checked Bag <span class="text-text-muted ml-1">(Paid)</span></span>
-              <p class="text-text-body text-[11px]">From {currencyStore.format(1200)}. Securely stowed in hold.</p>
+              <span class="text-brand-navy text-[13px] font-medium leading-none mb-1">Checked Bag <span class="text-text-muted ml-1">(Check-in review)</span></span>
+              <p class="text-text-body text-[11px]">Selected during booking, finalized at check-in.</p>
             </div>
           </div>
         </div>
         <div class="mt-8 pt-6 border-t-[0.5px] border-border">
           <p class="text-text-muted text-[11px] leading-relaxed italic">
-            Note: Excess, oversized, or special luggage (sports gear) incurs specific surcharges at the airport or during online checkout.
+            Note: Excess, oversized, or special luggage (sports gear) is finalized during check-in review.
           </p>
         </div>
       </div>
