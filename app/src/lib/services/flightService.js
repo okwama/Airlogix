@@ -82,6 +82,27 @@ const MOCK_FLIGHTS_DATA = [
 
 export const flightService = {
   /**
+   * Normalize API flight payload keys to frontend-consistent keys.
+   * @param {any} f
+   */
+  normalizeFlight(f) {
+    return {
+      ...f,
+      id: f?.id,
+      flight_number: f?.flight_number || f?.flt || '',
+      origin_iata: f?.origin_iata || f?.departure_code || '',
+      destination_iata: f?.destination_iata || f?.arrival_code || '',
+      departure_time: f?.departure_time || f?.std || '',
+      arrival_time: f?.arrival_time || f?.sta || '',
+      base_fare: Number(f?.base_fare ?? f?.adult_fare ?? 0),
+      adult_fare: Number(f?.adult_fare ?? f?.base_fare ?? 0),
+      child_fare: Number(f?.child_fare ?? f?.adult_fare ?? f?.base_fare ?? 0),
+      infant_fare: Number(f?.infant_fare ?? 0),
+      airline_name: f?.airline_name || appConfig.name
+    };
+  },
+
+  /**
    * Search for flights based on criteria.
    * If primary search returns no hits, suggestions from different dates or nearby airports are included.
    * @param {FlightSearchQuery} query
@@ -133,8 +154,12 @@ export const flightService = {
       const result = await response.json();
       /** @param {any} f */
       const hasBookableFare = (f) => Number(f?.adult_fare ?? f?.base_fare ?? 0) > 0;
-      const flights = (result.status ? result.data : []).filter(hasBookableFare);
-      const suggestions = (result.suggestions || []).filter(hasBookableFare);
+      const flights = (result.status ? result.data : [])
+        .map(this.normalizeFlight)
+        .filter(hasBookableFare);
+      const suggestions = (result.suggestions || [])
+        .map(this.normalizeFlight)
+        .filter(hasBookableFare);
 
       if (flights.length === 0 && suggestions.length === 0 && ENABLE_MOCKS) {
         return { flights: this.getMockFlights(query), suggestions: [] };
@@ -148,7 +173,7 @@ export const flightService = {
       if (cached) {
         /** @param {any} f */
         const hasBookableFare = (f) => Number(f?.adult_fare ?? f?.base_fare ?? 0) > 0;
-        return { flights: cached.filter(hasBookableFare), suggestions: [] };
+        return { flights: cached.map(this.normalizeFlight).filter(hasBookableFare), suggestions: [] };
       }
       return ENABLE_MOCKS ? { flights: this.getMockFlights(query), suggestions: [] } : { flights: [], suggestions: [] };
     }
