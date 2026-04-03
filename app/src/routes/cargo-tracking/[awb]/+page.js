@@ -13,9 +13,13 @@ export async function load({ params }) {
     return { booking };
   } catch (err) {
     // If it's already an SvelteKit error, rethrow it as-is.
-    if (err?.status) throw err;
+    if (typeof err === 'object' && err !== null && 'status' in err) throw err;
 
-    throw error(500, { message: err?.message || 'Failed to load cargo booking' });
+    const message =
+      typeof err === 'object' && err !== null && 'message' in err && typeof err.message === 'string'
+        ? err.message
+        : 'Failed to load cargo booking';
+
+    throw error(500, { message });
   }
 }
-

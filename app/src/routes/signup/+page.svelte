@@ -70,7 +70,13 @@
           </div>
         {/if}
 
-        <form class="space-y-4" on:submit|preventDefault={handleSubmit}>
+        <form
+          class="space-y-4"
+          onsubmit={(event) => {
+            event.preventDefault();
+            handleSubmit();
+          }}
+        >
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="First name" bind:value={firstName} required />
             <Input label="Last name" bind:value={lastName} required />
@@ -128,4 +134,3 @@
     </Card>
   </div>
 </main>
-

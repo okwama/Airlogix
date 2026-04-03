@@ -42,9 +42,9 @@ This roadmap is now the live status tracker for the app hardening and product-im
   Target:
   Restrict allowed origins by environment and review longer-term session/token handling.
 
-- `Pending` Remove sensitive operational artifacts from repo.
-  Target:
-  Move logs, uploads, cache artifacts, and key material out of source control and rotate exposed credentials if needed.
+- `Done` Remove sensitive operational artifacts from repo.
+  Outcome:
+  Runtime logs, cache files, uploaded profile photos, key material, and archive/junk artifacts are removed from source control, with placeholder keep-files and tighter ignore rules in place.
 
 ## 2. Reliability, Operational Resilience, And Engineering Quality
 
@@ -110,9 +110,9 @@ This roadmap is now the live status tracker for the app hardening and product-im
 
 ## Next Recommended Ticket
 
-1. Remove sensitive operational artifacts from repo.
-2. Clean frontend service/type errors so release checks become reliable.
-3. Standardize backend error handling.
+1. Clean frontend service/type errors so release checks become reliable.
+2. Standardize backend error handling.
+3. Improve payment callback idempotency and traceability.
 
 ## Recommended Execution Order
 

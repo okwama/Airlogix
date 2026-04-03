@@ -1,8 +1,0 @@
-[02-Mar-2026 08:31:24 UTC] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in /home/impulsep/public_html/api/airlogix/admin/submit_delete_request.php:16
-Stack trace:
-#0 {main}
-  thrown in /home/impulsep/public_html/api/airlogix/admin/submit_delete_request.php on line 16
-[02-Mar-2026 08:32:12 UTC] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in /home/impulsep/public_html/api/airlogix/admin/submit_delete_request.php:22
-Stack trace:
-#0 {main}
-  thrown in /home/impulsep/public_html/api/airlogix/admin/submit_delete_request.php on line 22

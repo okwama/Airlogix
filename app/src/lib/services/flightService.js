@@ -1,3 +1,5 @@
+import { appConfig } from '$lib/config/appConfig';
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/airlogix';
 const ENABLE_MOCKS = import.meta.env.VITE_ENABLE_MOCKS === 'true';
 
@@ -12,7 +14,7 @@ const MOCK_FLIGHTS_DATA = [
     arrival_time: '09:00', 
     duration: '1h 00m', 
     base_fare: 8500, 
-    airline_name: 'Mc Aviation' 
+    airline_name: appConfig.name
   },
   { 
     id: 2, 
@@ -23,7 +25,7 @@ const MOCK_FLIGHTS_DATA = [
     arrival_time: '12:00', 
     duration: '1h 00m', 
     base_fare: 9200, 
-    airline_name: 'Mc Aviation' 
+    airline_name: appConfig.name
   },
   { 
     id: 3, 
@@ -34,7 +36,7 @@ const MOCK_FLIGHTS_DATA = [
     arrival_time: '15:30', 
     duration: '1h 30m', 
     base_fare: 18500, 
-    airline_name: 'Mc Aviation' 
+    airline_name: appConfig.name
   },
   { 
     id: 4, 
@@ -45,7 +47,7 @@ const MOCK_FLIGHTS_DATA = [
     arrival_time: '18:30', 
     duration: '1h 30m', 
     base_fare: 19800, 
-    airline_name: 'Mc Aviation' 
+    airline_name: appConfig.name
   },
   { 
     id: 5, 
@@ -56,7 +58,7 @@ const MOCK_FLIGHTS_DATA = [
     arrival_time: '11:15', 
     duration: '1h 15m', 
     base_fare: 16400, 
-    airline_name: 'Mc Aviation' 
+    airline_name: appConfig.name
   },
   { 
     id: 6, 
@@ -67,7 +69,7 @@ const MOCK_FLIGHTS_DATA = [
     arrival_time: '14:15', 
     duration: '1h 15m', 
     base_fare: 17200, 
-    airline_name: 'Mc Aviation' 
+    airline_name: appConfig.name
   }
 ];
 
@@ -82,7 +84,7 @@ export const flightService = {
   /**
    * Search for flights based on criteria.
    * If primary search returns no hits, suggestions from different dates or nearby airports are included.
-   * @param {Object} query 
+   * @param {FlightSearchQuery} query
    * @returns {Promise<{flights: any[], suggestions: any[]}>}
    */
   async searchFlights(query) {
@@ -116,7 +118,7 @@ export const flightService = {
     // If offline, return cached results if any.
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       const cached = readCache();
-      return cached || [];
+      return { flights: cached || [], suggestions: [] };
     }
 
     try {
@@ -168,7 +170,7 @@ export const flightService = {
         arrival_time: '11:15',
         duration: '1h 30m',
         base_fare: 15400 + Math.random() * 5000,
-        airline_name: 'Mc Aviation'
+        airline_name: appConfig.name
       },
       {
         id: Math.floor(Math.random() * 10000),
@@ -179,7 +181,7 @@ export const flightService = {
         arrival_time: '17:50',
         duration: '1h 30m',
         base_fare: 14200 + Math.random() * 4000,
-        airline_name: 'Mc Aviation'
+        airline_name: appConfig.name
       }
     ];
   },

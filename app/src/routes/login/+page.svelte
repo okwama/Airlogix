@@ -56,7 +56,13 @@
           </div>
         {/if}
 
-        <form class="space-y-5" on:submit|preventDefault={handleSubmit}>
+        <form
+          class="space-y-5"
+          onsubmit={(event) => {
+            event.preventDefault();
+            handleSubmit();
+          }}
+        >
           <Input
             label="Phone number or email"
             placeholder="e.g. +2547..., or you@example.com"
@@ -87,11 +93,10 @@
         </form>
 
         <p class="text-[13px] text-center text-text-muted">
-          Don’t have an account?
+          Don't have an account?
           <a href="/signup" class="text-brand-blue hover:underline font-medium">Sign up</a>
         </p>
       </div>
     </Card>
   </div>
 </main>
-
