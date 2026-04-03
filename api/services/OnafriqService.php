@@ -392,7 +392,7 @@ class OnafriqService {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT pt.*, b.reference as booking_reference 
+                SELECT pt.*, b.booking_reference
                 FROM payment_transactions pt
                 LEFT JOIN bookings b ON pt.booking_id = b.id
                 WHERE pt.transaction_id = ?

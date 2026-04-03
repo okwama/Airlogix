@@ -2,7 +2,7 @@
   import BankTransfer from './BankTransfer.svelte';
   import { Smartphone, Building2, Loader2, CheckCircle2, AlertCircle, CreditCard } from 'lucide-svelte';
   import { goto } from '$app/navigation';
-  import { bookingService } from '$lib/services/bookingService';
+  import { bookingService, ServiceError } from '$lib/services/bookingService';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
 
@@ -39,7 +39,26 @@
       
       const pollInterval = setInterval(async () => {
         if (!checkoutRequestId) return;
-        const check = await bookingService.pollMpesaStatus(checkoutRequestId);
+        let check: any = null;
+        try {
+          check = await bookingService.pollMpesaStatus(checkoutRequestId);
+        } catch (err) {
+          clearInterval(pollInterval);
+          mpesaStatus = 'failed';
+          isProcessing = false;
+          if (err instanceof ServiceError) {
+            if (err.type === 'AUTH_EXPIRED') {
+              mpesaError = 'Access session expired. Verify booking access again on Manage Booking.';
+            } else if (err.type === 'NETWORK') {
+              mpesaError = 'Network issue while checking payment status. Please retry.';
+            } else {
+              mpesaError = err.message;
+            }
+          } else {
+            mpesaError = err instanceof Error ? err.message : 'Failed to check payment status.';
+          }
+          return;
+        }
         
         if (check && check.status) {
           // API returns {status: boolean, result_code, result_desc, data:{...}}
@@ -70,7 +89,19 @@
     } catch (err) {
       isProcessing = false;
       mpesaStatus = 'failed';
-      mpesaError = err instanceof Error ? err.message : 'Server error occurred.';
+      if (err instanceof ServiceError) {
+        if (err.type === 'AUTH_EXPIRED') {
+          mpesaError = 'Access session expired. Verify booking access again on Manage Booking.';
+        } else if (err.type === 'HOLD_EXPIRED') {
+          mpesaError = 'This reservation hold has expired. Please search and rebook.';
+        } else if (err.type === 'NETWORK') {
+          mpesaError = 'Network issue while starting M-Pesa. Please retry.';
+        } else {
+          mpesaError = err.message;
+        }
+      } else {
+        mpesaError = err instanceof Error ? err.message : 'Server error occurred.';
+      }
     }
   }
 
@@ -89,7 +120,19 @@
       }
     } catch (err) {
       isProcessing = false;
-      stripeError = err instanceof Error ? err.message : 'Failed to redirect to Stripe.';
+      if (err instanceof ServiceError) {
+        if (err.type === 'AUTH_EXPIRED') {
+          stripeError = 'Access session expired. Verify booking access again on Manage Booking.';
+        } else if (err.type === 'HOLD_EXPIRED') {
+          stripeError = 'This reservation hold has expired. Please search and rebook.';
+        } else if (err.type === 'NETWORK') {
+          stripeError = 'Network issue while creating Stripe checkout. Please retry.';
+        } else {
+          stripeError = err.message;
+        }
+      } else {
+        stripeError = err instanceof Error ? err.message : 'Failed to redirect to Stripe.';
+      }
     }
   }
 

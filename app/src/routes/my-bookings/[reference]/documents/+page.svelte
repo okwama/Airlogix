@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { onMount, onDestroy } from 'svelte';
-  import { bookingService } from '$lib/services/bookingService';
+  import { bookingService, ServiceError } from '$lib/services/bookingService';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
   import Button from '$lib/components/ui/Button.svelte';
@@ -24,7 +24,19 @@
       const blob = await bookingService.fetchBookingDocumentsPdf(reference, currencyStore.current);
       pdfUrl = URL.createObjectURL(blob);
     } catch (e) {
-      error = e instanceof Error ? e.message : 'Could not load document.';
+      if (e instanceof ServiceError) {
+        if (e.type === 'AUTH_EXPIRED') {
+          error = 'Your access session expired. Please verify this booking again via Manage Booking.';
+        } else if (e.type === 'NOT_FOUND') {
+          error = 'Document not found for this booking yet.';
+        } else if (e.type === 'NETWORK') {
+          error = 'Network issue while loading the document. Please retry.';
+        } else {
+          error = e.message;
+        }
+      } else {
+        error = e instanceof Error ? e.message : 'Could not load document.';
+      }
     } finally {
       loading = false;
     }

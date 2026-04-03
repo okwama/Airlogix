@@ -90,21 +90,91 @@ class PaymentController {
         return $amountInBase * $rates[$toCurrency];
     }
 
+    private function callbackCacheKey(string $method, string $gatewayReference): string
+    {
+        return 'payment_callback_done:' . strtolower(trim($method)) . ':' . hash('sha256', trim($gatewayReference));
+    }
+
+    private function isCallbackAlreadyProcessed(string $method, ?string $gatewayReference): bool
+    {
+        $ref = trim((string)$gatewayReference);
+        if ($ref === '') {
+            return false;
+        }
+        return Cache::get($this->callbackCacheKey($method, $ref)) === true;
+    }
+
+    private function markCallbackProcessed(string $method, ?string $gatewayReference): void
+    {
+        $ref = trim((string)$gatewayReference);
+        if ($ref === '') {
+            return;
+        }
+        // Keep dedupe markers for 30 days to avoid replay effects from gateways.
+        Cache::set($this->callbackCacheKey($method, $ref), true, 30 * 24 * 60 * 60);
+    }
+
     /**
      * Idempotent helper to finalize a successful payment:
      * - Marks booking as paid (if not already)
-     * - Optionally stores a receipt/transaction reference
+     * - Persists gateway callback traceability
      * - Sends ticket
      * - Awards loyalty points
      */
-    private function finalizeSuccessfulPayment(array $booking, string $method, ?string $receipt = null): void
+    private function finalizeSuccessfulPayment(array $booking, string $method, ?string $gatewayReference = null, array $gatewayPayload = []): void
     {
         if (empty($booking['id'])) {
             return;
         }
 
-        // If already marked as paid, do nothing (idempotent behavior)
+        $gatewayReference = trim((string)$gatewayReference);
+        $method = strtolower(trim($method));
+
+        if ($gatewayReference !== '' && $this->isCallbackAlreadyProcessed($method, $gatewayReference)) {
+            return;
+        }
+
+        $existingTrace = null;
+        if ($gatewayReference !== '') {
+            $existingTrace = $this->paymentModel->findByGatewayReference($gatewayReference);
+            if (
+                is_array($existingTrace)
+                && (($existingTrace['status'] ?? '') === 'completed')
+                && (($booking['payment_status'] ?? null) === 'paid')
+            ) {
+                $this->markCallbackProcessed($method, $gatewayReference);
+                return;
+            }
+        }
+
+        $traceMetadata = [
+            'method' => $method,
+            'gateway_reference' => $gatewayReference,
+            'request_id' => Response::requestId(),
+            'finalized_at' => date('Y-m-d H:i:s'),
+            'payload' => $gatewayPayload
+        ];
+
+        // If booking is already paid, still persist a trace row so replayed callbacks are auditable.
         if (($booking['payment_status'] ?? null) === 'paid') {
+            if (!is_array($existingTrace)) {
+                $trace = $this->paymentModel->createGatewayTrace([
+                    'booking_id' => $booking['id'],
+                    'user_id' => $booking['user_id'] ?? null,
+                    'amount' => $booking['total_amount'],
+                    'currency' => $booking['currency'] ?? 'USD',
+                    'payment_method' => $method,
+                    'payment_reference' => $booking['booking_reference'],
+                    'transaction_id' => $gatewayReference !== '' ? $gatewayReference : null,
+                    'status' => 'completed',
+                    'metadata' => json_encode(array_merge($traceMetadata, ['note' => 'Callback received after booking already paid'])),
+                    'payment_date' => date('Y-m-d H:i:s')
+                ]);
+                if (!$trace['status']) {
+                    error_log('Failed to record post-paid callback trace for booking ' . $booking['id']);
+                }
+            }
+            $this->markCallbackProcessed($method, $gatewayReference);
             return;
         }
 
@@ -114,22 +184,30 @@ class PaymentController {
             $method
         );
 
-        // Persist a transaction record in the payment_transactions table
-        $transactionResult = $this->paymentModel->initiate([
-            'booking_id' => $booking['id'],
-            'user_id'    => $booking['user_id'] ?? null, // Support guest bookings
-            'amount'     => $booking['total_amount'],
-            'currency'   => $booking['currency'] ?? 'USD',
-            'payment_method' => $method
-        ]);
+        // Persist or update transaction record in the payment_transactions table
+        if (is_array($existingTrace)) {
+            $transactionResult = ['status' => true, 'transaction_id' => (int)$existingTrace['id']];
+        } else {
+            $transactionResult = $this->paymentModel->createGatewayTrace([
+                'booking_id' => $booking['id'],
+                'user_id' => $booking['user_id'] ?? null,
+                'amount' => $booking['total_amount'],
+                'currency' => $booking['currency'] ?? 'USD',
+                'payment_method' => $method,
+                'payment_reference' => $booking['booking_reference'],
+                'transaction_id' => $gatewayReference !== '' ? $gatewayReference : null,
+                'status' => 'pending',
+                'metadata' => json_encode($traceMetadata)
+            ]);
+        }
 
-        // Update the transaction status to completed, including the gateway receipt
+        // Update the transaction status to completed, including callback metadata.
         if (!empty($transactionResult['transaction_id'])) {
             $this->paymentModel->updateStatus(
                 $transactionResult['transaction_id'],
                 'completed',
-                $receipt,
-                json_encode(['method' => $method, 'finalized_at' => date('Y-m-d H:i:s')])
+                $gatewayReference !== '' ? $gatewayReference : ($booking['booking_reference'] ?? null),
+                json_encode($traceMetadata)
             );
         }
 
@@ -148,6 +226,8 @@ class PaymentController {
             $loyalty = new Loyalty(db());
             $loyalty->awardPoints($booking['user_id'], $booking['id'], $booking['total_amount']);
         }
+
+        $this->markCallbackProcessed($method, $gatewayReference);
     }
 
     public function updatePayment() {
@@ -266,7 +346,8 @@ class PaymentController {
                 $booking = $this->bookingModel->getByReference($bookingReference);
                 
                 if ($booking) {
-                    $this->finalizeSuccessfulPayment($booking, 'paystack');
+                    $gatewayRef = (string)($transactionData['reference'] ?? $reference);
+                    $this->finalizeSuccessfulPayment($booking, 'paystack', $gatewayRef, $transactionData);
 
                     Response::json([
                         'status' => true,
@@ -320,7 +401,8 @@ class PaymentController {
             // Update booking status
             $booking = $this->bookingModel->getByReference($bookingReference);
             if ($booking) {
-                $this->finalizeSuccessfulPayment($booking, 'paystack');
+                $gatewayRef = (string)($data['reference'] ?? $reference);
+                $this->finalizeSuccessfulPayment($booking, 'paystack', $gatewayRef, $data);
             }
         }
 
@@ -434,8 +516,8 @@ class PaymentController {
                 $booking = $this->bookingModel->getByReference($bookingReference);
                 
                 if ($booking) {
-                    $receipt = $paymentData['mpesa_receipt'] ?? null;
-                    $this->finalizeSuccessfulPayment($booking, 'mpesa', $receipt);
+                    $gatewayRef = (string)($paymentData['checkout_request_id'] ?? $paymentData['merchant_request_id'] ?? '');
+                    $this->finalizeSuccessfulPayment($booking, 'mpesa', $gatewayRef, $paymentData);
                 }
             }
             
@@ -745,7 +827,8 @@ class PaymentController {
             $booking = $this->bookingModel->getByReference($bookingReference);
 
             if ($booking) {
-                $this->finalizeSuccessfulPayment($booking, 'onafriq');
+                $gatewayRef = (string)($result['data']['transaction_id'] ?? '');
+                $this->finalizeSuccessfulPayment($booking, 'onafriq', $gatewayRef, $result['data']);
             }
         }
         
@@ -859,7 +942,8 @@ class PaymentController {
             $booking = $this->bookingModel->getByReference($bookingReference);
 
             if ($booking) {
-                $this->finalizeSuccessfulPayment($booking, 'dpo');
+                $gatewayRef = (string)($result['data']['trans_token'] ?? ($callbackData['TransToken'] ?? $callbackData['trans_token'] ?? ''));
+                $this->finalizeSuccessfulPayment($booking, 'dpo', $gatewayRef, $result['data']);
             }
         }
 
@@ -991,7 +1075,7 @@ class PaymentController {
             if ($bookingReference) {
                 $booking = $this->bookingModel->getByReference($bookingReference);
                 if ($booking) {
-                    $this->finalizeSuccessfulPayment($booking, 'stripe', $session['id'] ?? null);
+                    $this->finalizeSuccessfulPayment($booking, 'stripe', $session['id'] ?? null, $session);
                 }
             }
         }

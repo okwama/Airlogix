@@ -50,5 +50,46 @@ class Payment {
         $stmt->execute([':booking_id' => $booking_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function findByGatewayReference(string $gatewayReference) {
+        $gatewayReference = trim($gatewayReference);
+        if ($gatewayReference === '') {
+            return null;
+        }
+
+        $query = "SELECT * FROM " . $this->table_name . "
+                  WHERE transaction_id = :ref OR payment_reference = :ref
+                  ORDER BY id DESC
+                  LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([':ref' => $gatewayReference]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function createGatewayTrace(array $data) {
+        $query = "INSERT INTO " . $this->table_name . "
+                 (booking_id, user_id, amount, currency, payment_method, payment_reference, transaction_id, status, metadata, payment_date, created_at)
+                 VALUES (:booking_id, :user_id, :amount, :currency, :method, :payment_reference, :transaction_id, :status, :meta, :payment_date, NOW())";
+
+        $stmt = $this->conn->prepare($query);
+        $ok = $stmt->execute([
+            ':booking_id' => $data['booking_id'],
+            ':user_id' => $data['user_id'] ?? null,
+            ':amount' => $data['amount'],
+            ':currency' => $data['currency'] ?? 'USD',
+            ':method' => $data['payment_method'],
+            ':payment_reference' => $data['payment_reference'] ?? null,
+            ':transaction_id' => $data['transaction_id'] ?? null,
+            ':status' => $data['status'] ?? 'pending',
+            ':meta' => $data['metadata'] ?? null,
+            ':payment_date' => $data['payment_date'] ?? null
+        ]);
+
+        if ($ok) {
+            return ['status' => true, 'transaction_id' => (int)$this->conn->lastInsertId()];
+        }
+        return ['status' => false, 'message' => 'Failed to create gateway trace'];
+    }
 }
 ?>

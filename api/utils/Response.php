@@ -1,31 +1,96 @@
 <?php
 class Response {
+    private static $requestId = null;
+
+    public static function requestId(): string {
+        if (self::$requestId === null) {
+            try {
+                self::$requestId = bin2hex(random_bytes(8));
+            } catch (Throwable $e) {
+                self::$requestId = (string)uniqid('req_', true);
+            }
+        }
+        return self::$requestId;
+    }
+
+    private static function defaultErrorCodeForStatus(int $status): string {
+        return match ($status) {
+            400 => 'BAD_REQUEST',
+            401 => 'UNAUTHORIZED',
+            403 => 'FORBIDDEN',
+            404 => 'NOT_FOUND',
+            409 => 'CONFLICT',
+            422 => 'VALIDATION_ERROR',
+            429 => 'RATE_LIMITED',
+            503 => 'SERVICE_UNAVAILABLE',
+            default => ($status >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_FAILED')
+        };
+    }
+
+    private static function normalizeErrorPayload($data, int $status): array {
+        $payload = is_array($data) ? $data : ['message' => (string)$data];
+        $legacyMessage = (string)($payload['message'] ?? $payload['error'] ?? 'Request failed');
+        $code = (string)($payload['code'] ?? self::defaultErrorCodeForStatus($status));
+        $details = $payload['details'] ?? null;
+
+        $payload['status'] = false;
+        $payload['message'] = $legacyMessage;
+        $payload['error'] = [
+            'code' => $code,
+            'message' => $legacyMessage,
+            'request_id' => self::requestId()
+        ];
+        if ($details !== null) {
+            $payload['error']['details'] = $details;
+        }
+        $payload['request_id'] = self::requestId();
+
+        return $payload;
+    }
+
     public static function json($data, int $status = 200): void {
         // Clear any previous output
         if (ob_get_level() > 0) {
             ob_clean();
         }
-        
+
+        if ($status >= 400) {
+            $data = self::normalizeErrorPayload($data, $status);
+        } elseif (is_array($data) && !isset($data['request_id'])) {
+            $data['request_id'] = self::requestId();
+        }
+
         http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');
-        
+        header('X-Request-Id: ' . self::requestId());
+
         $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($json === false) {
             // Fallback if json_encode fails
             http_response_code(500);
-            echo json_encode(['error' => 'Failed to encode response'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(self::normalizeErrorPayload(['message' => 'Failed to encode response', 'code' => 'ENCODING_ERROR'], 500), JSON_UNESCAPED_UNICODE);
         } else {
             echo $json;
         }
         exit;
     }
-    public static function badRequest($msg) { self::json(['error'=>$msg], 400); }
-    public static function unauthorized($msg='Unauthorized') { self::json(['error'=>$msg], 401); }
-    public static function notFound($msg='Not found') { self::json(['error'=>$msg], 404); }
-    public static function error($msg='Internal server error', int $status = 500) { self::json(['error'=>$msg], $status); }
-    
-    // Add conflict response for 409
-    public static function conflict($msg='Conflict') { self::json(['error'=>$msg], 409); }
-}
 
+    public static function fail(int $status, string $message, string $code = '', $details = null): void {
+        $payload = ['message' => $message];
+        if ($code !== '') {
+            $payload['code'] = $code;
+        }
+        if ($details !== null) {
+            $payload['details'] = $details;
+        }
+        self::json($payload, $status);
+    }
+
+    public static function badRequest($msg) { self::fail(400, (string)$msg, 'BAD_REQUEST'); }
+    public static function unauthorized($msg='Unauthorized') { self::fail(401, (string)$msg, 'UNAUTHORIZED'); }
+    public static function forbidden($msg='Forbidden') { self::fail(403, (string)$msg, 'FORBIDDEN'); }
+    public static function notFound($msg='Not found') { self::fail(404, (string)$msg, 'NOT_FOUND'); }
+    public static function error($msg='Internal server error', int $status = 500) { self::fail($status, (string)$msg); }
+    public static function conflict($msg='Conflict') { self::fail(409, (string)$msg, 'CONFLICT'); }
+}
 

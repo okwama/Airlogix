@@ -52,9 +52,11 @@ This roadmap is now the live status tracker for the app hardening and product-im
   Current state:
   The undefined passenger-count bug is fixed and hold metadata is now persisted. Broader input cleanup and transaction hardening still remain.
 
-- `Pending` Standardize backend error handling.
+- `Partially Done` Standardize backend error handling.
+  Current state:
+  API responses now normalize errors through a shared contract (`status=false`, `message`, `error.code`, `error.message`, `error.request_id`), with request IDs emitted via `X-Request-Id` and unhandled exceptions/fatal errors routed through the same response utility.
   Target:
-  Adopt a shared API error shape with stable codes, safe user messages, and richer server-side logging.
+  Complete controller-level migration to explicit domain error codes and richer `details` fields across all major workflows.
 
 - `Pending` Stop swallowing frontend service failures.
   Target:
@@ -64,9 +66,11 @@ This roadmap is now the live status tracker for the app hardening and product-im
   Outcome:
   `flightService` and cargo-tracking contract issues were corrected, and the frontend now passes `svelte-check`.
 
-- `Pending` Improve payment callback idempotency and traceability.
+- `Partially Done` Improve payment callback idempotency and traceability.
+  Current state:
+  Gateway callbacks now finalize through gateway-reference idempotency checks, persist request-scoped callback metadata, and cache replay markers to reduce duplicate side effects.
   Target:
-  Ensure callbacks are safe to replay, consistently linked to booking and transaction records, and fully auditable.
+  Add DB-level uniqueness/constraints for gateway references and expand callback audit retention/monitoring to complete end-to-end replay safety.
 
 - `Pending` Add booking lifecycle observability.
   Target:
@@ -110,9 +114,9 @@ This roadmap is now the live status tracker for the app hardening and product-im
 
 ## Next Recommended Ticket
 
-1. Standardize backend error handling.
-2. Improve payment callback idempotency and traceability.
-3. Stop swallowing frontend service failures.
+1. Stop swallowing frontend service failures.
+2. Complete explicit controller-level error code migration.
+3. Add DB-level gateway reference uniqueness for callback replay hardening.
 
 ## Recommended Execution Order
 

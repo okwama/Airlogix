@@ -5,6 +5,9 @@ ini_set('display_errors', 0); // Don't display errors to users
 ini_set('log_errors', 1); // Log errors to error log
 
 require_once __DIR__.'/config.php';
+require_once __DIR__.'/utils/Response.php';
+
+header('X-Request-Id: ' . Response::requestId());
 
 // CORS Headers Support
 function cors_allowed_origins(): array {
@@ -47,8 +50,7 @@ header('Access-Control-Max-Age: 600');
 // Handle Preflight OPTIONS Request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     if ($requestOrigin !== '' && !in_array($requestOrigin, $allowedOrigins, true)) {
-        http_response_code(403);
-        exit();
+        Response::forbidden('Origin not allowed');
     }
     http_response_code(200);
     exit();
@@ -66,15 +68,21 @@ register_shutdown_function(function() {
             $error['line'] ?? 0
         ));
 
-        http_response_code(500);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
-            'error' => 'Internal server error'
-        ], JSON_UNESCAPED_UNICODE);
+        Response::error('Internal server error', 500);
     }
 });
-require_once __DIR__.'/utils/Response.php';
 require_once __DIR__.'/utils/Auth.php';
+set_exception_handler(function (Throwable $e): void {
+    error_log(sprintf(
+        'Unhandled exception [%s]: %s in %s on line %d',
+        Response::requestId(),
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine()
+    ));
+    Response::error('Internal server error', 500);
+});
+
 require_once __DIR__.'/controllers/AirlineUserController.php';
 require_once __DIR__.'/controllers/FlightController.php';
 require_once __DIR__.'/controllers/BookingController.php';

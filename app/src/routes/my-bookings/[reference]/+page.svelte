@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { onMount } from 'svelte';
-  import { bookingService } from '$lib/services/bookingService';
+  import { bookingService, ServiceError } from '$lib/services/bookingService';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import { appConfig } from '$lib/config/appConfig';
@@ -23,7 +23,21 @@
       if (!data) throw new Error('Booking not found.');
       booking = data;
     } catch (e) {
-      error = e instanceof Error ? e.message : 'Failed to load booking.';
+      if (e instanceof ServiceError) {
+        if (e.type === 'AUTH_EXPIRED') {
+          error = 'Your access session expired. Verify this booking again through Manage Booking OTP.';
+        } else if (e.type === 'HOLD_EXPIRED') {
+          error = 'This reservation hold has expired. Please search and create a new booking.';
+        } else if (e.type === 'NOT_FOUND') {
+          error = 'Booking not found. Confirm your reference and try again.';
+        } else if (e.type === 'NETWORK') {
+          error = 'Network connection issue. Reconnect and refresh this page.';
+        } else {
+          error = e.message;
+        }
+      } else {
+        error = e instanceof Error ? e.message : 'Failed to load booking.';
+      }
       booking = null;
     } finally {
       loading = false;

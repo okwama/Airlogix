@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Building2, Save, Loader2 } from 'lucide-svelte';
   import { onMount } from 'svelte';
-  import { bookingService } from '$lib/services/bookingService.js';
+  import { bookingService, ServiceError } from '$lib/services/bookingService.js';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
 
   interface Props {
@@ -15,11 +15,25 @@
   let isCopied = $state(false);
   let isLoading = $state(true);
   let bankDetails = $state<any>(null);
+  let loadError = $state('');
 
   onMount(async () => {
-    const data = await bookingService.getBankInfo();
-    if (data) {
+    try {
+      const data = await bookingService.getBankInfo();
       bankDetails = data;
+      loadError = '';
+    } catch (err) {
+      if (err instanceof ServiceError) {
+        if (err.type === 'NETWORK') {
+          loadError = 'Network issue while loading bank details. Please retry.';
+        } else if (err.type === 'AUTH_EXPIRED') {
+          loadError = 'Session expired. Verify booking access again and reopen this page.';
+        } else {
+          loadError = err.message;
+        }
+      } else {
+        loadError = err instanceof Error ? err.message : 'Failed to load bank details.';
+      }
     }
     isLoading = false;
   });
@@ -85,7 +99,7 @@
     </div>
   {:else}
     <div class="bg-red-50 border border-red-100 rounded-lg p-5 text-center">
-      <p class="text-[13px] text-red-600 font-medium">Failed to load bank details. Please try again later.</p>
+      <p class="text-[13px] text-red-600 font-medium">{loadError || 'Failed to load bank details. Please try again later.'}</p>
     </div>
   {/if}
 
