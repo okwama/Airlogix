@@ -2,11 +2,6 @@
   import CurrencySelector from '$lib/features/payment/CurrencySelector.svelte';
   import logo from '$lib/assets/logo.png';
   import { authStore } from '$lib/stores/authStore.svelte';
-  import { onMount } from 'svelte';
-
-  onMount(() => {
-    authStore.init();
-  });
 </script>
 
 <nav class="h-[58px] bg-brand-navy flex items-center px-[28px] sticky top-0 z-100 w-full">

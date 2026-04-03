@@ -3,12 +3,14 @@
   import Navbar from '$lib/components/ui/Navbar.svelte';
   import Footer from '$lib/components/ui/Footer.svelte';
   import { onMount } from 'svelte';
+  import { authStore } from '$lib/stores/authStore.svelte';
 
   let { children } = $props();
 
   let isOnline = $state(true);
 
   onMount(() => {
+    authStore.init();
     isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
 
     const onOnline = () => (isOnline = true);

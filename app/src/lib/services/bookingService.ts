@@ -87,6 +87,16 @@ export const bookingService = {
         'Content-Type': 'application/json'
       };
 
+      // Include JWT auth if available (logged-in travelers)
+      try {
+        if (typeof localStorage !== 'undefined') {
+          const jwt = localStorage.getItem('airlogix_jwt');
+          if (jwt) headers.Authorization = `Bearer ${jwt}`;
+        }
+      } catch {
+        // ignore
+      }
+
       // Include access token if available
       if (typeof sessionStorage !== 'undefined') {
         const token = sessionStorage.getItem(tokenKey);

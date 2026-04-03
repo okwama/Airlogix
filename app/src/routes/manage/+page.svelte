@@ -89,7 +89,7 @@
         bookingService.setAccessToken(cleanRef, result.access_token);
       }
       
-      goto(`/booking/${cleanRef}`);
+      goto(`/my-bookings/${cleanRef}`);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Verification failed.';
     } finally {
@@ -145,7 +145,7 @@
               {#each myBookings as b (b.id)}
                 <button
                   class="w-full text-left border border-border rounded-lg p-4 hover:border-brand-blue transition-colors bg-white"
-                  onclick={() => goto(`/booking/${String(b.booking_reference || '').toUpperCase()}`)}
+                  onclick={() => goto(`/my-bookings/${String(b.booking_reference || '').toUpperCase()}`)}
                 >
                   <div class="flex items-center justify-between gap-4">
                     <div class="space-y-1">

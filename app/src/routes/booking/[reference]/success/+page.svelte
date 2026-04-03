@@ -118,7 +118,7 @@
               <Download size={18} /> Download E-Ticket
             </Button>
           {:else}
-            <Button variant="primary" href={`/booking/${reference}`}>
+            <Button variant="primary" href={`/my-bookings/${reference}`}>
               <Download size={18} /> View Booking
             </Button>
           {/if}
