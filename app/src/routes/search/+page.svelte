@@ -1,5 +1,6 @@
 <script>
   import FlightCard from '$lib/features/flights/FlightCard.svelte';
+  import { navigating } from '$app/stores';
   import { Plane, ChevronLeft, SlidersHorizontal, Info } from 'lucide-svelte';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
@@ -8,15 +9,16 @@
 
   const searchQuery = $derived(data.searchQuery);
   const flights = $derived(data.flights);
-  
-  const formattedDate = $derived(new Date(searchQuery.date).toLocaleDateString('en-GB', { 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
+  const isNavigating = $derived(Boolean($navigating));
+
+  const formattedDate = $derived(new Date(searchQuery.date).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
   }));
-  
+
   const passengersLabel = $derived(
-    `${searchQuery.adults} Adult${searchQuery.adults > 1 ? 's' : ''}` + 
+    `${searchQuery.adults} Adult${searchQuery.adults > 1 ? 's' : ''}` +
     (searchQuery.children > 0 ? `, ${searchQuery.children} Child${searchQuery.children > 1 ? 'ren' : ''}` : '')
   );
 </script>
@@ -26,7 +28,6 @@
 </svelte:head>
 
 <div class="bg-surface min-h-[calc(100vh-58px)] pb-12">
-  <!-- Summary Header -->
   <div class="bg-brand-navy pt-8 pb-10">
     <div class="container mx-auto px-7 max-w-[1240px] flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div class="flex flex-col gap-1.5">
@@ -34,7 +35,7 @@
           <ChevronLeft size={14} /> Back to Search
         </a>
         <h1 class="text-white text-[32px] font-medium leading-none">
-          {searchQuery.from} <span class="text-white/40 mx-2">→</span> {searchQuery.to}
+          {searchQuery.from} <span class="text-white/40 mx-2">-&gt;</span> {searchQuery.to}
         </h1>
         <div class="flex items-center gap-4 mt-2">
           <span class="text-white/72 text-[13px] font-medium">{formattedDate}</span>
@@ -52,8 +53,6 @@
   </div>
 
   <div class="container mx-auto px-7 max-w-[1240px] mt-12 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12 items-start">
-    
-    <!-- Results List -->
     <main class="flex flex-col gap-4">
       <div class="flex items-center justify-between mb-2">
         <span class="text-text-muted text-[13px] font-medium">{flights.length} Flights available</span>
@@ -62,13 +61,23 @@
           <span>Flexible booking active</span>
         </div>
       </div>
-      
-      {#if flights.length > 0}
+
+      {#if isNavigating}
+        <div class="space-y-4" aria-live="polite">
+          {#each Array(3) as _}
+            <div class="bg-surface border-[0.5px] border-border rounded-lg p-6 animate-pulse">
+              <div class="h-4 w-1/4 bg-slate-200 rounded mb-5"></div>
+              <div class="h-8 w-full bg-slate-200 rounded mb-4"></div>
+              <div class="h-10 w-40 bg-slate-200 rounded ml-auto"></div>
+            </div>
+          {/each}
+        </div>
+      {:else if flights.length > 0}
         {#each flights as flight}
-          <FlightCard 
-            {flight} 
-            adults={searchQuery.adults} 
-            children={searchQuery.children} 
+          <FlightCard
+            {flight}
+            adults={searchQuery.adults}
+            children={searchQuery.children}
           />
         {/each}
       {:else if data.suggestions && data.suggestions.length > 0}
@@ -87,10 +96,10 @@
             <div class="absolute -top-2.5 right-6 z-10 bg-brand-blue text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
               {flight.suggestion_label || 'Suggested'}
             </div>
-            <FlightCard 
-              {flight} 
-              adults={searchQuery.adults} 
-              children={searchQuery.children} 
+            <FlightCard
+              {flight}
+              adults={searchQuery.adults}
+              children={searchQuery.children}
             />
           </div>
         {/each}
@@ -108,7 +117,6 @@
       {/if}
     </main>
 
-    <!-- Side Panel / Ad / Luggage Hint -->
     <aside class="flex flex-col gap-6">
       <div class="bg-slate-50 border-[0.5px] border-border rounded-lg p-6">
         <h4 class="ui-label mb-6">Luggage Policy</h4>
@@ -144,4 +152,3 @@
     </aside>
   </div>
 </div>
-

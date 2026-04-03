@@ -1,4 +1,5 @@
 <script>
+  import { navigating } from '$app/stores';
   import CargoCard from '$lib/features/cargo/CargoCard.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
@@ -9,6 +10,7 @@
 
   const searchQuery = $derived(data.searchQuery);
   const flights = $derived(data.flights);
+  const isNavigating = $derived(Boolean($navigating));
 </script>
 
 <svelte:head>
@@ -23,7 +25,7 @@
         <span class="date">{new Date(searchQuery.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
       </div>
       <div class="details">
-        <span class="badge">{searchQuery.weight} kg • {searchQuery.commodity}</span>
+        <span class="badge">{searchQuery.weight} kg - {searchQuery.commodity}</span>
         <Button variant="secondary" onclick={() => window.history.back()}>Change Search</Button>
       </div>
     </div>
@@ -60,7 +62,17 @@
     </aside>
 
     <main class="results-list">
-      {#if flights.length > 0}
+      {#if isNavigating}
+        <div class="space-y-4" aria-live="polite">
+          {#each Array(3) as _}
+            <div class="bg-white border-[0.5px] border-border rounded-lg p-8 animate-pulse">
+              <div class="h-4 w-1/3 bg-slate-200 rounded mb-4"></div>
+              <div class="h-6 w-full bg-slate-200 rounded mb-3"></div>
+              <div class="h-6 w-2/3 bg-slate-200 rounded"></div>
+            </div>
+          {/each}
+        </div>
+      {:else if flights.length > 0}
         <div class="sort-bar">
           <span class="text-[13px]">{flights.length} flights with available capacity</span>
           <select class="text-[13px] font-medium text-brand-navy outline-none cursor-pointer">
@@ -69,7 +81,7 @@
             <option>Highest Capacity</option>
           </select>
         </div>
-        
+
         <div class="space-y-4">
           {#each flights as flight}
             <CargoCard {flight} />
@@ -181,7 +193,6 @@
     color: var(--color-primary-navy);
     cursor: pointer;
   }
-
 
   @media (max-width: 1024px) {
     .main-content {

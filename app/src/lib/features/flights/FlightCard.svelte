@@ -3,7 +3,7 @@
   import { bookingStore } from '$lib/stores/bookingStore.svelte';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
-  import { Plane, Info } from 'lucide-svelte';
+  import { Plane, Info, Loader2 } from 'lucide-svelte';
 
   /**
    * @typedef {Object} Flight
@@ -23,7 +23,7 @@
    * @property {number} [adults=1]
    * @property {number} [children=0]
    */
-  
+
   /** @type {Props} */
   let { flight, adults = 1, children = 0 } = $props();
 
@@ -34,10 +34,21 @@
   const airline = $derived(flight.airline_name || appConfig.name);
   const flightNo = $derived(flight.flight_number || 'MC101');
 
+  let isSelecting = $state(false);
+
+  async function handleSelectFlight() {
+    if (isSelecting) return;
+    isSelecting = true;
+    try {
+      bookingStore.setFlight(flight, adults, children);
+      await goto(`/booking/${bookingStore.reference}`);
+    } catch (e) {
+      isSelecting = false;
+    }
+  }
 </script>
 
 <div class="bg-surface border-[0.5px] border-border rounded-lg p-6 mb-4 flex flex-col md:flex-row items-center gap-8 transition-all hover:border-brand-blue group">
-  <!-- Airline -->
   <div class="flex items-center gap-4 min-w-[160px]">
     <div class="w-10 h-10 bg-brand-navy rounded-sm flex items-center justify-center text-white text-[14px] font-medium shrink-0">
       Mc
@@ -48,7 +59,6 @@
     </div>
   </div>
 
-  <!-- Route & Times -->
   <div class="flex-1 flex items-center justify-center gap-8 md:gap-12 w-full">
     <div class="flex flex-col items-center">
       <span class="text-brand-navy text-[22px] font-normal leading-tight">{depTime}</span>
@@ -71,26 +81,28 @@
     </div>
   </div>
 
-  <!-- Price & Selection -->
   <div class="flex flex-col items-end gap-3 min-w-[180px] border-l-[0.5px] border-border pl-8 md:pl-12">
     <div class="flex flex-col items-end">
       <span class="ui-label">from</span>
       <span class="text-brand-navy text-[22px] font-medium leading-none">{currencyStore.format(price)}</span>
     </div>
-    
+
     <div class="flex items-center gap-2 text-text-muted text-[11px] font-medium mb-1">
       <Info size={12} />
-      <span>✓ 7 kg cabin bag incl.</span>
+      <span>7 kg cabin bag included</span>
     </div>
 
-    <button 
-      class="btn-primary w-full !h-[40px]" 
-      onclick={() => {
-        bookingStore.setFlight(flight, adults, children);
-        goto(`/booking/${bookingStore.reference}`);
-      }}
+    <button
+      class="btn-primary w-full !h-[40px]"
+      onclick={handleSelectFlight}
+      disabled={isSelecting}
+      aria-busy={isSelecting}
     >
-      Select Flight
+      {#if isSelecting}
+        <Loader2 size={14} class="animate-spin mr-2" /> Opening checkout...
+      {:else}
+        Select Flight
+      {/if}
     </button>
   </div>
 </div>

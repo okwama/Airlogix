@@ -2,6 +2,8 @@ export interface Passenger {
   first_name: string;
   last_name: string;
   passenger_type: 'adult' | 'child' | 'infant';
+  email?: string;
+  phone?: string;
   title?: string;
   date_of_birth?: string;
   passport_number?: string;
