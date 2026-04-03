@@ -13,7 +13,7 @@
   <div class="flex items-center justify-between w-full max-w-[1440px] mx-auto">
     <!-- Logo Section -->
     <a href="/" class="flex items-center group outline-none">
-      <img src={logo} alt="Mc Aviation" class="h-8 w-auto object-contain" />
+      <img src={logo} alt="Mc Aviation" class="h-10 w-auto object-contain" />
     </a>
 
     <!-- Navigation Links -->

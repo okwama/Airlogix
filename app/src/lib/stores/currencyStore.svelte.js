@@ -1,7 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/airlogix';
 
 // Svelte 5 rune-based store for currency
-let currentCurrency = $state('KES');
+let currentCurrency = $state('USD');
 let rates = $state({ KES: 1, USD: 0.0076, TZS: 19.5, ZAR: 0.14 }); // Default fallback rates
 
 export const currencyStore = {

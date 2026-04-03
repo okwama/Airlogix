@@ -9,7 +9,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <a href="/" class="logo block mb-4">
-          <img src={logo} alt="Mc Aviation" class="h-10 w-auto object-contain" />
+          <img src={logo} alt="Mc Aviation" class="h-12 w-auto object-contain" />
         </a>
         <p>Connecting Central, East, and South Africa with premium aviation services.</p>
       </div>
@@ -32,7 +32,7 @@
       <div class="footer-apps">
         <h4>Get the App</h4>
         <div class="flex flex-wrap gap-4">
-          <a href="https://mcaviation.com/apple" class="btn-primary gap-3 h-[48px]! px-8!">
+          <a href="https://mcaviation.com/apple" class="btn-secondary gap-3 h-[48px]! px-8!">
             <img src={appStoreImg} alt="App Store" class="h-5" />
             <span>App Store</span>
           </a>
