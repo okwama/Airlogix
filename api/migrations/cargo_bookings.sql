@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `cargo_bookings` (
   
   -- Financial Info
   `total_amount` DECIMAL(15, 2) NOT NULL,
-  `currency` VARCHAR(3) DEFAULT 'KES',
+  `currency` VARCHAR(3) DEFAULT 'USD',
   `payment_method` VARCHAR(50) DEFAULT 'pending',
   `payment_status` ENUM('pending', 'paid', 'cancelled', 'refunded') DEFAULT 'pending',
   

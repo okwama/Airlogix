@@ -3,6 +3,8 @@
   import { Smartphone, Building2, Loader2, CheckCircle2, AlertCircle, CreditCard } from 'lucide-svelte';
   import { goto } from '$app/navigation';
   import { bookingService } from '$lib/services/bookingService';
+  import { currencyStore } from '$lib/stores/currencyStore.svelte';
+  import { appConfig } from '$lib/config/appConfig';
 
   interface Props {
     amount: number;
@@ -188,7 +190,7 @@
               </div>
             </div>
             <button type="submit" class="btn-primary w-full h-[56px]! text-[15px] font-medium shadow-md hover:shadow-lg transition-all" disabled={isProcessing || !phoneNumber}>
-              Pay KES {amount.toLocaleString()} via M-Pesa
+              Pay {currencyStore.format(amount)} via M-Pesa
             </button>
           </form>
         {/if}
@@ -236,6 +238,6 @@
   </div>
 
   <p class="text-[11px] text-center text-text-muted mt-6">
-    By proceeding, you agree to Mc Aviation <a href="/terms" class="text-brand-blue font-medium hover:underline">Conditions of Carriage</a>.
+    By proceeding, you agree to {appConfig.name} <a href="/terms" class="text-brand-blue font-medium hover:underline">Conditions of Carriage</a>.
   </p>
 </div>

@@ -18,10 +18,10 @@ class PaystackService {
      * @param int $amount Amount in smallest currency unit (e.g. kobo/cents)
      * @param string $reference Unique transaction reference
      * @param array $metadata Additional transaction metadata
-     * @param string $currency Currency code (default: KES)
+     * @param string $currency Currency code (default: USD)
      * @return array Response from Paystack API
      */
-    public function initializeTransaction($email, $amount, $reference, $metadata = [], $currency = 'KES') {
+    public function initializeTransaction($email, $amount, $reference, $metadata = [], $currency = 'USD') {
         $url = $this->baseUrl . '/transaction/initialize';
         
         $fields = [

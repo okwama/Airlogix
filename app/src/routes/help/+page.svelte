@@ -1,5 +1,9 @@
+<script>
+  import { appConfig } from '$lib/config/appConfig';
+</script>
+
 <svelte:head>
-  <title>Help Center | Mc Aviation</title>
+  <title>Help Center | {appConfig.name}</title>
 </svelte:head>
 
 <div class="page-container container">
@@ -11,7 +15,7 @@
   <div class="content card-placeholder">
     <div class="empty-state">
       <h3>Knowledge Base</h3>
-      <p>The comprehensive Mc Aviation Help FAQ is being deployed soon to assist you with everything from booking modifications to pet travel.</p>
+      <p>The comprehensive {appConfig.name} Help FAQ is being deployed soon to assist you with everything from booking modifications to pet travel.</p>
     </div>
   </div>
 </div>

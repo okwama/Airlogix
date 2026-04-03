@@ -3,6 +3,7 @@
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import { PackageSearch } from 'lucide-svelte';
+  import { appConfig } from '$lib/config/appConfig';
 
   let { data } = $props();
 
@@ -11,7 +12,7 @@
 </script>
 
 <svelte:head>
-  <title>Cargo Search Results | Mc Aviation Airline</title>
+  <title>Cargo Search Results | {appConfig.name}</title>
 </svelte:head>
 
 <div class="search-results-page">

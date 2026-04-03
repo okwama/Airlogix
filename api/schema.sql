@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 01, 2026 at 11:19 AM
+-- Generation Time: Apr 03, 2026 at 03:41 PM
 -- Server version: 10.6.24-MariaDB-cll-lve
 -- PHP Version: 8.4.19
 
@@ -213,7 +213,7 @@ CREATE TABLE `bookings` (
   `total_amount` decimal(10,2) NOT NULL,
   `payment_method` varchar(50) NOT NULL,
   `payment_status` varchar(50) NOT NULL DEFAULT 'pending',
-  `status` tinyint(4) NOT NULL DEFAULT 0,
+  `status` tinyint(4) DEFAULT 0 COMMENT '0:Pending, 1:Confirmed, 2:Cancelled, 3:Partial',
   `booking_date` date NOT NULL,
   `notes` text DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
@@ -1077,6 +1077,7 @@ ALTER TABLE `bookings`
 ALTER TABLE `booking_passengers`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_booking_passenger` (`booking_id`,`passenger_id`),
+  ADD UNIQUE KEY `idx_ticket_number` (`ticket_number`),
   ADD KEY `passenger_id` (`passenger_id`);
 
 --

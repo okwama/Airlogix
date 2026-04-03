@@ -2,6 +2,8 @@
   import { page } from '$app/state';
   import { onMount, onDestroy } from 'svelte';
   import { bookingService } from '$lib/services/bookingService';
+  import { currencyStore } from '$lib/stores/currencyStore.svelte';
+  import { appConfig } from '$lib/config/appConfig';
   import Button from '$lib/components/ui/Button.svelte';
   import { ArrowLeft, Download, Loader2 } from 'lucide-svelte';
 
@@ -19,7 +21,7 @@
       pdfUrl = null;
     }
     try {
-      const blob = await bookingService.fetchBookingDocumentsPdf(reference);
+      const blob = await bookingService.fetchBookingDocumentsPdf(reference, currencyStore.current);
       pdfUrl = URL.createObjectURL(blob);
     } catch (e) {
       error = e instanceof Error ? e.message : 'Could not load document.';
@@ -32,7 +34,7 @@
     if (!pdfUrl) return;
     const a = document.createElement('a');
     a.href = pdfUrl;
-    a.download = `Airlogix-E-Ticket-${reference}.pdf`;
+    a.download = `${appConfig.name.replace(/\s+/g, '-')}-E-Ticket-${reference}.pdf`;
     a.rel = 'noopener';
     a.click();
   }
@@ -45,7 +47,7 @@
 </script>
 
 <svelte:head>
-  <title>E-ticket — {reference} | Mc Aviation</title>
+  <title>E-ticket - {reference} | {appConfig.name}</title>
 </svelte:head>
 
 <main class="min-h-[calc(100vh-58px)] flex flex-col bg-slate-100">
@@ -90,3 +92,4 @@
     </div>
   {/if}
 </main>
+

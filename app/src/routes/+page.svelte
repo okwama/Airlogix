@@ -2,6 +2,7 @@
   import FlightSearchForm from '$lib/features/flights/FlightSearchForm.svelte';
   import CargoSearchForm from '$lib/features/cargo/CargoSearchForm.svelte';
   import { Sparkles, Clock, Handshake, Plane, Package } from 'lucide-svelte';
+  import { appConfig } from '$lib/config/appConfig';
 
   let searchMode = $state('flight'); // 'flight' | 'cargo'
 
@@ -28,8 +29,8 @@
 </script>
 
 <svelte:head>
-  <title>Mc Aviation Airline | Premium Regional Travel</title>
-  <meta name="description" content="Book your next flight with Mc Aviation. Premium travel across Central, East, and South Africa." />
+  <title>{appConfig.name} | Premium Regional Travel</title>
+  <meta name="description" content={appConfig.description} />
 </svelte:head>
 
 <!-- Hero Section: High Contrast, Solid colors, specific fonts -->
@@ -82,7 +83,7 @@
 <section class="py-24 bg-surface">
   <div class="container mx-auto px-7 max-w-[1200px]">
     <h2 class="text-[32px] font-medium text-brand-navy mb-16 px-4">
-      Discover Why <span class="text-brand-blue">Mc Aviation</span> is the Smart Choice
+      Discover Why <span class="text-brand-blue">{appConfig.name}</span> is the Smart Choice
     </h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       {#each benefits as benefit}
@@ -110,7 +111,7 @@
       <div>
         <h2 class="text-[32px] font-medium text-brand-navy mb-6 tracking-tight">One App, Many Solutions</h2>
         <p class="text-text-body text-[15px] leading-relaxed mb-10 max-w-[450px]">
-          Need to book a flight, order food, or schedule a medical visit? Do it all on the Mc Aviation App.
+          Need to book a flight, order food, or schedule a medical visit? Do it all on the {appConfig.name} App.
         </p>
         <div class="flex flex-wrap gap-4">
           <a href="https://mcaviation.com/apple" class="btn-primary gap-3 h-[48px]! px-8!">

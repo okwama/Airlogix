@@ -4,6 +4,7 @@
   import Card from '$lib/components/ui/Card.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import { goto } from '$app/navigation';
+  import { appConfig } from '$lib/config/appConfig';
 
   import { BASE_URL, bookingService } from '$lib/services/bookingService';
   
@@ -73,7 +74,7 @@
 </script>
 
 <svelte:head>
-  <title>Online Check-in | Mc Aviation</title>
+  <title>Online Check-in | {appConfig.name}</title>
 </svelte:head>
 
 <main class="min-h-[calc(100vh-58px-300px)] py-16 px-6 bg-slate-50/50">

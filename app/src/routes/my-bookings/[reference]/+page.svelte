@@ -4,6 +4,7 @@
   import { bookingService } from '$lib/services/bookingService';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
+  import { appConfig } from '$lib/config/appConfig';
   import { Calendar, Download, Plane, RefreshCw, ShieldAlert } from 'lucide-svelte';
 
   const reference = $derived(String(page.params.reference || '').toUpperCase());
@@ -36,7 +37,7 @@
 </script>
 
 <svelte:head>
-  <title>Booking — {reference} | Mc Aviation</title>
+  <title>Booking - {reference} | {appConfig.name}</title>
 </svelte:head>
 
 <main class="min-h-[calc(100vh-58px-300px)] py-12 px-6 bg-slate-50/50">

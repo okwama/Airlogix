@@ -4,6 +4,7 @@
   import Button from '$lib/components/ui/Button.svelte';
   import { authStore } from '$lib/stores/authStore.svelte';
   import { goto } from '$app/navigation';
+  import { appConfig } from '$lib/config/appConfig';
 
   let firstName = $state('');
   let lastName = $state('');
@@ -49,7 +50,7 @@
 </script>
 
 <svelte:head>
-  <title>Sign up | Mc Aviation</title>
+  <title>Sign up | {appConfig.name}</title>
 </svelte:head>
 
 <main class="min-h-[calc(100vh-58px-300px)] py-16 px-6 bg-slate-50/50 flex items-center justify-center">

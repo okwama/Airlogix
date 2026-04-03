@@ -2,6 +2,7 @@
   import { Plane, Users, Fuel, Gauge, Zap, Wind, ArrowRight } from 'lucide-svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
+  import { appConfig } from '$lib/config/appConfig';
 
   const aircraft = [
     {
@@ -35,14 +36,14 @@
 </script>
 
 <svelte:head>
-  <title>Our Fleet | Mc Aviation</title>
+  <title>Our Fleet | {appConfig.name}</title>
 </svelte:head>
 
 <main class="min-h-[calc(100vh-58px-300px)] py-16 px-6 bg-slate-50/50">
   <div class="max-w-[1200px] mx-auto">
     <header class="text-center mb-16">
       <div class="ui-label text-brand-blue mb-4">Precision Engineering</div>
-      <h1 class="text-brand-navy mb-4">The Mc Aviation Fleet</h1>
+      <h1 class="text-brand-navy mb-4">The {appConfig.name} Fleet</h1>
       <p class="text-text-body/80 text-lg max-w-2xl mx-auto">Modern, efficient, and meticulously maintained. Discover the aircraft that connect your world.</p>
     </header>
 

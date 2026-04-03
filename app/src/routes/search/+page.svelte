@@ -1,6 +1,8 @@
 <script>
   import FlightCard from '$lib/features/flights/FlightCard.svelte';
   import { Plane, ChevronLeft, SlidersHorizontal, Info } from 'lucide-svelte';
+  import { currencyStore } from '$lib/stores/currencyStore.svelte';
+  import { appConfig } from '$lib/config/appConfig';
 
   let { data } = $props();
 
@@ -20,7 +22,7 @@
 </script>
 
 <svelte:head>
-  <title>Search Results: {searchQuery.from} to {searchQuery.to} | Mc Aviation</title>
+  <title>Search Results: {searchQuery.from} to {searchQuery.to} | {appConfig.name}</title>
 </svelte:head>
 
 <div class="bg-surface min-h-[calc(100vh-58px)] pb-12">
@@ -129,7 +131,7 @@
             <div class="w-2 h-2 rounded-full bg-border mt-1.5 shrink-0"></div>
             <div class="flex flex-col">
               <span class="text-brand-navy text-[13px] font-medium leading-none mb-1">Checked Bag <span class="text-text-muted ml-1">(Paid)</span></span>
-              <p class="text-text-body text-[11px]">From KES 1,200. Securely stowed in hold.</p>
+              <p class="text-text-body text-[11px]">From {currencyStore.format(1200)}. Securely stowed in hold.</p>
             </div>
           </div>
         </div>
@@ -142,3 +144,4 @@
     </aside>
   </div>
 </div>
+

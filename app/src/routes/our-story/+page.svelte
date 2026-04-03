@@ -1,5 +1,9 @@
+<script>
+  import { appConfig } from '$lib/config/appConfig';
+</script>
+
 <svelte:head>
-  <title>Our Story | Mc Aviation</title>
+  <title>Our Story | {appConfig.name}</title>
 </svelte:head>
 
 <div class="page-container container">
@@ -10,7 +14,7 @@
   
   <div class="content card-placeholder">
     <div class="empty-state">
-      <h3>About Mc Aviation</h3>
+      <h3>About {appConfig.name}</h3>
       <p>Founded to provide world-class travel and cargo logistics across the African continent. This section is currently being updated with our latest milestones.</p>
     </div>
   </div>

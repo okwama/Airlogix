@@ -9,6 +9,7 @@
   import { BASE_URL, bookingService } from '$lib/services/bookingService';
   import { authStore } from '$lib/stores/authStore.svelte';
   import { authService } from '$lib/services/authService';
+  import { appConfig } from '$lib/config/appConfig';
   
   let reference = $state('');
   let email = $state('');
@@ -220,7 +221,7 @@
 </script>
 
 <svelte:head>
-  <title>Manage Booking | Mc Aviation</title>
+  <title>Manage Booking | {appConfig.name}</title>
 </svelte:head>
 
 <main class="min-h-[calc(100vh-58px-300px)] py-16 px-6 bg-slate-50/50">

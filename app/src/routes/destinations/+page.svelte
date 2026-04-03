@@ -1,5 +1,9 @@
+<script>
+  import { appConfig } from '$lib/config/appConfig';
+</script>
+
 <svelte:head>
-  <title>Destinations | Mc Aviation</title>
+  <title>Destinations | {appConfig.name}</title>
 </svelte:head>
 
 <div class="page-container container">

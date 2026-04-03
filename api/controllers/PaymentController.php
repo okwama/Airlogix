@@ -145,8 +145,7 @@ class PaymentController {
         require_once __DIR__ . '/../services/PaystackService.php';
         $paystack = new PaystackService();
 
-        // Convert amount to kobo (Paystack uses smallest currency unit)
-        // For KES: 1 KES = 100 cents
+        // Convert amount to minor units (Paystack expects the smallest currency unit)
         $amountInKobo = (int)($data['amount'] * 100);
 
         $metadata = [
@@ -165,7 +164,7 @@ class PaymentController {
             $amountInKobo,
             $data['booking_reference'],
             $metadata,
-            $data['currency'] ?? 'KES'
+            $data['currency'] ?? 'USD'
         );
 
         if ($response['status']) {
@@ -613,7 +612,7 @@ class PaymentController {
         $response = $onafriq->initiateMobileMoneyPayment(
             $data['phone_number'],
             $data['amount'],
-            $data['currency'] ?? 'XAF',
+            $data['currency'] ?? 'USD',
             $data['booking_reference'],
             $data['provider'] ?? 'orange',
             $data['country_code'] ?? '243'

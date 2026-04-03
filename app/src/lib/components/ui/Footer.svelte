@@ -2,6 +2,7 @@
   import appStoreImg from '$lib/assets/app-store.png';
   import playStoreImg from '$lib/assets/playstore.png';
   import logo from '$lib/assets/logo.png';
+  import { appConfig } from '$lib/config/appConfig';
 </script>
 
 <footer class="footer">
@@ -9,9 +10,9 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <a href="/" class="logo block mb-4">
-          <img src={logo} alt="Mc Aviation" class="h-12 w-auto object-contain" />
+          <img src={logo} alt={appConfig.name} class="h-12 w-auto object-contain" />
         </a>
-        <p>Connecting Central, East, and South Africa with premium aviation services.</p>
+        <p>{appConfig.description}</p>
       </div>
       <div class="footer-section">
         <h4>About Us</h4>
@@ -44,7 +45,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2026 Mc Aviation Airline. All rights reserved.</p>
+      <p>&copy; 2026 {appConfig.name}. All rights reserved.</p>
     </div>
   </div>
 </footer>

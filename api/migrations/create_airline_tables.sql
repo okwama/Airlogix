@@ -177,7 +177,7 @@ CREATE TABLE `payment_transactions` (
   `booking_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `amount` decimal(10,2) NOT NULL,
-  `currency` varchar(3) DEFAULT 'KES',
+  `currency` varchar(3) DEFAULT 'USD',
   `payment_method` varchar(50) NOT NULL COMMENT 'M-Pesa, Card, etc',
   `payment_reference` varchar(100) DEFAULT NULL,
   `transaction_id` varchar(100) DEFAULT NULL COMMENT 'External payment gateway ID',

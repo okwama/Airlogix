@@ -20,7 +20,7 @@ class Payment {
             ':booking_id' => $data['booking_id'],
             ':user_id' => $data['user_id'],
             ':amount' => $data['amount'],
-            ':currency' => $data['currency'] ?? 'KES',
+            ':currency' => $data['currency'] ?? 'USD',
             ':method' => $data['payment_method']
         ];
 

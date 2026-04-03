@@ -1,6 +1,8 @@
 <script>
   import { goto } from '$app/navigation';
   import { bookingStore } from '$lib/stores/bookingStore.svelte';
+  import { currencyStore } from '$lib/stores/currencyStore.svelte';
+  import { appConfig } from '$lib/config/appConfig';
   import { Plane, Info } from 'lucide-svelte';
 
   /**
@@ -29,7 +31,7 @@
   const arrTime = $derived(flight.arrival_time || '14:30');
   const duration = $derived(flight.duration || '4h 30m');
   const price = $derived(flight.base_fare || 25000);
-  const airline = $derived(flight.airline_name || 'Mc Aviation');
+  const airline = $derived(flight.airline_name || appConfig.name);
   const flightNo = $derived(flight.flight_number || 'MC101');
 
 </script>
@@ -73,7 +75,7 @@
   <div class="flex flex-col items-end gap-3 min-w-[180px] border-l-[0.5px] border-border pl-8 md:pl-12">
     <div class="flex flex-col items-end">
       <span class="ui-label">from</span>
-      <span class="text-brand-navy text-[22px] font-medium leading-none">KES {price.toLocaleString()}</span>
+      <span class="text-brand-navy text-[22px] font-medium leading-none">{currencyStore.format(price)}</span>
     </div>
     
     <div class="flex items-center gap-2 text-text-muted text-[11px] font-medium mb-1">

@@ -2,6 +2,7 @@
   import { page } from '$app/state';
   import AWBForm from '$lib/features/cargo/AWBForm.svelte';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
+  import { appConfig } from '$lib/config/appConfig';
   import { Lock, Package, ChevronLeft, CheckCircle2 } from 'lucide-svelte';
 
   // The [reference] param is actually the flight ID in cargo-search flow ("c1", "c2", etc.)
@@ -20,8 +21,11 @@
 </script>
 
 <svelte:head>
-  <title>Cargo Booking | Mc Aviation Cargo</title>
-  <meta name="description" content="Complete your Mc Aviation cargo booking — fill in shipper and consignee details to generate your Air Waybill." />
+  <title>Cargo Booking | {appConfig.name} Cargo</title>
+  <meta
+    name="description"
+    content={`Complete your ${appConfig.name} cargo booking - fill in shipper and consignee details to generate your Air Waybill.`}
+  />
 </svelte:head>
 
 <div class="bg-surface min-h-[calc(100vh-58px)] pb-24">
@@ -113,12 +117,12 @@
 
             <div class="flex justify-between items-center text-[13px]">
               <span class="text-text-body">Rate per kg</span>
-              <span class="text-brand-navy font-medium">KES {ratePerKg.toLocaleString()}</span>
+              <span class="text-brand-navy font-medium">{currencyStore.format(ratePerKg)}</span>
             </div>
             
             <div class="flex justify-between items-center pt-4 border-t-[0.5px] border-border">
               <span class="text-brand-navy font-medium">Total Charge</span>
-              <span class="text-brand-navy text-[22px] font-bold">KES {totalAmount.toLocaleString()}</span>
+              <span class="text-brand-navy text-[22px] font-bold">{currencyStore.format(totalAmount)}</span>
             </div>
           </div>
         </div>
@@ -137,10 +141,11 @@
             <Lock size={12} /> SSL Secure Reservation Engine
           </div>
           <p class="text-text-muted text-[11px] leading-relaxed italic max-w-[240px]">
-            By confirming you agree to Mc Aviation Cargo Terms of Carriage.
+            By confirming you agree to {appConfig.name} Cargo Terms of Carriage.
           </p>
         </div>
       </div>
     </aside>
   </div>
 </div>
+

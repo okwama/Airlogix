@@ -1,5 +1,6 @@
 <script>
   import { Loader2, Lock } from 'lucide-svelte';
+  import { currencyStore } from '$lib/stores/currencyStore.svelte';
 
   /**
    * @typedef {Object} Props
@@ -56,7 +57,7 @@
     {#if isProcessing}
       <Loader2 size={18} class="animate-spin mr-2" /> Processing...
     {:else}
-      Pay KES {amount.toLocaleString()}
+      Pay {currencyStore.format(amount)}
     {/if}
   </button>
 </form>

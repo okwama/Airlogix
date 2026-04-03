@@ -1,5 +1,6 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/airlogix';
 const ENABLE_MOCKS = import.meta.env.VITE_ENABLE_MOCKS === 'true';
+import { appConfig } from '$lib/config/appConfig';
 
 export const load = async ({ url, fetch }) => {
   const from = url.searchParams.get('from') || 'NBO';
@@ -26,7 +27,7 @@ export const load = async ({ url, fetch }) => {
     return [
       {
         id: 'c1',
-        airline: 'Mc Aviation',
+        airline: appConfig.name,
         flight_no: 'MC101C',
         origin: from,
         destination: to,
@@ -40,7 +41,7 @@ export const load = async ({ url, fetch }) => {
       },
       {
         id: 'c2',
-        airline: 'Mc Aviation',
+        airline: appConfig.name,
         flight_no: 'MC105C',
         origin: from,
         destination: to,

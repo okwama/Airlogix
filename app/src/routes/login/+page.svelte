@@ -5,6 +5,7 @@
   import { authStore } from '$lib/stores/authStore.svelte';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
+  import { appConfig } from '$lib/config/appConfig';
 
   let identifier = $state('');
   let password = $state('');
@@ -35,7 +36,7 @@
 </script>
 
 <svelte:head>
-  <title>Log in | Mc Aviation</title>
+  <title>Log in | {appConfig.name}</title>
 </svelte:head>
 
 <main class="min-h-[calc(100vh-58px-300px)] py-16 px-6 bg-slate-50/50 flex items-center justify-center">

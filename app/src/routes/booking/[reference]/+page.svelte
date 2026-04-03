@@ -6,6 +6,7 @@
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { bookingStore } from '$lib/stores/bookingStore.svelte';
   import { bookingService, type Passenger } from '$lib/services/bookingService.js';
+  import { appConfig } from '$lib/config/appConfig';
   import { Lock, Check, Plane, ChevronLeft, Loader2 } from 'lucide-svelte';
 
   // We start with the URL reference, but update to the real backend PNR later
@@ -65,7 +66,7 @@
 </script>
 
 <svelte:head>
-  <title>Complete Your Booking | Mc Aviation</title>
+  <title>Complete Your Booking | {appConfig.name}</title>
 </svelte:head>
 
 <div class="bg-surface min-h-[calc(100vh-58px)] pb-24">
@@ -168,19 +169,19 @@
           <div class="flex flex-col gap-4 pt-4 border-t-[0.5px] border-border">
             <div class="flex justify-between items-center text-[13px]">
               <span class="text-text-body">{passengerCount}x Passengers</span>
-              <span class="text-brand-navy font-medium">KES {baseTotal.toLocaleString()}</span>
+              <span class="text-brand-navy font-medium">{currencyStore.format(baseTotal)}</span>
             </div>
             
             {#if luggageData.totalLuggagePrice > 0}
               <div class="flex justify-between items-center text-[13px]">
                 <span class="text-text-body">Luggage & Surcharges</span>
-                <span class="text-brand-navy font-medium">KES {luggageData.totalLuggagePrice.toLocaleString()}</span>
+                <span class="text-brand-navy font-medium">{currencyStore.format(luggageData.totalLuggagePrice)}</span>
               </div>
             {/if}
 
             <div class="flex justify-between items-center pt-4 border-t-[0.5px] border-border">
               <span class="text-brand-navy font-medium">Total Amount</span>
-              <span class="text-brand-navy text-[22px] font-bold">KES {finalTotal.toLocaleString()}</span>
+              <span class="text-brand-navy text-[22px] font-bold">{currencyStore.format(finalTotal)}</span>
             </div>
           </div>
         </div>
@@ -191,7 +192,7 @@
           <Lock size={12} /> SSL Secure Reservation Engine
         </div>
         <p class="text-text-muted text-[11px] leading-relaxed italic max-w-[240px]">
-          By paying you agree to Mc Aviation General Conditions of Carriage.
+          By paying you agree to {appConfig.name} General Conditions of Carriage.
         </p>
       </div>
     </aside>

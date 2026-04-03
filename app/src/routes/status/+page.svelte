@@ -3,6 +3,7 @@
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import Input from '$lib/components/ui/Input.svelte';
+  import { appConfig } from '$lib/config/appConfig';
 
   let searchMode = $state('number'); // 'number' | 'route'
   let flightNumber = $state('');
@@ -17,14 +18,14 @@
 </script>
 
 <svelte:head>
-  <title>Flight Status | Mc Aviation</title>
+  <title>Flight Status | {appConfig.name}</title>
 </svelte:head>
 
 <main class="min-h-[calc(100vh-58px-300px)] py-12 px-6 bg-slate-50/50">
   <div class="max-w-[800px] mx-auto">
     <header class="text-center mb-10">
       <h1 class="text-brand-navy mb-3">Flight Status</h1>
-      <p class="text-text-body/80 max-w-lg mx-auto">Check the real-time status of any Mc Aviation flight by flight number or route.</p>
+      <p class="text-text-body/80 max-w-lg mx-auto">Check the real-time status of any {appConfig.name} flight by flight number or route.</p>
     </header>
 
     <Card padding="none" class="shadow-sm bg-white overflow-hidden">

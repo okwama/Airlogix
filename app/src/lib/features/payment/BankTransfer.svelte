@@ -2,6 +2,7 @@
   import { Building2, Save, Loader2 } from 'lucide-svelte';
   import { onMount } from 'svelte';
   import { bookingService } from '$lib/services/bookingService.js';
+  import { currencyStore } from '$lib/stores/currencyStore.svelte';
 
   interface Props {
     amount: number;
@@ -48,7 +49,7 @@
     <div class="flex flex-col gap-1">
       <h4 class="text-[16px] font-medium text-brand-navy">International Wire Transfer</h4>
       <p class="text-[13px] text-text-body leading-relaxed">
-        Please transfer <strong>KES {amount.toLocaleString()}</strong> to the account below. Use your reference <strong>{reference}</strong> as the payment description.
+        Please transfer <strong>{currencyStore.format(amount)}</strong> to the account below. Use your reference <strong>{reference}</strong> as the payment description.
       </p>
     </div>
   </div>

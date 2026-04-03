@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { bookingService } from '$lib/services/bookingService.js';
+  import { appConfig } from '$lib/config/appConfig';
   import { AlertCircle, Loader2 } from 'lucide-svelte';
 
   interface Props {
@@ -70,7 +71,7 @@
         pieces: pieces,
         declared_value: declaredValue ? parseFloat(declaredValue) : 0,
         total_amount: totalAmount,
-        currency: 'KES',
+        currency: 'USD',
         payment_method: 'stripe',
         booking_date: bookingDate
       };
@@ -167,7 +168,7 @@
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
       <div class="flex flex-col">
-        <span class="ui-label mb-1">Declared Value for Carriage (KES)</span>
+        <span class="ui-label mb-1">Declared Value for Carriage ({appConfig.defaultCurrency})</span>
         <input type="number" bind:value={declaredValue} class="input-field w-full" placeholder="e.g. 50000" />
         <p class="text-text-muted text-[11px] mt-1">Used to calculate excess value charges. Optional.</p>
       </div>

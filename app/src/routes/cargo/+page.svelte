@@ -2,10 +2,11 @@
   import { Truck, Package, Globe, Shield, Zap, Search, ArrowRight } from 'lucide-svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
+  import { appConfig } from '$lib/config/appConfig';
 </script>
 
 <svelte:head>
-  <title>AirLogix Cargo | Premium Logistics Solutions</title>
+  <title>{appConfig.name} Cargo | Premium Logistics Solutions</title>
 </svelte:head>
 
 <main class="page-container bg-slate-50/50 pb-20">
@@ -13,7 +14,7 @@
   <section class="bg-brand-navy py-20 px-6 text-center text-white relative overflow-hidden">
     <div class="max-w-4xl mx-auto relative z-10">
       <div class="ui-label text-brand-blue mb-4">Precision Logistics</div>
-      <h1 class="text-white text-[48px] leading-tight mb-6 font-medium">Mc Aviation Cargo Services</h1>
+      <h1 class="text-white text-[48px] leading-tight mb-6 font-medium">{appConfig.name} Cargo Services</h1>
       <p class="text-white/70 text-lg max-w-2xl mx-auto mb-10">Connecting Central, East, and South Africa with premium air freight solutions for every logistics need.</p>
       
       <div class="flex flex-wrap gap-4 justify-center">
@@ -82,7 +83,7 @@
       <div>
         <div class="ui-label text-brand-blue mb-3">Global Reach</div>
         <h2 class="text-brand-navy text-[32px] mb-6 font-medium">Unrivaled Network Across the Continent</h2>
-        <p class="text-text-body text-lg mb-10 leading-relaxed">Mc Aviation Cargo operates a strategic network connecting the major industrial hubs of Africa with the world. We offer more direct connections than any other regional carrier.</p>
+        <p class="text-text-body text-lg mb-10 leading-relaxed">{appConfig.name} Cargo operates a strategic network connecting the major industrial hubs of Africa with the world. We offer more direct connections than any other regional carrier.</p>
         
         <div class="grid grid-cols-2 gap-8">
           <div>
@@ -118,7 +119,7 @@
     <div class="bg-brand-blue rounded-card text-center text-white overflow-hidden shadow-lg transform transition-all hover:scale-[1.01]">
        <div class="max-w-[80%] mx-auto py-16">
         <h2 class="text-white mb-4 font-medium">Ready to Ship?</h2>
-        <p class="text-white/80 max-w-xl mx-auto mb-10 text-lg">Partner with Mc Aviation Cargo for your next logistics challenge. Reliable, secure, and fast.</p>
+        <p class="text-white/80 max-w-xl mx-auto mb-10 text-lg">Partner with {appConfig.name} Cargo for your next logistics challenge. Reliable, secure, and fast.</p>
         <Button variant="primary" class="bg-brand-navy hover:bg-slate-900 mx-auto min-w-[220px] h-12" href="/cargo-search">
           Start a Quote
         </Button>

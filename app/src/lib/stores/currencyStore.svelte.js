@@ -1,8 +1,10 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/airlogix';
+import { appConfig } from '$lib/config/appConfig';
 
 // Svelte 5 rune-based store for currency
-let currentCurrency = $state('USD');
-let rates = $state({ KES: 1, USD: 0.0076, TZS: 19.5, ZAR: 0.14 }); // Default fallback rates
+let currentCurrency = $state(appConfig.defaultCurrency);
+// Fixer-style rates relative to EUR.
+let rates = $state({ EUR: 1, USD: 1.08, KES: 140.0, TZS: 2700.0, ZAR: 19.0 });
 
 export const currencyStore = {
   get current() { return currentCurrency; },
@@ -14,8 +16,8 @@ export const currencyStore = {
       const response = await fetch(`${BASE_URL}/currency/rates`);
       if (!response.ok) throw new Error('Failed to fetch rates');
       const result = await response.json();
-      if (result.status && result.data) {
-        rates = result.data;
+      if (result.status && result.rates) {
+        rates = result.rates;
       }
     } catch (error) {
       console.error('Error fetching currency rates:', error);
@@ -23,14 +25,16 @@ export const currencyStore = {
   },
 
   /**
-   * Convert KES amount to current currency
+   * Convert USD amount to current currency using EUR-relative rates.
    * @param {number} amount 
    */
   convert(amount) {
     /** @type {Record<string, number>} */
     const currentRates = rates;
-    const rate = currentRates[currentCurrency] || 1;
-    return amount * rate;
+    const usdPerEur = currentRates.USD || 1;
+    const targetPerEur = currentRates[currentCurrency] || usdPerEur;
+    const rateFromUsdToTarget = targetPerEur / usdPerEur;
+    return amount * rateFromUsdToTarget;
   },
 
   /**

@@ -2,13 +2,14 @@
   import CurrencySelector from '$lib/features/payment/CurrencySelector.svelte';
   import logo from '$lib/assets/logo.png';
   import { authStore } from '$lib/stores/authStore.svelte';
+  import { appConfig } from '$lib/config/appConfig';
 </script>
 
 <nav class="h-[58px] bg-brand-navy flex items-center px-[28px] sticky top-0 z-100 w-full">
   <div class="flex items-center justify-between w-full max-w-[1440px] mx-auto">
     <!-- Logo Section -->
     <a href="/" class="flex items-center group outline-none">
-      <img src={logo} alt="Mc Aviation" class="h-10 w-auto object-contain" />
+      <img src={logo} alt={appConfig.name} class="h-10 w-auto object-contain" />
     </a>
 
     <!-- Navigation Links -->

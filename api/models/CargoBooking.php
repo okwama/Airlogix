@@ -47,7 +47,7 @@ class CargoBooking {
             ':dimensions_json' => $data['dimensions_json'] ?? null,
             ':declared_value' => $data['declared_value'] ?? 0,
             ':total_amount' => $data['total_amount'],
-            ':currency' => $data['currency'] ?? 'KES',
+            ':currency' => $data['currency'] ?? 'USD',
             ':payment_method' => $data['payment_method'] ?? 'pending',
             ':booking_date' => $data['booking_date'] ?? date('Y-m-d')
         ];

@@ -1,5 +1,6 @@
 <script>
   import { Briefcase, ShoppingBag, Luggage, Plus, Minus, Info } from 'lucide-svelte';
+  import { currencyStore } from '$lib/stores/currencyStore.svelte';
 
   /**
    * @typedef {Object} Props
@@ -69,7 +70,7 @@
           </div>
         </div>
         <div class="flex items-center gap-6">
-          <span class="text-brand-navy text-[14px] font-medium">KES {checkedBagPrice.toLocaleString()} / bag</span>
+          <span class="text-brand-navy text-[14px] font-medium">{currencyStore.format(checkedBagPrice)} / bag</span>
           <div class="flex items-center gap-3 bg-slate-50 rounded-full p-1 border-[0.5px] border-border">
             <button 
               class="w-6 h-6 flex items-center justify-center text-text-body hover:text-brand-navy transition-all disabled:opacity-20"
@@ -99,7 +100,7 @@
           </div>
         </div>
         <div class="flex items-center gap-6">
-          <span class="text-brand-navy text-[14px] font-medium">KES {specialItemPrice.toLocaleString()} / item</span>
+          <span class="text-brand-navy text-[14px] font-medium">{currencyStore.format(specialItemPrice)} / item</span>
           <div class="flex items-center gap-3 bg-slate-50 rounded-full p-1 border-[0.5px] border-border">
             <button 
               class="w-6 h-6 flex items-center justify-center text-text-body hover:text-brand-navy transition-all disabled:opacity-20"

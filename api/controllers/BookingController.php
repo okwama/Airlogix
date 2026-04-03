@@ -592,12 +592,18 @@ class BookingController {
 
     /**
      * Public: retrieve booking documents.
-     * GET /bookings/{reference}/documents?type=ticket|receipt|combined&format=html|json|pdf
+     * GET /bookings/{reference}/documents?type=ticket|receipt|combined&format=html|json|pdf&currency=USD|KES|...
      */
     public function documents($reference) {
         $reference = strtoupper(trim((string)$reference));
         $type = strtolower((string)($_GET['type'] ?? 'combined'));
         $format = strtolower((string)($_GET['format'] ?? 'html'));
+        $displayCurrency = strtoupper(trim((string)($_GET['currency'] ?? 'USD')));
+
+        if (!preg_match('/^[A-Z]{3}$/', $displayCurrency)) {
+            Response::json(['status' => false, 'message' => 'Invalid currency code'], 400);
+            return;
+        }
 
         $booking = $this->bookingModel->getByReference($reference);
         if (!$booking) {
@@ -607,11 +613,30 @@ class BookingController {
 
         $passengers = $this->bookingPassengerModel->getByBookingId($booking['id']);
 
+        // System base currency is USD. Convert only for document display.
+        $currencyConversionError = null;
+        [$bookingForDoc, $passengersForDoc] = $this->convertBookingAndPassengersForDisplay(
+            $booking,
+            $passengers,
+            'USD',
+            $displayCurrency,
+            $currencyConversionError
+        );
+
+        if ($currencyConversionError !== null) {
+            Response::json([
+                'status' => false,
+                'message' => 'Could not convert document currency right now',
+                'details' => $currencyConversionError
+            ], 503);
+            return;
+        }
+
         require_once __DIR__ . '/../services/TicketService.php';
         $ticketService = TicketService::getInstance();
 
-        $ticketHtml = $ticketService->generateTicketHTML($booking, $passengers);
-        $receiptHtml = $ticketService->generateReceiptHTML($booking, $passengers);
+        $ticketHtml = $ticketService->generateTicketHTML($bookingForDoc, $passengersForDoc);
+        $receiptHtml = $ticketService->generateReceiptHTML($bookingForDoc, $passengersForDoc);
 
         if ($type === 'ticket') $html = $ticketHtml;
         else if ($type === 'receipt') $html = $receiptHtml;
@@ -631,6 +656,7 @@ class BookingController {
                 'data' => [
                     'reference' => $reference,
                     'type' => $type,
+                    'currency' => $displayCurrency,
                     'html' => $html
                 ]
             ]);
@@ -694,6 +720,75 @@ class BookingController {
             return trim($m[1]);
         }
         return $html;
+    }
+
+    /**
+     * Convert booking/passenger monetary fields for document display only.
+     */
+    private function convertBookingAndPassengersForDisplay(
+        array $booking,
+        array $passengers,
+        string $sourceCurrency,
+        string $targetCurrency,
+        ?string &$error = null
+    ): array {
+        $sourceCurrency = strtoupper(trim($sourceCurrency));
+        $targetCurrency = strtoupper(trim($targetCurrency));
+
+        $booking['currency'] = $targetCurrency;
+
+        if ($sourceCurrency === $targetCurrency) {
+            return [$booking, $passengers];
+        }
+
+        $factor = $this->getCurrencyConversionFactor($sourceCurrency, $targetCurrency, $error);
+        if ($factor === null) {
+            return [$booking, $passengers];
+        }
+
+        if (isset($booking['total_amount'])) {
+            $booking['total_amount'] = round((float)$booking['total_amount'] * $factor, 2);
+        }
+        if (isset($booking['fare_per_passenger'])) {
+            $booking['fare_per_passenger'] = round((float)$booking['fare_per_passenger'] * $factor, 2);
+        }
+
+        foreach ($passengers as &$p) {
+            if (isset($p['fare_amount'])) {
+                $p['fare_amount'] = round((float)$p['fare_amount'] * $factor, 2);
+            }
+        }
+        unset($p);
+
+        return [$booking, $passengers];
+    }
+
+    /**
+     * Exchange rates table stores values relative to Fixer base EUR.
+     */
+    private function getCurrencyConversionFactor(string $fromCurrency, string $toCurrency, ?string &$error = null): ?float
+    {
+        try {
+            $db = db();
+            $stmt = $db->prepare("SELECT currency_code, rate FROM exchange_rates WHERE currency_code IN (?, ?)");
+            $stmt->execute([$fromCurrency, $toCurrency]);
+
+            $rates = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $rates[$row['currency_code']] = (float)$row['rate'];
+            }
+
+            if (!isset($rates[$fromCurrency]) || !isset($rates[$toCurrency])) {
+                $error = "Missing exchange rates for {$fromCurrency} or {$toCurrency}";
+                return null;
+            }
+
+            $amountInBaseEur = 1 / $rates[$fromCurrency];
+            return $amountInBaseEur * $rates[$toCurrency];
+        } catch (Throwable $e) {
+            $error = 'Rate lookup failed: ' . $e->getMessage();
+            return null;
+        }
     }
 }
 ?>

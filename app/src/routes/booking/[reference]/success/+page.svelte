@@ -3,6 +3,7 @@
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import { bookingStore } from '$lib/stores/bookingStore.svelte';
+  import { appConfig } from '$lib/config/appConfig';
   import { CheckCircle, Download, Home, Mail } from 'lucide-svelte';
   import { confetti } from '@neoconfetti/svelte';
   import { onMount } from 'svelte';
@@ -47,7 +48,7 @@
 </script>
 
 <svelte:head>
-  <title>Booking Confirmed | Mc Aviation</title>
+  <title>Booking Confirmed | {appConfig.name}</title>
 </svelte:head>
 
 <div class="success-page" role="main">
@@ -80,7 +81,7 @@
               <CheckCircle size={64} color="var(--color-success)" strokeWidth={1.5} />
             </div>
             <h1>Booking Confirmed!</h1>
-            <p class="subtitle">Thank you for choosing Mc Aviation. Your journey starts here.</p>
+            <p class="subtitle">Thank you for choosing {appConfig.name}. Your journey starts here.</p>
           {/if}
         </div>
 

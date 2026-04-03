@@ -277,7 +277,7 @@ export const bookingService = {
    * Fetch combined e-ticket + receipt as PDF (uses JWT and/or guest booking access token).
    * Prefer opening from /my-bookings/[ref]/documents so the browser shows your site URL, not the API path.
    */
-  async fetchBookingDocumentsPdf(reference: string): Promise<Blob> {
+  async fetchBookingDocumentsPdf(reference: string, currency = 'USD'): Promise<Blob> {
     const headers: Record<string, string> = {};
     try {
       if (typeof localStorage !== 'undefined') {
@@ -293,7 +293,7 @@ export const bookingService = {
     }
 
     const response = await fetch(
-      `${BASE_URL}/bookings/${reference}/documents?type=combined&format=pdf`,
+      `${BASE_URL}/bookings/${reference}/documents?type=combined&format=pdf&currency=${encodeURIComponent(currency)}`,
       { headers }
     );
 

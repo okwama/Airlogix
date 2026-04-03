@@ -2,6 +2,7 @@
   import CargoLabel from '$lib/features/cargo/CargoLabel.svelte';
   import { CheckCircle2, Package, ArrowRight } from 'lucide-svelte';
   import { onMount } from 'svelte';
+  import { appConfig } from '$lib/config/appConfig';
 
   interface PageData {
     booking: any;
@@ -22,8 +23,11 @@
 </script>
 
 <svelte:head>
-  <title>AWB Confirmed — {awb} | Mc Aviation Cargo</title>
-  <meta name="description" content="Your Mc Aviation cargo shipment has been confirmed. Print your Air Waybill label for tracking." />
+  <title>AWB Confirmed - {awb} | {appConfig.name} Cargo</title>
+  <meta
+    name="description"
+    content={`Your ${appConfig.name} cargo shipment has been confirmed. Print your Air Waybill label for tracking.`}
+  />
 </svelte:head>
 
 <div class="bg-surface min-h-screen pb-24">
@@ -88,7 +92,7 @@
             {#each [
               { step: '1', text: 'Print the label by clicking "Print Cargo Label".' },
               { step: '2', text: 'Attach one label to each piece of cargo.' },
-              { step: '3', text: 'Drop off your shipment at the Mc Aviation cargo terminal.' },
+              { step: '3', text: `Drop off your shipment at the ${appConfig.name} cargo terminal.` },
               { step: '4', text: 'Notify your consignee of the AWB number for collection.' }
             ] as item}
               <div class="flex items-start gap-3">
@@ -119,3 +123,4 @@
     </div>
   </div>
 </div>
+

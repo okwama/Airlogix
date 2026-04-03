@@ -3,6 +3,7 @@
   import { ChevronDown, Loader2, Search, X, User, Users } from 'lucide-svelte';
   import { clickOutside } from '../../utils/clickOutside';
   import { fade, slide } from 'svelte/transition';
+  import { currencyStore } from '$lib/stores/currencyStore.svelte';
 
   let from = $state('NBO');
   let fromLabel = $state('Nairobi');
@@ -256,7 +257,7 @@
     <!-- Luggage Hint -->
     <div class="flex items-center gap-3">
       <div class="text-status-green-text bg-status-green-bg px-3 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-2">
-        <span>✓ 7 kg cabin bag free + Checked bags from KES 1,200</span>
+        <span>✓ 7 kg cabin bag free + Checked bags from {currencyStore.format(1200)}</span>
       </div>
       
       <button 
@@ -281,3 +282,4 @@
     </button>
   </div>
 </div>
+

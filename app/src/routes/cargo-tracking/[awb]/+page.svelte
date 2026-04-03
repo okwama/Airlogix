@@ -2,6 +2,7 @@
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import CargoLabel from '$lib/features/cargo/CargoLabel.svelte';
+  import { appConfig } from '$lib/config/appConfig';
   import { ArrowRight, CheckCircle2, Package, Search } from 'lucide-svelte';
 
   import { goto } from '$app/navigation';
@@ -81,7 +82,7 @@
 </script>
 
 <svelte:head>
-  <title>Track Cargo — {awb} | Mc Aviation Cargo</title>
+  <title>Track Cargo - {awb} | {appConfig.name} Cargo</title>
   <meta name="description" content="Track your cargo using your AWB/waybill number." />
 </svelte:head>
 
