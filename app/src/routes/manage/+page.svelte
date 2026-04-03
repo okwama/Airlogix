@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Search, Hash, User, ArrowRight, HelpCircle, Package } from 'lucide-svelte';
+  import { Search, Hash, User, ArrowRight, HelpCircle, Package, CheckCircle2, Clock, History, CreditCard, ListFilter } from 'lucide-svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import Input from '$lib/components/ui/Input.svelte';
@@ -17,9 +17,15 @@
   let error = $state('');
   let stage = $state<'request' | 'verify'>('request');
 
+  type BookingRow = any;
+
   let myBookingsLoading = $state(false);
   let myBookingsError = $state('');
-  let myBookings = $state<any[]>([]);
+  let myBookings = $state<BookingRow[]>([]);
+  let activeTab = $state<'upcoming' | 'past' | 'checked_in' | 'pending_payment' | 'all'>('upcoming');
+  let searchQuery = $state('');
+  let checkedInMap = $state<Record<string, boolean>>({});
+  let checkedInLoading = $state(false);
 
   async function loadMyBookings() {
     if (!authStore.isAuthenticated) return;
@@ -34,6 +40,97 @@
       myBookingsLoading = false;
     }
   }
+
+  function toDateOnly(value: any): Date | null {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+    // booking_date is typically YYYY-MM-DD
+    const d = new Date(raw.length <= 10 ? `${raw}T00:00:00` : raw);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function isPast(b: any) {
+    const d = toDateOnly(b?.booking_date);
+    if (!d) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return d.getTime() < today.getTime();
+  }
+
+  function isUpcoming(b: any) {
+    const d = toDateOnly(b?.booking_date);
+    if (!d) return true;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return d.getTime() >= today.getTime();
+  }
+
+  function isPendingPayment(b: any) {
+    const p = String(b?.payment_status || '').toLowerCase();
+    return p !== 'paid' && p !== 'completed' && p !== 'success';
+  }
+
+  async function ensureCheckedInComputed() {
+    if (!authStore.isAuthenticated) return;
+    if (checkedInLoading) return;
+    checkedInLoading = true;
+    try {
+      const entries = await Promise.all(
+        (myBookings || []).map(async (b) => {
+          const bookingId = Number(b?.id);
+          const ref = String(b?.booking_reference || '').toUpperCase();
+          if (!bookingId || !ref) return [ref, false] as const;
+          try {
+            const checkins = await bookingService.getCheckins(bookingId, () => authService.getToken());
+            return [ref, Array.isArray(checkins) && checkins.length > 0] as const;
+          } catch {
+            return [ref, false] as const;
+          }
+        })
+      );
+      checkedInMap = Object.fromEntries(entries);
+    } finally {
+      checkedInLoading = false;
+    }
+  }
+
+  const filteredBookings = $derived((() => {
+    const q = searchQuery.trim().toLowerCase();
+    const list = Array.isArray(myBookings) ? myBookings : [];
+
+    const searched = q
+      ? list.filter((b) => {
+          const ref = String(b?.booking_reference || '').toLowerCase();
+          const from = String(b?.from_code || '').toLowerCase();
+          const to = String(b?.to_code || '').toLowerCase();
+          const flight = String(b?.flight_number || '').toLowerCase();
+          return ref.includes(q) || from.includes(q) || to.includes(q) || flight.includes(q);
+        })
+      : list;
+
+    switch (activeTab) {
+      case 'upcoming':
+        return searched.filter(isUpcoming);
+      case 'past':
+        return searched.filter(isPast);
+      case 'pending_payment':
+        return searched.filter(isPendingPayment);
+      case 'checked_in':
+        return searched.filter((b) => checkedInMap[String(b?.booking_reference || '').toUpperCase()] === true);
+      default:
+        return searched;
+    }
+  })() as BookingRow[]);
+
+  const tabCounts = $derived((() => {
+    const list = Array.isArray(myBookings) ? myBookings : [];
+    const all = list.length;
+    const upcoming = list.filter(isUpcoming).length;
+    const past = list.filter(isPast).length;
+    const pending_payment = list.filter(isPendingPayment).length;
+    const checked_in = Object.values(checkedInMap).filter(Boolean).length;
+    return { all, upcoming, past, pending_payment, checked_in };
+  })());
 
   onMount(async () => {
     await authStore.init();
@@ -103,29 +200,89 @@
 </svelte:head>
 
 <main class="min-h-[calc(100vh-58px-300px)] py-16 px-6 bg-slate-50/50">
-  <div class="max-w-[1000px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+  <div class="max-w-[1440px] mx-auto space-y-10">
     
-    <div class="space-y-8">
-      <header>
+    <header class="text-center max-w-[900px] mx-auto">
         <h1 class="text-brand-navy mb-4">Manage Your Booking</h1>
         <p class="text-text-body/80 text-lg leading-relaxed">
           View your itinerary, select seats, add luggage, or update your contact information quickly and securely.
         </p>
-      </header>
+    </header>
 
-      {#if authStore.isAuthenticated}
-        <div class="premium-card p-6 bg-white">
-          <div class="flex items-center justify-between gap-4 mb-5">
-            <div>
-              <div class="ui-label text-brand-blue mb-1">Signed in</div>
-              <h3 class="text-brand-navy text-[18px] font-medium">My bookings</h3>
-              <p class="text-[13px] text-text-muted mt-1">
-                Your recent trips linked to this account.
+    {#if authStore.isAuthenticated}
+      <Card padding="none" class="bg-white">
+        <div class="p-7">
+          <div class="flex items-start justify-between gap-6 flex-wrap mb-6">
+            <div class="space-y-1">
+              <div class="ui-label text-brand-blue flex items-center gap-2">
+                <ListFilter size={14} /> Dashboard
+              </div>
+              <h2 class="text-brand-navy text-[18px] font-medium">My bookings</h2>
+              <p class="text-[13px] text-text-muted">
+                Filter by trip status and quickly open itineraries.
               </p>
             </div>
-            <Button variant="secondary" onclick={loadMyBookings} disabled={myBookingsLoading}>
-              Refresh
-            </Button>
+
+            <div class="flex items-center gap-3 flex-wrap">
+              <div class="w-[260px] max-w-full">
+                <Input
+                  label="Search"
+                  icon={Search}
+                  placeholder="PNR, route, flight…"
+                  bind:value={searchQuery}
+                />
+              </div>
+              <Button variant="secondary" onclick={loadMyBookings} disabled={myBookingsLoading}>
+                Refresh
+              </Button>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex flex-wrap gap-2 mb-6">
+            <button
+              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
+              class:!text-brand-navy={activeTab === 'upcoming'}
+              class:!border-brand-blue={activeTab === 'upcoming'}
+              onclick={() => (activeTab = 'upcoming')}
+            >
+              <Clock size={14} class="mr-1 inline" /> Upcoming ({tabCounts.upcoming})
+            </button>
+            <button
+              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
+              class:!text-brand-navy={activeTab === 'past'}
+              class:!border-brand-blue={activeTab === 'past'}
+              onclick={() => (activeTab = 'past')}
+            >
+              <History size={14} class="mr-1 inline" /> Past ({tabCounts.past})
+            </button>
+            <button
+              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
+              class:!text-brand-navy={activeTab === 'pending_payment'}
+              class:!border-brand-blue={activeTab === 'pending_payment'}
+              onclick={() => (activeTab = 'pending_payment')}
+            >
+              <CreditCard size={14} class="mr-1 inline" /> Pending payment ({tabCounts.pending_payment})
+            </button>
+            <button
+              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
+              class:!text-brand-navy={activeTab === 'checked_in'}
+              class:!border-brand-blue={activeTab === 'checked_in'}
+              onclick={async () => {
+                activeTab = 'checked_in';
+                await ensureCheckedInComputed();
+              }}
+            >
+              <CheckCircle2 size={14} class="mr-1 inline" /> Checked in ({tabCounts.checked_in})
+            </button>
+            <button
+              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
+              class:!text-brand-navy={activeTab === 'all'}
+              class:!border-brand-blue={activeTab === 'all'}
+              onclick={() => (activeTab = 'all')}
+            >
+              All ({tabCounts.all})
+            </button>
           </div>
 
           {#if myBookingsError}
@@ -136,13 +293,53 @@
 
           {#if myBookingsLoading}
             <p class="text-[13px] text-text-muted">Loading your bookings…</p>
-          {:else if myBookings.length === 0}
-            <p class="text-[13px] text-text-muted">
-              No bookings found on this account yet.
-            </p>
+          {:else if activeTab === 'checked_in' && checkedInLoading}
+            <p class="text-[13px] text-text-muted">Checking which trips are checked in…</p>
+          {:else if filteredBookings.length === 0}
+            <p class="text-[13px] text-text-muted">No bookings match this filter.</p>
           {:else}
-            <div class="space-y-3">
-              {#each myBookings as b (b.id)}
+            <!-- Desktop table -->
+            <div class="hidden md:block border border-border rounded-lg overflow-hidden">
+              <div class="grid grid-cols-[140px_1fr_140px_140px_120px] bg-slate-50 text-[11px] uppercase tracking-widest font-medium text-text-muted">
+                <div class="px-4 py-3">PNR</div>
+                <div class="px-4 py-3">Route / Flight</div>
+                <div class="px-4 py-3">Date</div>
+                <div class="px-4 py-3">Payment</div>
+                <div class="px-4 py-3">Status</div>
+              </div>
+              {#each filteredBookings as b (b.id)}
+                <button
+                  class="grid grid-cols-[140px_1fr_140px_140px_120px] w-full text-left bg-white hover:bg-slate-50 transition-colors border-t border-border"
+                  onclick={() => goto(`/my-bookings/${String(b.booking_reference || '').toUpperCase()}`)}
+                >
+                  <div class="px-4 py-4 font-mono text-[12px] text-brand-navy">{b.booking_reference}</div>
+                  <div class="px-4 py-4">
+                    <div class="text-brand-navy font-medium">
+                      {b.from_code} → {b.to_code}
+                      <span class="text-text-muted text-[12px] font-medium ml-2">{b.flight_number}</span>
+                    </div>
+                    <div class="text-[12px] text-text-muted">
+                      {b.from_city || ''}{b.from_city && b.to_city ? ' → ' : ''}{b.to_city || ''}
+                    </div>
+                  </div>
+                  <div class="px-4 py-4 text-[12px] text-text-muted">{b.booking_date}</div>
+                  <div class="px-4 py-4 text-[12px] font-medium text-text-muted">{String(b.payment_status || 'pending').toUpperCase()}</div>
+                  <div class="px-4 py-4">
+                    {#if activeTab === 'checked_in' || checkedInMap[String(b.booking_reference || '').toUpperCase()] === true}
+                      <span class="status-badge bg-status-green-bg text-status-green-text">CHECKED IN</span>
+                    {:else if isPast(b)}
+                      <span class="status-badge bg-slate-100 text-text-muted">PAST</span>
+                    {:else}
+                      <span class="status-badge bg-status-blue-bg text-status-blue-text">UPCOMING</span>
+                    {/if}
+                  </div>
+                </button>
+              {/each}
+            </div>
+
+            <!-- Mobile cards -->
+            <div class="md:hidden space-y-3">
+              {#each filteredBookings as b (b.id)}
                 <button
                   class="w-full text-left border border-border rounded-lg p-4 hover:border-brand-blue transition-colors bg-white"
                   onclick={() => goto(`/my-bookings/${String(b.booking_reference || '').toUpperCase()}`)}
@@ -167,8 +364,10 @@
             </div>
           {/if}
         </div>
-      {/if}
+      </Card>
+    {/if}
 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
       <div class="space-y-6">
         <div class="flex gap-4 items-start">
           <div class="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0">
@@ -200,14 +399,13 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <Card padding="none" class="shadow-lg transform transition-all hover:scale-[1.01] bg-white overflow-hidden">
-      <div class="max-w-[85%] mx-auto py-12">
-        <div class="mb-10 text-center">
-          <h3 class="text-brand-navy text-xl font-medium mb-2">Find Your Booking</h3>
-          <p class="text-[13px] text-text-muted">Enter your booking details to access your itinerary.</p>
-        </div>
+      <Card padding="none" class="shadow-lg transform transition-all hover:scale-[1.01] bg-white overflow-hidden">
+        <div class="max-w-[560px] mx-auto py-12 px-6">
+          <div class="mb-10 text-center">
+            <h3 class="text-brand-navy text-xl font-medium mb-2">Find Your Booking</h3>
+            <p class="text-[13px] text-text-muted">Enter your booking details to access your itinerary.</p>
+          </div>
 
         {#if error}
           <div class="bg-red-50 text-red-600 text-[13px] p-3 rounded-md mb-8 border border-red-100 flex items-center gap-2 font-medium">
@@ -274,7 +472,7 @@
           </p>
         </div>
       </div>
-    </Card>
-
+      </Card>
+    </div>
   </div>
 </main>

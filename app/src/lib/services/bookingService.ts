@@ -251,6 +251,26 @@ export const bookingService = {
   },
 
   /**
+   * Get check-ins for a booking (JWT required)
+   */
+  async getCheckins(bookingId: number, getToken?: () => string | null) {
+    const token = getToken ? getToken() : null;
+    if (!token) throw new Error('Not authenticated');
+
+    const response = await fetch(`${BASE_URL}/checkin/${bookingId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+    if (response.status === 401) throw new Error('Unauthorized');
+    if (!response.ok || !result.status) throw new Error(result.message || 'Failed to load check-ins');
+    return result.data || [];
+  },
+
+  /**
    * Initiate Stripe Payment Session
    */
   async initiateStripePayment(bookingReference: string, amount: number, email: string) {
