@@ -60,11 +60,9 @@ This roadmap is now the live status tracker for the app hardening and product-im
   Target:
   Return typed error states and let the UI distinguish auth issues, network issues, expired holds, and not-found conditions.
 
-- `Pending` Fix type and contract inconsistencies.
-  Current state:
-  `svelte-check` still fails because of `flightService` and cargo-tracking issues.
-  Target:
-  Normalize service contracts and make the app pass `svelte-check`.
+- `Done` Fix type and contract inconsistencies.
+  Outcome:
+  `flightService` and cargo-tracking contract issues were corrected, and the frontend now passes `svelte-check`.
 
 - `Pending` Improve payment callback idempotency and traceability.
   Target:
@@ -96,7 +94,9 @@ This roadmap is now the live status tracker for the app hardening and product-im
   Outcome:
   Travelers can re-enter via OTP, open the booking, and continue payment from a dedicated resume-payment page.
 
-- `Pending` Raise frontend polish for airline expectations.
+- `Partially Done` Raise frontend polish for airline expectations.
+  Current state:
+  A branded, illustrated global error experience now exists for 404/500/505 states.
   Target:
   Tighten hierarchy, loading states, empty states, mobile handling, and trust cues across booking, payment, and documents.
 
@@ -110,9 +110,9 @@ This roadmap is now the live status tracker for the app hardening and product-im
 
 ## Next Recommended Ticket
 
-1. Clean frontend service/type errors so release checks become reliable.
-2. Standardize backend error handling.
-3. Improve payment callback idempotency and traceability.
+1. Standardize backend error handling.
+2. Improve payment callback idempotency and traceability.
+3. Stop swallowing frontend service failures.
 
 ## Recommended Execution Order
 
