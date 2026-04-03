@@ -124,6 +124,11 @@ if (preg_match('#^/bookings/([A-Z0-9]+)/documents$#', $path, $matches) && $metho
 if (preg_match('#^/bookings/([A-Z0-9]+)$#', $path, $matches) && $method==='GET') { $bookingCtrl->get($matches[1]); exit; }
 if ($path === '/bookings/find' && $method==='POST') { $bookingCtrl->find(); exit; }
 if ($path === '/bookings/update_payment' && $method==='POST') { $bookingCtrl->updatePayment(); exit; }
+if ($path === '/bookings/expire-stale' && $method==='POST') {
+    Auth::requireInternalKey();
+    $bookingCtrl->expireStale();
+    exit;
+}
 if ($path === '/bookings/access/request' && $method==='POST') { $bookingCtrl->requestAccessCode(); exit; }
 if ($path === '/bookings/access/verify' && $method==='POST') { $bookingCtrl->verifyAccessCode(); exit; }
 

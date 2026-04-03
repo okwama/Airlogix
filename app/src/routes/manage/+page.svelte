@@ -458,7 +458,7 @@
         <div class="max-w-[560px] mx-auto py-12 px-6">
           <div class="mb-10 text-center">
             <h3 class="text-brand-navy text-xl font-medium mb-2">Find Your Booking</h3>
-            <p class="text-[13px] text-text-muted">Enter your booking details to access your itinerary.</p>
+            <p class="text-[13px] text-text-muted">Enter your booking details to access your itinerary, continue payment, or download documents.</p>
           </div>
 
         {#if error}
@@ -522,7 +522,7 @@
           </div>
 
           <p class="text-center text-[12px] text-text-muted mt-6">
-            Don't have a PNR? <a href="/help" class="text-brand-blue hover:underline">Check your email</a> or contact support.
+            Reserved seats but left the payment page? Use your PNR and booking email here to continue payment before the hold expires.
           </p>
         </div>
       </div>

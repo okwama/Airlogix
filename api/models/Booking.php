@@ -4,24 +4,77 @@ require_once __DIR__ . '/../config.php';
 class Booking {
     private $conn;
     private $table_name = "bookings";
+    private $columnCache = [];
 
     public function __construct($db) {
         $this->conn = $db;
     }
 
-    public function create($data) {
-        $query = "INSERT INTO " . $this->table_name . " 
-                 (booking_reference, flight_series_id, cabin_class_id, passenger_id, passenger_name, passenger_email, passenger_phone, 
-                  passenger_type, number_of_passengers, fare_per_passenger, total_amount, payment_method, 
-                  payment_status, booking_date, notes, user_id) 
-                 VALUES (:ref, :flight_id, :cabin_class_id, :passenger_id, :passenger_name, :passenger_email, :passenger_phone, 
-                          :passenger_type, :num_passengers, :fare_per_passenger, :total_amount, :payment_method, 
-                          'pending', :booking_date, :notes, :user_id)";
+    private function hasColumn(string $column): bool
+    {
+        if (array_key_exists($column, $this->columnCache)) {
+            return $this->columnCache[$column];
+        }
 
-        $stmt = $this->conn->prepare($query);
-        
+        $stmt = $this->conn->prepare("SHOW COLUMNS FROM {$this->table_name} LIKE :column");
+        $stmt->execute([':column' => $column]);
+        $this->columnCache[$column] = (bool)$stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->columnCache[$column];
+    }
+
+    public function getReservationHoldMinutes(): int
+    {
+        $minutes = (int)env('BOOKING_HOLD_MINUTES', 30);
+        return $minutes > 0 ? $minutes : 30;
+    }
+
+    public function reservationExpiresAt(?string $from = null): string
+    {
+        $base = $from ? strtotime($from) : time();
+        return date('Y-m-d H:i:s', strtotime('+' . $this->getReservationHoldMinutes() . ' minutes', $base));
+    }
+
+    public function isReservationExpired(array $booking): bool
+    {
+        $paymentStatus = strtolower((string)($booking['payment_status'] ?? 'pending'));
+        if ($paymentStatus === 'paid' || $paymentStatus === 'completed') {
+            return false;
+        }
+
+        if (!empty($booking['expired_at'])) {
+            return true;
+        }
+
+        $expiresAt = $booking['reservation_expires_at'] ?? null;
+        if (empty($expiresAt)) {
+            return false;
+        }
+
+        return strtotime((string)$expiresAt) <= time();
+    }
+
+    public function create($data) {
         // Generate unique 6-character alphanumeric booking reference (IATA style)
         $ref = strtoupper(substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 6));
+
+        $columns = [
+            'booking_reference' => ':ref',
+            'flight_series_id' => ':flight_id',
+            'cabin_class_id' => ':cabin_class_id',
+            'passenger_id' => ':passenger_id',
+            'passenger_name' => ':passenger_name',
+            'passenger_email' => ':passenger_email',
+            'passenger_phone' => ':passenger_phone',
+            'passenger_type' => ':passenger_type',
+            'number_of_passengers' => ':num_passengers',
+            'fare_per_passenger' => ':fare_per_passenger',
+            'total_amount' => ':total_amount',
+            'payment_method' => ':payment_method',
+            'payment_status' => ':payment_status',
+            'booking_date' => ':booking_date',
+            'notes' => ':notes',
+            'user_id' => ':user_id'
+        ];
 
         $params = [
             ':ref' => $ref,
@@ -36,10 +89,25 @@ class Booking {
             ':fare_per_passenger' => $data['fare_per_passenger'],
             ':total_amount' => $data['total_amount'],
             ':payment_method' => $data['payment_method'] ?? 'cash',
+            ':payment_status' => 'pending',
             ':booking_date' => $data['booking_date'] ?? date('Y-m-d'),
             ':notes' => $data['notes'] ?? null,
             ':user_id' => $data['user_id'] ?? null
         ];
+
+        if ($this->hasColumn('reservation_expires_at')) {
+            $columns['reservation_expires_at'] = ':reservation_expires_at';
+            $params[':reservation_expires_at'] = $data['reservation_expires_at'] ?? $this->reservationExpiresAt();
+        }
+        if ($this->hasColumn('expired_at')) {
+            $columns['expired_at'] = ':expired_at';
+            $params[':expired_at'] = null;
+        }
+
+        $query = "INSERT INTO " . $this->table_name . " (" . implode(', ', array_keys($columns)) . ")
+                  VALUES (" . implode(', ', array_values($columns)) . ")";
+
+        $stmt = $this->conn->prepare($query);
 
         if ($stmt->execute($params)) {
             $booking_id = $this->conn->lastInsertId();
@@ -140,6 +208,56 @@ class Booking {
             ':method' => $method,
             ':id' => $booking_id
         ]);
+    }
+
+    public function expireBooking(int $bookingId): bool
+    {
+        $set = [
+            "payment_status = 'cancelled'",
+            "status = 2",
+            "updated_at = NOW()"
+        ];
+
+        if ($this->hasColumn('expired_at')) {
+            $set[] = "expired_at = NOW()";
+        }
+
+        $query = "UPDATE " . $this->table_name . "
+                  SET " . implode(', ', $set) . "
+                  WHERE id = :id
+                  AND payment_status != 'paid'";
+
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute([':id' => $bookingId]);
+    }
+
+    public function expireStaleReservations(): int
+    {
+        if (!$this->hasColumn('reservation_expires_at')) {
+            return 0;
+        }
+
+        $select = "SELECT id
+                   FROM " . $this->table_name . "
+                   WHERE LOWER(payment_status) = 'pending'
+                   AND reservation_expires_at <= NOW()";
+
+        if ($this->hasColumn('expired_at')) {
+            $select .= " AND expired_at IS NULL";
+        }
+
+        $stmt = $this->conn->prepare($select);
+        $stmt->execute();
+        $ids = array_map('intval', array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'id'));
+
+        $expired = 0;
+        foreach ($ids as $id) {
+            if ($this->expireBooking($id)) {
+                $expired++;
+            }
+        }
+
+        return $expired;
     }
 
     public function getAll($limit = 50, $offset = 0) {

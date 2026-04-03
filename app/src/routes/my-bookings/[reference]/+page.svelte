@@ -5,13 +5,15 @@
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import { appConfig } from '$lib/config/appConfig';
-  import { Calendar, Download, Plane, RefreshCw, ShieldAlert } from 'lucide-svelte';
+  import { Calendar, Clock3, CreditCard, Download, Plane, RefreshCw, ShieldAlert } from 'lucide-svelte';
 
   const reference = $derived(String(page.params.reference || '').toUpperCase());
 
   let loading = $state(true);
   let error = $state('');
   let booking = $state<any | null>(null);
+  let nowMs = $state(Date.now());
+  let timer: ReturnType<typeof setInterval> | null = null;
 
   async function loadBooking() {
     loading = true;
@@ -29,11 +31,40 @@
   }
 
   onMount(loadBooking);
+  onMount(() => {
+    timer = setInterval(() => {
+      nowMs = Date.now();
+    }, 1000);
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  });
 
   const paymentState = $derived((booking?.payment_state || booking?.payment_status || '').toString());
   const ticketState = $derived((booking?.ticket_state || '').toString());
   const bookingState = $derived((booking?.booking_state || '').toString());
   const nextActions = $derived(Array.isArray(booking?.next_actions) ? booking.next_actions : []);
+  const reservationExpiresAt = $derived(String(booking?.reservation_expires_at || ''));
+  const reservationExpiryMs = $derived(reservationExpiresAt ? new Date(reservationExpiresAt).getTime() : NaN);
+  const hasActiveHold = $derived(
+    bookingState === 'CREATED' &&
+    paymentState === 'PENDING' &&
+    Number.isFinite(reservationExpiryMs) &&
+    reservationExpiryMs > nowMs
+  );
+  const holdTimeRemaining = $derived((() => {
+    if (!hasActiveHold) return '';
+    const diff = Math.max(0, reservationExpiryMs - nowMs);
+    const totalSeconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  })());
+  const showExpiredHold = $derived(
+    bookingState === 'EXPIRED' ||
+    (bookingState === 'CANCELLED' && paymentState !== 'PAID')
+  );
 </script>
 
 <svelte:head>
@@ -47,7 +78,7 @@
         <div class="ui-label text-brand-blue">My booking</div>
         <h1 class="text-brand-navy">PNR: <span class="font-mono">{reference}</span></h1>
         <p class="text-[13px] text-text-muted">
-          View itinerary details, payment state, and download documents.
+          View itinerary details, payment state, and resume payment if your hold is still active.
         </p>
       </div>
       <div class="flex gap-3">
@@ -117,6 +148,36 @@
               </div>
             </div>
 
+            {#if hasActiveHold}
+              <div class="border border-status-blue rounded-lg p-4 bg-status-blue-bg/40">
+                <div class="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <p class="text-[11px] text-status-blue-text uppercase tracking-widest font-medium">Payment window</p>
+                    <p class="text-status-blue-text font-medium mt-1">
+                      Seats reserved until {new Date(reservationExpiresAt).toLocaleString()}
+                    </p>
+                    <p class="text-[12px] text-status-blue-text/80 mt-1">
+                      Leave this page if you need to. You can come back through Manage Booking and continue payment until the timer ends.
+                    </p>
+                  </div>
+                  <div class="min-w-[120px] border border-status-blue rounded-lg px-4 py-3 bg-white text-center">
+                    <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium">Time left</p>
+                    <p class="text-brand-navy text-[24px] font-semibold mt-1">{holdTimeRemaining}</p>
+                  </div>
+                </div>
+              </div>
+            {:else if showExpiredHold}
+              <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+                <p class="text-[11px] text-red-600 uppercase tracking-widest font-medium">Reservation expired</p>
+                <p class="text-red-700 font-medium mt-1">
+                  This unpaid hold has expired, so the seats are no longer reserved.
+                </p>
+                <p class="text-[12px] text-red-700/80 mt-1">
+                  Please search again and create a new booking if you still want to travel.
+                </p>
+              </div>
+            {/if}
+
             {#if nextActions.length}
               <div class="border border-border rounded-lg p-4">
                 <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium mb-2">Next actions</p>
@@ -147,13 +208,31 @@
         <aside class="space-y-6">
           <Card padding="none" class="bg-white">
             <div class="p-7 space-y-4">
-              <h2 class="text-brand-navy font-medium text-[16px]">Documents</h2>
-              <p class="text-[12px] text-text-muted">
-                Download your combined e-ticket and receipt.
-              </p>
-              <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="w-full">
-                <Download size={16} /> View e-ticket (PDF)
-              </Button>
+              {#if hasActiveHold}
+                <h2 class="text-brand-navy font-medium text-[16px]">Resume payment</h2>
+                <p class="text-[12px] text-text-muted">
+                  Your reservation is still active. Continue to payment before the hold expires.
+                </p>
+                <Button variant="primary" href={`/my-bookings/${reference}/pay`} class="w-full">
+                  <CreditCard size={16} /> Continue payment
+                </Button>
+              {:else if paymentState === 'PAID' || ticketState === 'TICKETED'}
+                <h2 class="text-brand-navy font-medium text-[16px]">Documents</h2>
+                <p class="text-[12px] text-text-muted">
+                  Download your combined e-ticket and receipt.
+                </p>
+                <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="w-full">
+                  <Download size={16} /> View e-ticket (PDF)
+                </Button>
+              {:else}
+                <h2 class="text-brand-navy font-medium text-[16px]">Reservation status</h2>
+                <p class="text-[12px] text-text-muted">
+                  This booking does not currently have an active payment window.
+                </p>
+                <Button variant="secondary" href="/search" class="w-full">
+                  <Clock3 size={16} /> Search flights again
+                </Button>
+              {/if}
             </div>
           </Card>
 

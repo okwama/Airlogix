@@ -4,6 +4,7 @@ require_once __DIR__ . '/../config.php';
 class Flight {
     private $conn;
     private $table_name = "flight_series";
+    private $bookingHasReservationExpiry;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -208,12 +209,39 @@ class Flight {
 
         $total_seats = $flight['number_of_seats'] ?? 0;
 
-        // Get booked seats for this date
-        $query = "SELECT COALESCE(SUM(number_of_passengers), 0) as booked_seats
-                  FROM bookings
-                  WHERE flight_series_id = :flight_id 
-                  AND booking_date = :date
-                  AND payment_status != 'cancelled'";
+        // Release stale holds before calculating availability so abandoned bookings
+        // stop blocking inventory.
+        require_once __DIR__ . '/Booking.php';
+        $bookingModel = new Booking($this->conn);
+        $bookingModel->expireStaleReservations();
+
+        if ($this->bookingHasReservationExpiry === null) {
+            $check = $this->conn->query("SHOW COLUMNS FROM bookings LIKE 'reservation_expires_at'");
+            $this->bookingHasReservationExpiry = (bool)$check->fetch(PDO::FETCH_ASSOC);
+        }
+
+        if ($this->bookingHasReservationExpiry) {
+            $query = "SELECT COALESCE(SUM(number_of_passengers), 0) as booked_seats
+                      FROM bookings
+                      WHERE flight_series_id = :flight_id
+                      AND booking_date = :date
+                      AND (
+                        LOWER(payment_status) = 'paid'
+                        OR (
+                            LOWER(payment_status) = 'pending'
+                            AND (
+                                reservation_expires_at IS NULL
+                                OR reservation_expires_at > NOW()
+                            )
+                        )
+                      )";
+        } else {
+            $query = "SELECT COALESCE(SUM(number_of_passengers), 0) as booked_seats
+                      FROM bookings
+                      WHERE flight_series_id = :flight_id
+                      AND booking_date = :date
+                      AND payment_status != 'cancelled'";
+        }
 
         $stmt = $this->conn->prepare($query);
         $stmt->execute([

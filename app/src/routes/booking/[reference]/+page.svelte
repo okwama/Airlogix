@@ -32,6 +32,7 @@
 
   let isSubmitting = $state(false);
   let errorMessage = $state('');
+  let reservationExpiresAt = $state('');
 
   function handlePassengerSubmit(data: Passenger[]) {
     bookingStore.setPassengers(data);
@@ -54,6 +55,10 @@
       });
 
       reference = response.reference || response.data?.reference || response.data?.booking_reference || reference;
+      reservationExpiresAt = response.reservation_expires_at || response.data?.reservation_expires_at || '';
+      if (reference && response.access_token) {
+        bookingService.setAccessToken(reference, response.access_token);
+      }
       
       step = 'payment';
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -141,6 +146,11 @@
           </button>
         {/if}
       {:else}
+        {#if reservationExpiresAt}
+          <div class="bg-status-blue-bg/40 border border-status-blue rounded-lg p-4 text-[13px] text-status-blue-text">
+            Your seats are being held temporarily. Complete payment before <strong>{new Date(reservationExpiresAt).toLocaleString()}</strong> or the reservation will expire automatically.
+          </div>
+        {/if}
         <PaymentPicker amount={finalTotal} {reference} />
         <button class="flex items-center justify-start gap-2 text-text-muted text-[13px] font-medium hover:text-brand-navy transition-all" onclick={() => step = 'luggage'}>
           <ChevronLeft size={14} /> Back to luggage selection

@@ -9,27 +9,26 @@ class Passenger {
     }
     
     /**
-     * Generate a unique 13-digit IATA Ticket Number
-     * Format: [3-digit Airline Code 998] + [10-digit Serial]
+     * Generate a unique passenger locator for the legacy pnr column.
+     * Uses an airline-style uppercase alphanumeric format and avoids
+     * ambiguous characters such as O/0 and I/1.
      */
-    private function generateTicketNumber() {
-        $prefix = "998";
-        
+    private function generatePassengerPnr() {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $length = 8;
+
         do {
-            // Generate a random 10-digit number
-            $serial = "";
-            for ($i = 0; $i < 10; $i++) {
-                $serial .= random_int(0, 9);
+            $pnr = '';
+            for ($i = 0; $i < $length; $i++) {
+                $pnr .= $alphabet[random_int(0, strlen($alphabet) - 1)];
             }
-            $ticketNumber = $prefix . $serial; // 13 digits total
-            
-            // Check if Ticket Number already exists in the pnr column
+
             $stmt = $this->db->prepare("SELECT id FROM passengers WHERE pnr = ?");
-            $stmt->execute([$ticketNumber]);
+            $stmt->execute([$pnr]);
             $exists = $stmt->fetch();
         } while ($exists);
-        
-        return $ticketNumber;
+
+        return $pnr;
     }
     
     /**
@@ -37,7 +36,7 @@ class Passenger {
      */
     public function create($data) {
         try {
-            $ticketNumber = $this->generateTicketNumber();
+            $passengerPnr = $this->generatePassengerPnr();
             
             $stmt = $this->db->prepare("
                 INSERT INTO passengers 
@@ -46,7 +45,7 @@ class Passenger {
             ");
             
             $stmt->execute([
-                $ticketNumber,
+                $passengerPnr,
                 $data['name'] ?? '',
                 $data['email'] ?? null,
                 $data['contact'] ?? null,
@@ -60,7 +59,7 @@ class Passenger {
             
             return [
                 'id' => $passengerId,
-                'pnr' => $ticketNumber, // Stored in the legacy 'pnr' column but holds the Ticket Number
+                'pnr' => $passengerPnr,
                 'name' => $data['name'],
                 'email' => $data['email'] ?? null,
                 'contact' => $data['contact'] ?? null

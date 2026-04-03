@@ -20,6 +20,32 @@ export interface BookingPayload {
 }
 
 export const bookingService = {
+  getAccessHeaders(reference: string): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const jwt = localStorage.getItem('airlogix_jwt');
+        if (jwt) headers.Authorization = `Bearer ${jwt}`;
+      }
+    } catch {
+      // ignore
+    }
+
+    try {
+      if (typeof sessionStorage !== 'undefined') {
+        const token = sessionStorage.getItem(`booking_token:${reference}`);
+        if (token) headers['X-Booking-Access-Token'] = token;
+      }
+    } catch {
+      // ignore
+    }
+
+    return headers;
+  },
+
   /**
    * Create a passenger booking and receive a PNR reference.
    */
@@ -129,7 +155,7 @@ export const bookingService = {
     try {
         const response = await fetch(`${BASE_URL}/bookings/update_payment`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: this.getAccessHeaders(reference),
             body: JSON.stringify({
                 booking_reference: reference,
                 payment_method: paymentMethod,
@@ -151,7 +177,7 @@ export const bookingService = {
     try {
       const response = await fetch(`${BASE_URL}/payments/mpesa/initialize`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.getAccessHeaders(reference),
         body: JSON.stringify({ booking_reference: reference, phone_number: phoneNumber, amount })
       });
       const result = await response.json();
@@ -279,18 +305,8 @@ export const bookingService = {
    */
   async fetchBookingDocumentsPdf(reference: string, currency = 'USD'): Promise<Blob> {
     const headers: Record<string, string> = {};
-    try {
-      if (typeof localStorage !== 'undefined') {
-        const jwt = localStorage.getItem('airlogix_jwt');
-        if (jwt) headers.Authorization = `Bearer ${jwt}`;
-      }
-    } catch {
-      // ignore
-    }
-    if (typeof sessionStorage !== 'undefined') {
-      const token = sessionStorage.getItem(`booking_token:${reference}`);
-      if (token) headers['X-Booking-Access-Token'] = token;
-    }
+    Object.assign(headers, this.getAccessHeaders(reference));
+    delete headers['Content-Type'];
 
     const response = await fetch(
       `${BASE_URL}/bookings/${reference}/documents?type=combined&format=pdf&currency=${encodeURIComponent(currency)}`,
@@ -313,7 +329,7 @@ export const bookingService = {
     try {
       const response = await fetch(`${BASE_URL}/payments/stripe/initialize`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.getAccessHeaders(bookingReference),
         body: JSON.stringify({
           booking_reference: bookingReference,
           amount,

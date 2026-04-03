@@ -215,6 +215,8 @@ CREATE TABLE `bookings` (
   `payment_status` varchar(50) NOT NULL DEFAULT 'pending',
   `status` tinyint(4) DEFAULT 0 COMMENT '0:Pending, 1:Confirmed, 2:Cancelled, 3:Partial',
   `booking_date` date NOT NULL,
+  `reservation_expires_at` datetime DEFAULT NULL,
+  `expired_at` datetime DEFAULT NULL,
   `notes` text DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),

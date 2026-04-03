@@ -109,6 +109,7 @@ class BookingController {
 
         // Use the server-validated fare for the record
         $farePerPassenger = $expectedTotal / count($passengers);
+        $numPassengers = count($passengers);
 
         // Start transaction
         $db = db();
@@ -134,6 +135,7 @@ class BookingController {
                 // Persist the server-computed canonical total, not arbitrary client value
                 'total_amount' => $expectedTotal,
                 'payment_method' => $data['payment_method'] ?? 'pending',
+                'reservation_expires_at' => $this->bookingModel->reservationExpiresAt(),
                 'notes' => $data['notes'] ?? null,
                 'user_id' => $userId
             ];
@@ -209,6 +211,12 @@ class BookingController {
                 'message' => 'Booking created successfully',
                 'booking_id' => $bookingId,
                 'reference' => $bookingReference,
+                'reservation_expires_at' => $bookingResponse['data']['reservation_expires_at'] ?? $bookingData['reservation_expires_at'],
+                'access_token' => hash_hmac(
+                    'sha256',
+                    $bookingReference . '|' . $bookingId,
+                    env('JWT_SECRET', 'airlogix_default_secret')
+                ),
                 'data' => array_merge($bookingResponse['data'], [
                     'passengers' => $createdPassengers
                 ])
@@ -244,29 +252,42 @@ class BookingController {
         ]);
     }
 
+    private function canAccessBooking(array $booking, string $reference): bool
+    {
+        $headers = apache_request_headers();
+        $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
+
+        // 1. Try JWT Auth
+        $authUserId = $this->userModel->validateToken($token);
+        $isAuthorized = ($authUserId && (int)$authUserId === (int)($booking['user_id'] ?? 0));
+
+        // 2. Try OTP Access Token (X-Booking-Access-Token)
+        if (!$isAuthorized) {
+            $accessToken = $headers['X-Booking-Access-Token'] ?? '';
+            if (!empty($accessToken)) {
+                $expected = hash_hmac('sha256', $reference . '|' . $booking['id'], env('JWT_SECRET', 'airlogix_default_secret'));
+                $isAuthorized = hash_equals($expected, $accessToken);
+            }
+        }
+
+        return $isAuthorized;
+    }
+
+    private function isBookingExpired(array $booking): bool
+    {
+        return $this->bookingModel->isReservationExpired($booking);
+    }
 
     public function get($reference) {
         $booking = $this->bookingModel->getByReference($reference);
         
         if ($booking) {
-            // SECURITY: Require authentication or a valid access token
-            $headers = apache_request_headers();
-            $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
-            
-            // 1. Try JWT Auth
-            $authUserId = $this->userModel->validateToken($token);
-            $isAuthorized = ($authUserId && (int)$authUserId === (int)$booking['user_id']);
-            
-            // 2. Try OTP Access Token (X-Booking-Access-Token)
-            if (!$isAuthorized) {
-                $accessToken = $headers['X-Booking-Access-Token'] ?? '';
-                if (!empty($accessToken)) {
-                    $expected = hash_hmac('sha256', $reference . '|' . $booking['id'], env('JWT_SECRET', 'airlogix_default_secret'));
-                    $isAuthorized = hash_equals($expected, $accessToken);
-                }
+            if ($this->isBookingExpired($booking)) {
+                $this->bookingModel->expireBooking((int)$booking['id']);
+                $booking = $this->bookingModel->getByReference($reference);
             }
 
-            if (!$isAuthorized) {
+            if (!$this->canAccessBooking($booking, $reference)) {
                 Response::json([
                     'status' => false, 
                     'message' => 'Unauthorized. Please use the "Manage Booking" flow to verify access via OTP.'
@@ -330,38 +351,56 @@ class BookingController {
             return;
         }
 
-        $success = $this->bookingModel->updatePaymentStatus((int)$bookingId, $status, $method);
+        $booking = $this->bookingModel->getById((int)$bookingId);
+        if (!$booking) {
+            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            return;
+        }
+
+        if (!$this->canAccessBooking($booking, (string)$booking['booking_reference'])) {
+            Response::json([
+                'status' => false,
+                'message' => 'Unauthorized. Please verify booking access before updating payment details.'
+            ], 401);
+            return;
+        }
+
+        if ($this->isBookingExpired($booking)) {
+            $this->bookingModel->expireBooking((int)$booking['id']);
+            Response::json([
+                'status' => false,
+                'message' => 'This reservation has expired. Please search again to create a new booking.'
+            ], 409);
+            return;
+        }
+
+        $normalizedStatus = strtolower(trim((string)$status));
+        $normalizedMethod = strtolower(trim((string)($method ?? '')));
+
+        // This route is only for traveler-facing "payment initiated / pending" flows
+        // such as bank transfer instructions. Paid status must only come from a verified
+        // gateway callback or an internal/admin settlement flow.
+        if ($normalizedStatus !== 'pending') {
+            Response::json([
+                'status' => false,
+                'message' => 'This endpoint can only mark a booking payment as pending.'
+            ], 403);
+            return;
+        }
+
+        $allowedMethods = ['bank_transfer', 'wire_transfer', 'bank'];
+        if (!in_array($normalizedMethod, $allowedMethods, true)) {
+            Response::json([
+                'status' => false,
+                'message' => 'Unsupported payment method for this endpoint'
+            ], 400);
+            return;
+        }
+
+        $success = $this->bookingModel->updatePaymentStatus((int)$bookingId, 'pending', $normalizedMethod);
 
         if ($success) {
-            // Trigger Ticket Issuance if status is PAID
-            if ($status === 'paid') {
-                require_once __DIR__ . '/../services/TicketService.php';
-                TicketService::getInstance()->issueTickets((int)$bookingId);
-                
-                $booking = $this->bookingModel->getById((int)$bookingId);
-                
-                if ($booking) {
-                    // Fetch passengers for the ticket
-                    $passengers = $this->bookingPassengerModel->getByBookingId((int)$bookingId);
-                    
-                    // Sending combined e-ticket & receipt
-                    $sent = TicketService::getInstance()->sendTicket($booking, $passengers);
-                    if (!$sent) {
-                        error_log("Payment marked as PAID but document delivery failed for Ref: " . $booking['booking_reference']);
-                    }
-                    
-                    // Award Loyalty Points if user is logged in
-                    if (!empty($booking['user_id'])) {
-                        require_once __DIR__ . '/LoyaltyController.php'; // Ensure loyalty model/logic is accessible
-                        $loyalty = new Loyalty(db());
-                        $loyalty->awardPoints($booking['user_id'], $booking['id'], $booking['total_amount']);
-                    }
-                } else {
-                    error_log("Severe: Payment marked as PAID for non-existent booking ID: " . $bookingId);
-                }
-            }
-            
-            Response::json(['status' => true, 'message' => 'Payment status updated and tickets issued']);
+            Response::json(['status' => true, 'message' => 'Payment status updated to pending']);
         } else {
             error_log("Failed to update payment status for booking ID: " . ($bookingId ?? 'unknown'));
             Response::json(['status' => false, 'message' => 'Failed to update payment status'], 500);
@@ -394,6 +433,8 @@ class BookingController {
 
     private function deriveBookingState(array $booking): string
     {
+        if ($this->isBookingExpired($booking)) return 'EXPIRED';
+
         $status = (int)($booking['status'] ?? 0);
         if ($status === 1) return 'CONFIRMED';
         // No explicit cancelled enum in schema; reserve 2 as cancelled if later introduced.
@@ -590,6 +631,15 @@ class BookingController {
         ]);
     }
 
+    public function expireStale() {
+        $expired = $this->bookingModel->expireStaleReservations();
+        Response::json([
+            'status' => true,
+            'message' => 'Stale reservations processed',
+            'expired_count' => $expired
+        ]);
+    }
+
     /**
      * Public: retrieve booking documents.
      * GET /bookings/{reference}/documents?type=ticket|receipt|combined&format=html|json|pdf&currency=USD|KES|...
@@ -608,6 +658,23 @@ class BookingController {
         $booking = $this->bookingModel->getByReference($reference);
         if (!$booking) {
             Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            return;
+        }
+
+        if (!$this->canAccessBooking($booking, $reference)) {
+            Response::json([
+                'status' => false,
+                'message' => 'Unauthorized. Please use the "Manage Booking" flow to verify access via OTP.'
+            ], 401);
+            return;
+        }
+
+        if ($this->isBookingExpired($booking)) {
+            $this->bookingModel->expireBooking((int)$booking['id']);
+            Response::json([
+                'status' => false,
+                'message' => 'This reservation has expired and documents are no longer available for this pending booking.'
+            ], 409);
             return;
         }
 

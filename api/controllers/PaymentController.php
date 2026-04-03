@@ -31,6 +31,41 @@ class PaymentController {
         return $user_id;
     }
 
+    private function canAccessBooking(array $booking): bool
+    {
+        $headers = apache_request_headers();
+        $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
+
+        $authUserId = $this->userModel->validateToken($token);
+        $isAuthorized = ($authUserId && (int)$authUserId === (int)($booking['user_id'] ?? 0));
+
+        if (!$isAuthorized) {
+            $accessToken = $headers['X-Booking-Access-Token'] ?? '';
+            if (!empty($accessToken) && !empty($booking['booking_reference']) && !empty($booking['id'])) {
+                $expected = hash_hmac(
+                    'sha256',
+                    $booking['booking_reference'] . '|' . $booking['id'],
+                    env('JWT_SECRET', 'airlogix_default_secret')
+                );
+                $isAuthorized = hash_equals($expected, $accessToken);
+            }
+        }
+
+        return $isAuthorized;
+    }
+
+    private function ensureActiveReservation(array $booking): void
+    {
+        if ($this->bookingModel->isReservationExpired($booking)) {
+            $this->bookingModel->expireBooking((int)$booking['id']);
+            Response::json([
+                'status' => false,
+                'message' => 'This reservation has expired. Please search again to create a new booking.'
+            ], 409);
+            exit();
+        }
+    }
+
     private function convertAmount($amount, $fromCurrency, $toCurrency) {
         if ($fromCurrency === $toCurrency) return $amount;
         
@@ -137,8 +172,30 @@ class PaymentController {
         $data = request_json();
 
         // Validate required fields
-        if (empty($data['email']) || empty($data['amount']) || empty($data['booking_reference'])) {
+        if (empty($data['email']) || empty($data['booking_reference'])) {
             Response::json(['status' => false, 'message' => 'Missing required payment details'], 400);
+            return;
+        }
+
+        $booking = $this->bookingModel->getByReference($data['booking_reference']);
+        if (!$booking) {
+            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            return;
+        }
+
+        if (!$this->canAccessBooking($booking)) {
+            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            return;
+        }
+        $this->ensureActiveReservation($booking);
+
+        if (($booking['payment_status'] ?? null) === 'paid') {
+            Response::conflict('Booking is already marked as paid');
+        }
+
+        $amount = (float)($booking['total_amount'] ?? 0);
+        if ($amount <= 0) {
+            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
             return;
         }
 
@@ -146,15 +203,16 @@ class PaymentController {
         $paystack = new PaystackService();
 
         // Convert amount to minor units (Paystack expects the smallest currency unit)
-        $amountInKobo = (int)($data['amount'] * 100);
+        $currency = strtoupper((string)($data['currency'] ?? 'USD'));
+        $amountInKobo = (int)round($this->convertAmount($amount, 'USD', $currency) * 100);
 
         $metadata = [
-            'booking_reference' => $data['booking_reference'],
+            'booking_reference' => $booking['booking_reference'],
             'custom_fields' => [
                 [
                     'display_name' => 'Booking Reference',
                     'variable_name' => 'booking_reference',
-                    'value' => $data['booking_reference']
+                    'value' => $booking['booking_reference']
                 ]
             ]
         ];
@@ -162,9 +220,9 @@ class PaymentController {
         $response = $paystack->initializeTransaction(
             $data['email'],
             $amountInKobo,
-            $data['booking_reference'],
+            $booking['booking_reference'],
             $metadata,
-            $data['currency'] ?? 'USD'
+            $currency
         );
 
         if ($response['status']) {
@@ -275,10 +333,6 @@ class PaymentController {
             Response::json(['status' => false, 'message' => 'Phone number is required'], 400);
             return;
         }
-        if (empty($data['amount']) || $data['amount'] <= 0) {
-            Response::json(['status' => false, 'message' => 'Valid amount is required'], 400);
-            return;
-        }
         if (empty($data['booking_reference'])) {
             Response::json(['status' => false, 'message' => 'Booking reference is required'], 400);
             return;
@@ -291,19 +345,34 @@ class PaymentController {
             return;
         }
 
+        if (!$this->canAccessBooking($booking)) {
+            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            return;
+        }
+        $this->ensureActiveReservation($booking);
+
+        if (($booking['payment_status'] ?? null) === 'paid') {
+            Response::conflict('Booking is already marked as paid');
+        }
+
+        $amount = (float)($booking['total_amount'] ?? 0);
+        if ($amount <= 0) {
+            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
+            return;
+        }
+
         require_once __DIR__ . '/../services/MpesaService.php';
         $mpesa = new MpesaService(db());
 
         $response = $mpesa->initiateStkPush(
             $data['phone_number'],
-            $data['amount'],
-            $data['booking_reference'],
+            $amount,
+            $booking['booking_reference'],
             $data['description'] ?? 'Flight Booking Payment'
         );
         
         if ($response['status']) {
             // Update booking to indicate payment is pending
-            $booking = $this->bookingModel->getByReference($data['booking_reference']);
             if ($booking) {
                 $this->bookingModel->updatePaymentStatus(
                     $booking['id'],
@@ -429,6 +498,7 @@ class PaymentController {
             Response::json(['status' => false, 'message' => 'Unauthorized: Booking does not belong to you'], 403);
             return;
         }
+        $this->ensureActiveReservation($booking);
 
         // Server-side integrity checks: ensure amount and status are valid before
         // handing off to any payment gateway.
@@ -600,8 +670,30 @@ class PaymentController {
     public function initializeOnafriq() {
         $data = request_json();
 
-        if (empty($data['phone_number']) || empty($data['amount']) || empty($data['booking_reference'])) {
+        if (empty($data['phone_number']) || empty($data['booking_reference'])) {
             Response::json(['status' => false, 'message' => 'Missing required payment details'], 400);
+            return;
+        }
+
+        $booking = $this->bookingModel->getByReference($data['booking_reference']);
+        if (!$booking) {
+            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            return;
+        }
+
+        if (!$this->canAccessBooking($booking)) {
+            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            return;
+        }
+        $this->ensureActiveReservation($booking);
+
+        if (($booking['payment_status'] ?? null) === 'paid') {
+            Response::conflict('Booking is already marked as paid');
+        }
+
+        $amount = (float)($booking['total_amount'] ?? 0);
+        if ($amount <= 0) {
+            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
             return;
         }
 
@@ -611,9 +703,9 @@ class PaymentController {
 
         $response = $onafriq->initiateMobileMoneyPayment(
             $data['phone_number'],
-            $data['amount'],
+            $amount,
             $data['currency'] ?? 'USD',
-            $data['booking_reference'],
+            $booking['booking_reference'],
             $data['provider'] ?? 'orange',
             $data['country_code'] ?? '243'
         );
@@ -679,8 +771,30 @@ class PaymentController {
     public function initializeDPO() {
         $data = request_json();
 
-        if (empty($data['amount']) || empty($data['booking_reference']) || empty($data['email'])) {
+        if (empty($data['booking_reference']) || empty($data['email'])) {
             Response::json(['status' => false, 'message' => 'Missing required payment details'], 400);
+            return;
+        }
+
+        $booking = $this->bookingModel->getByReference($data['booking_reference']);
+        if (!$booking) {
+            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            return;
+        }
+
+        if (!$this->canAccessBooking($booking)) {
+            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            return;
+        }
+        $this->ensureActiveReservation($booking);
+
+        if (($booking['payment_status'] ?? null) === 'paid') {
+            Response::conflict('Booking is already marked as paid');
+        }
+
+        $amount = (float)($booking['total_amount'] ?? 0);
+        if ($amount <= 0) {
+            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
             return;
         }
 
@@ -689,9 +803,9 @@ class PaymentController {
         $dpo = new DPOService($db);
 
         $response = $dpo->createToken(
-            $data['amount'],
+            $amount,
             $data['currency'] ?? 'USD',
-            $data['booking_reference'],
+            $booking['booking_reference'],
             $data['email'],
             $data['customer_name'] ?? '',
             $data['phone_number'] ?? ''
@@ -792,18 +906,45 @@ class PaymentController {
     public function initializeStripe() {
         $data = request_json();
         
-        if (empty($data['amount']) || empty($data['booking_reference']) || empty($data['email'])) {
+        if (empty($data['booking_reference']) || empty($data['email'])) {
             Response::json(['status' => false, 'message' => 'Missing required payment details'], 400);
             return;
         }
+
+        $booking = $this->bookingModel->getByReference($data['booking_reference']);
+        if (!$booking) {
+            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            return;
+        }
+
+        if (!$this->canAccessBooking($booking)) {
+            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            return;
+        }
+        $this->ensureActiveReservation($booking);
+
+        if (($booking['payment_status'] ?? null) === 'paid') {
+            Response::conflict('Booking is already marked as paid');
+        }
+
+        $currency = strtoupper((string)($data['currency'] ?? 'USD'));
+        $amount = (float)($booking['total_amount'] ?? 0);
+        if ($amount <= 0) {
+            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
+            return;
+        }
+
+        $convertedAmount = $currency === 'USD'
+            ? $amount
+            : $this->convertAmount($amount, 'USD', $currency);
 
         require_once __DIR__ . '/../services/StripeService.php';
         $stripe = new StripeService();
 
         $response = $stripe->createCheckoutSession(
-            $data['amount'],
-            $data['currency'] ?? 'USD',
-            $data['booking_reference'],
+            $convertedAmount,
+            $currency,
+            $booking['booking_reference'],
             $data['email']
         );
 
