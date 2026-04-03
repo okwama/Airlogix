@@ -58,9 +58,11 @@ This roadmap is now the live status tracker for the app hardening and product-im
   Target:
   Complete controller-level migration to explicit domain error codes and richer `details` fields across all major workflows.
 
-- `Pending` Stop swallowing frontend service failures.
+- `Partially Done` Stop swallowing frontend service failures.
+  Current state:
+  Frontend booking/payment services now emit typed errors (auth expired, hold expired, network, not found, validation/server), and key booking/cargo loaders map these to clearer UI states.
   Target:
-  Return typed error states and let the UI distinguish auth issues, network issues, expired holds, and not-found conditions.
+  Finish remaining route/component migration so every flow handles typed errors consistently without generic fallback paths.
 
 - `Done` Fix type and contract inconsistencies.
   Outcome:
@@ -114,9 +116,9 @@ This roadmap is now the live status tracker for the app hardening and product-im
 
 ## Next Recommended Ticket
 
-1. Stop swallowing frontend service failures.
-2. Complete explicit controller-level error code migration.
-3. Add DB-level gateway reference uniqueness for callback replay hardening.
+1. Complete explicit controller-level error code migration.
+2. Add DB-level gateway reference uniqueness for callback replay hardening.
+3. Finish remaining frontend typed-error migration pass.
 
 ## Recommended Execution Order
 

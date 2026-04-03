@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { bookingService } from '$lib/services/bookingService.js';
+import { bookingService, ServiceError } from '$lib/services/bookingService.js';
 
 export async function load({ params }) {
   const awb = params.awb;
@@ -14,6 +14,17 @@ export async function load({ params }) {
   } catch (err) {
     // If it's already an SvelteKit error, rethrow it as-is.
     if (typeof err === 'object' && err !== null && 'status' in err) throw err;
+    if (err instanceof ServiceError) {
+      if (err.type === 'NOT_FOUND') {
+        throw error(404, { message: err.message || 'Cargo booking not found' });
+      }
+      if (err.type === 'AUTH_EXPIRED') {
+        throw error(401, { message: 'Access session expired. Please verify again.' });
+      }
+      if (err.type === 'NETWORK') {
+        throw error(503, { message: 'Network error while loading cargo booking. Please retry.' });
+      }
+    }
 
     const message =
       typeof err === 'object' && err !== null && 'message' in err && typeof err.message === 'string'
