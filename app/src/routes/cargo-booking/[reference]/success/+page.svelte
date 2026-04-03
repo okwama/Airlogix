@@ -1,6 +1,7 @@
 <script lang="ts">
   import CargoLabel from '$lib/features/cargo/CargoLabel.svelte';
   import { CheckCircle2, Package, ArrowRight } from 'lucide-svelte';
+  import { onMount } from 'svelte';
 
   interface PageData {
     booking: any;
@@ -10,6 +11,14 @@
   
   const booking = $derived(data.booking);
   const awb = $derived(booking?.awb_number ?? '');
+
+  // Unlock full cargo label view for this AWB in this browser session.
+  // This is a placeholder until the real auth flow is wired in.
+  onMount(() => {
+    if (typeof sessionStorage === 'undefined') return;
+    const key = `cargo_tracking_full:${awb}`;
+    if (awb) sessionStorage.setItem(key, '1');
+  });
 </script>
 
 <svelte:head>
@@ -92,7 +101,7 @@
 
         <!-- Track link -->
         <a
-          href="/cargo-tracking/{awb}"
+          href={`/cargo-tracking/${awb}`}
           class="btn-primary flex items-center justify-center gap-2 no-underline"
           id="link-track-cargo"
         >

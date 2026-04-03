@@ -1,6 +1,12 @@
 <script>
   import CurrencySelector from '$lib/features/payment/CurrencySelector.svelte';
   import logo from '$lib/assets/logo.png';
+  import { authStore } from '$lib/stores/authStore.svelte';
+  import { onMount } from 'svelte';
+
+  onMount(() => {
+    authStore.init();
+  });
 </script>
 
 <nav class="h-[58px] bg-brand-navy flex items-center px-[28px] sticky top-0 z-100 w-full">
@@ -24,8 +30,31 @@
       <div class="hidden sm:block opacity-72 hover:opacity-100 transition-opacity">
         <CurrencySelector invert />
       </div>
-      <button class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium hidden sm:block">Log in</button>
-      <button class="bg-brand-blue text-white h-[36px] px-5 rounded-btn text-[13px] font-medium hover:bg-brand-mid transition-all active:scale-[0.98]">Sign up</button>
+
+      {#if authStore.isAuthenticated}
+        <span class="text-white/80 text-[13px] font-medium hidden sm:block">
+          Hi, {authStore.user?.first_name || 'traveler'}
+        </span>
+        <a
+          href="/manage"
+          class="bg-brand-blue text-white h-[36px] px-5 rounded-btn text-[13px] font-medium hover:bg-brand-mid transition-all active:scale-[0.98] hidden sm:inline-flex items-center justify-center"
+        >
+          My trips
+        </a>
+      {:else}
+        <a
+          href="/login"
+          class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium hidden sm:block"
+        >
+          Log in
+        </a>
+        <a
+          href="/signup"
+          class="bg-brand-blue text-white h-[36px] px-5 rounded-btn text-[13px] font-medium hover:bg-brand-mid transition-all active:scale-[0.98]"
+        >
+          Sign up
+        </a>
+      {/if}
     </div>
   </div>
 </nav>
