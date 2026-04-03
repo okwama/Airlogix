@@ -119,8 +119,11 @@
             {#each milestones as m, i (m.key)}
               <div class="flex items-start gap-4">
                 <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center border text-[12px] font-bold shrink-0"
-                  class={i <= currentIndex ? 'bg-status-green-bg border-status-green-bg text-status-green-text' : 'bg-white border-border text-text-muted'}
+                  class={`w-8 h-8 rounded-full flex items-center justify-center border text-[12px] font-bold shrink-0 ${
+                    i <= currentIndex
+                      ? 'bg-status-green-bg border-status-green-bg text-status-green-text'
+                      : 'bg-white border-border text-text-muted'
+                  }`}
                 >
                   {i < currentIndex ? '✓' : i === currentIndex ? '•' : ''}
                 </div>
