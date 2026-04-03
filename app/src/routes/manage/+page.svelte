@@ -4,8 +4,11 @@
   import Card from '$lib/components/ui/Card.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
 
   import { BASE_URL, bookingService } from '$lib/services/bookingService';
+  import { authStore } from '$lib/stores/authStore.svelte';
+  import { authService } from '$lib/services/authService';
   
   let reference = $state('');
   let email = $state('');
@@ -13,6 +16,29 @@
   let loading = $state(false);
   let error = $state('');
   let stage = $state<'request' | 'verify'>('request');
+
+  let myBookingsLoading = $state(false);
+  let myBookingsError = $state('');
+  let myBookings = $state<any[]>([]);
+
+  async function loadMyBookings() {
+    if (!authStore.isAuthenticated) return;
+    myBookingsError = '';
+    myBookingsLoading = true;
+    try {
+      myBookings = await bookingService.listMyBookings(() => authService.getToken());
+    } catch (e) {
+      myBookingsError = e instanceof Error ? e.message : 'Failed to load your bookings.';
+      myBookings = [];
+    } finally {
+      myBookingsLoading = false;
+    }
+  }
+
+  onMount(async () => {
+    await authStore.init();
+    await loadMyBookings();
+  });
 
   async function handleRequestCode() {
     if (!reference || !email) {
@@ -86,6 +112,62 @@
           View your itinerary, select seats, add luggage, or update your contact information quickly and securely.
         </p>
       </header>
+
+      {#if authStore.isAuthenticated}
+        <div class="premium-card p-6 bg-white">
+          <div class="flex items-center justify-between gap-4 mb-5">
+            <div>
+              <div class="ui-label text-brand-blue mb-1">Signed in</div>
+              <h3 class="text-brand-navy text-[18px] font-medium">My bookings</h3>
+              <p class="text-[13px] text-text-muted mt-1">
+                Your recent trips linked to this account.
+              </p>
+            </div>
+            <Button variant="secondary" onclick={loadMyBookings} disabled={myBookingsLoading}>
+              Refresh
+            </Button>
+          </div>
+
+          {#if myBookingsError}
+            <div class="bg-red-50 text-red-600 text-[13px] p-3 rounded-md border border-red-100 mb-4">
+              {myBookingsError}
+            </div>
+          {/if}
+
+          {#if myBookingsLoading}
+            <p class="text-[13px] text-text-muted">Loading your bookings…</p>
+          {:else if myBookings.length === 0}
+            <p class="text-[13px] text-text-muted">
+              No bookings found on this account yet.
+            </p>
+          {:else}
+            <div class="space-y-3">
+              {#each myBookings as b (b.id)}
+                <button
+                  class="w-full text-left border border-border rounded-lg p-4 hover:border-brand-blue transition-colors bg-white"
+                  onclick={() => goto(`/booking/${String(b.booking_reference || '').toUpperCase()}`)}
+                >
+                  <div class="flex items-center justify-between gap-4">
+                    <div class="space-y-1">
+                      <p class="text-brand-navy font-medium">
+                        {b.from_code} → {b.to_code}
+                        <span class="text-text-muted text-[12px] font-medium ml-2">{b.flight_number}</span>
+                      </p>
+                      <p class="text-[12px] text-text-muted">
+                        PNR: <span class="font-mono text-brand-navy">{b.booking_reference}</span>
+                        · {b.booking_date}
+                      </p>
+                    </div>
+                    <span class="text-[12px] font-medium text-text-muted whitespace-nowrap">
+                      {String(b.payment_status || 'pending').toUpperCase()}
+                    </span>
+                  </div>
+                </button>
+              {/each}
+            </div>
+          {/if}
+        </div>
+      {/if}
 
       <div class="space-y-6">
         <div class="flex gap-4 items-start">
