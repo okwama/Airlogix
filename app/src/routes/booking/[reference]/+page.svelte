@@ -84,7 +84,7 @@
         bookingService.setAccessToken(reference, response.access_token);
       }
 
-      step = 'payment';
+      step = 'review';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       if (err instanceof ServiceError) {
@@ -126,8 +126,8 @@
             <div class="flex-1 h-[1px] bg-white/10 mx-4 -mt-8"></div>
 
             <div class="flex flex-col items-center gap-3">
-              <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-[12px] font-medium transition-all {step === 'luggage' ? 'border-brand-blue bg-brand-blue text-white' : (step === 'payment' ? 'border-status-green-bg bg-status-green-bg text-status-green-text' : 'border-white/10 text-white/40')}">
-                {step === 'payment' ? 'OK' : '2'}
+              <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-[12px] font-medium transition-all {step === 'luggage' ? 'border-brand-blue bg-brand-blue text-white' : ((step === 'review' || step === 'payment') ? 'border-status-green-bg bg-status-green-bg text-status-green-text' : 'border-white/10 text-white/40')}">
+                {(step === 'review' || step === 'payment') ? 'OK' : '2'}
               </div>
               <span class="text-[11px] font-medium uppercase tracking-wider {step === 'luggage' ? 'text-white' : 'text-white/40'}">Luggage</span>
             </div>
@@ -135,10 +135,10 @@
             <div class="flex-1 h-[1px] bg-white/10 mx-4 -mt-8"></div>
 
             <div class="flex flex-col items-center gap-3">
-              <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-[12px] font-medium transition-all {step === 'payment' ? 'border-brand-blue bg-brand-blue text-white' : 'border-white/10 text-white/40'}">
+              <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-[12px] font-medium transition-all {(step === 'review' || step === 'payment') ? 'border-brand-blue bg-brand-blue text-white' : 'border-white/10 text-white/40'}">
                 3
               </div>
-              <span class="text-[11px] font-medium uppercase tracking-wider {step === 'payment' ? 'text-white' : 'text-white/40'}">Payment</span>
+              <span class="text-[11px] font-medium uppercase tracking-wider {(step === 'review' || step === 'payment') ? 'text-white' : 'text-white/40'}">Review & Pay</span>
             </div>
           </div>
         </div>
@@ -184,6 +184,63 @@
             <ChevronLeft size={14} /> Back to passenger details
           </button>
         {/if}
+      {:else if step === 'review'}
+        {#if reservationExpiresAt}
+          <div class="bg-status-blue-bg/40 border border-status-blue rounded-lg p-4 text-[13px] text-status-blue-text">
+            Your seats are reserved. Review all details before payment. Hold expires at <strong>{new Date(reservationExpiresAt).toLocaleString()}</strong>.
+          </div>
+        {/if}
+
+        <div class="bg-surface border-[0.5px] border-border rounded-lg p-6 lg:p-8">
+          <h3 class="text-[20px] font-medium text-brand-navy mb-6 border-b-[0.5px] border-border pb-3">Booking Review</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-[13px]">
+            <div>
+              <p class="text-text-muted uppercase text-[11px] mb-1">Route</p>
+              <p class="text-brand-navy font-medium">{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</p>
+            </div>
+            <div>
+              <p class="text-text-muted uppercase text-[11px] mb-1">Flight</p>
+              <p class="text-brand-navy font-medium">{booking?.flight_number || '--'}</p>
+            </div>
+            <div>
+              <p class="text-text-muted uppercase text-[11px] mb-1">Departure</p>
+              <p class="text-brand-navy font-medium">{booking?.departure_time || '--'}</p>
+            </div>
+            <div>
+              <p class="text-text-muted uppercase text-[11px] mb-1">Passengers</p>
+              <p class="text-brand-navy font-medium">{adultCount} Adult{adultCount > 1 ? 's' : ''}{childCount > 0 ? `, ${childCount} Child${childCount > 1 ? 'ren' : ''}` : ''}</p>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t-[0.5px] border-border">
+            <p class="text-text-muted uppercase text-[11px] mb-3">Traveler Details</p>
+            <div class="space-y-2 text-[13px]">
+              {#each bookingStore.passengers as p, i}
+                <p class="text-brand-navy">
+                  {i + 1}. {p.first_name} {p.last_name} - <span class="uppercase text-text-muted">{p.passenger_type}</span>
+                </p>
+              {/each}
+            </div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t-[0.5px] border-border">
+            <p class="text-text-muted uppercase text-[11px] mb-3">Luggage Selection</p>
+            <div class="space-y-2 text-[13px] text-brand-navy">
+              <p>Checked Bags: {luggageData.checkedBags}</p>
+              <p>Special Items: {luggageData.specialItems}</p>
+              <p>Luggage Charges: {currencyStore.format(luggageData.totalLuggagePrice)}</p>
+            </div>
+          </div>
+
+          <div class="mt-8 flex flex-col md:flex-row gap-3">
+            <button class="btn-secondary w-full md:w-auto" onclick={() => step = 'luggage'}>
+              Back to Luggage
+            </button>
+            <button class="btn-primary w-full md:w-auto" onclick={() => step = 'payment'}>
+              Proceed to Payment
+            </button>
+          </div>
+        </div>
       {:else}
         {#if reservationExpiresAt}
           <div class="bg-status-blue-bg/40 border border-status-blue rounded-lg p-4 text-[13px] text-status-blue-text">
@@ -191,8 +248,8 @@
           </div>
         {/if}
         <PaymentPicker amount={finalTotal} {reference} email={contactEmail} />
-        <button class="flex items-center justify-start gap-2 text-text-muted text-[13px] font-medium hover:text-brand-navy transition-all" onclick={() => step = 'luggage'}>
-          <ChevronLeft size={14} /> Back to luggage selection
+        <button class="flex items-center justify-start gap-2 text-text-muted text-[13px] font-medium hover:text-brand-navy transition-all" onclick={() => step = 'review'}>
+          <ChevronLeft size={14} /> Back to booking review
         </button>
       {/if}
     </main>

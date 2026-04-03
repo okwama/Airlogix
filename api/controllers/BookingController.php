@@ -198,12 +198,13 @@ class BookingController {
             $userId = $authUserId ?: ($data['user_id'] ?? null);
 
             $primaryPassenger = $passengers[0];
+            $primaryPassengerContact = $primaryPassenger['contact'] ?? ($primaryPassenger['phone'] ?? null);
             $bookingData = [
                 'flight_series_id' => $data['flight_series_id'],
                 'cabin_class_id' => $data['cabin_class_id'] ?? 1, // Defaulting to Economy if not provided
                 'passenger_name' => $primaryPassenger['name'],
                 'passenger_email' => $primaryPassenger['email'] ?? null,
-                'passenger_phone' => $primaryPassenger['contact'] ?? null,
+                'passenger_phone' => $primaryPassengerContact,
                 'passenger_type' => $primaryPassenger['passenger_type'] ?? 'adult',
                 'number_of_passengers' => $numPassengers,
                 'fare_per_passenger' => $farePerPassenger,
@@ -238,10 +239,11 @@ class BookingController {
                 }
 
                 // Create passenger record
+                $passengerContact = $passengerData['contact'] ?? ($passengerData['phone'] ?? null);
                 $passenger = $this->passengerModel->create([
                     'name' => $passengerData['name'],
                     'email' => $passengerData['email'] ?? null,
-                    'contact' => $passengerData['contact'] ?? null,
+                    'contact' => $passengerContact,
                     'nationality' => $passengerData['nationality'] ?? null,
                     'identification' => $passengerData['identification'] ?? null,
                     'age' => $passengerData['age'] ?? null,
@@ -282,16 +284,30 @@ class BookingController {
 
             $bookingSnapshot = $this->bookingModel->getById((int)$bookingId);
             if ($bookingSnapshot) {
-                $this->sendReservationHoldNotifications($bookingSnapshot);
+                // Notification failures should never block a successful booking creation.
+                try {
+                    $this->sendReservationHoldNotifications($bookingSnapshot);
+                } catch (Throwable $notifyError) {
+                    error_log("Booking notification error for {$bookingReference}: " . $notifyError->getMessage());
+                }
             }
 
-            Observability::event('booking.hold_created', [
-                'booking_id' => (int)$bookingId,
-                'booking_reference' => (string)$bookingReference,
-                'user_id' => $bookingSnapshot['user_id'] ?? $userId ?? null,
-                'reservation_expires_at' => $bookingResponse['data']['reservation_expires_at'] ?? $bookingData['reservation_expires_at'] ?? null,
-                'payment_status' => 'pending'
-            ]);
+            try {
+                Observability::event('booking.hold_created', [
+                    'booking_id' => (int)$bookingId,
+                    'booking_reference' => (string)$bookingReference,
+                    'user_id' => $bookingSnapshot['user_id'] ?? $userId ?? null,
+                    'reservation_expires_at' => $bookingResponse['data']['reservation_expires_at'] ?? $bookingData['reservation_expires_at'] ?? null,
+                    'payment_status' => 'pending'
+                ]);
+            } catch (Throwable $obsError) {
+                error_log("Booking observability error for {$bookingReference}: " . $obsError->getMessage());
+            }
+
+            $bookingResponseData = [];
+            if (isset($bookingResponse['data']) && is_array($bookingResponse['data'])) {
+                $bookingResponseData = $bookingResponse['data'];
+            }
 
             // Return success response with all passenger details
             Response::json([
@@ -305,15 +321,17 @@ class BookingController {
                     'booking_reference' => $bookingReference,
                     'reservation_expires_at' => $bookingResponse['data']['reservation_expires_at'] ?? $bookingData['reservation_expires_at']
                 ]),
-                'data' => array_merge($bookingResponse['data'], [
+                'data' => array_merge($bookingResponseData, [
                     'passengers' => $createdPassengers
                 ])
             ]);
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // Rollback transaction on error
-            $db->rollBack();
-            error_log("Booking creation error: " . $e->getMessage());
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log("Booking creation error: " . $e->getMessage() . " @ " . $e->getFile() . ":" . $e->getLine());
             Observability::event('booking.hold_create_failed', [
                 'flight_series_id' => $data['flight_series_id'] ?? null,
                 'error_message' => $e->getMessage()
