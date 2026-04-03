@@ -1,53 +1,62 @@
 <script>
   import { appConfig } from '$lib/config/appConfig';
+
+  const regions = [
+    { name: 'East Africa', cities: ['Nairobi', 'Mombasa', 'Kisumu', 'Dar es Salaam', 'Zanzibar', 'Entebbe', 'Kigali'] },
+    { name: 'Central Africa', cities: ['Kinshasa', 'Bujumbura', 'Lubumbashi'] },
+    { name: 'Southern Africa', cities: ['Lusaka', 'Harare', 'Johannesburg'] }
+  ];
+
+  const popularRoutes = [
+    'Nairobi to Mombasa',
+    'Nairobi to Dar es Salaam',
+    'Nairobi to Entebbe',
+    'Nairobi to Kigali',
+    'Dar es Salaam to Zanzibar',
+    'Lusaka to Harare'
+  ];
 </script>
 
 <svelte:head>
   <title>Destinations | {appConfig.name}</title>
 </svelte:head>
 
-<div class="page-container container">
-  <div class="header">
-    <h1>Our Network</h1>
-    <p>Explore our growing list of African destinations.</p>
-  </div>
-  
-  <div class="content card-placeholder">
-    <div class="empty-state">
-      <h3>Destinations Map</h3>
-      <p>We serve major hubs across Central, East, and South Africa. Interactive route map is currently under construction.</p>
+<main class="bg-surface min-h-[calc(100vh-58px)] pb-16">
+  <section class="bg-brand-navy py-14">
+    <div class="container mx-auto px-7 max-w-[1240px] text-center">
+      <p class="text-white/60 text-[12px] uppercase tracking-[0.2em] mb-4">Route Network</p>
+      <h1 class="text-white text-[38px] leading-tight mb-4">Destinations</h1>
+      <p class="text-white/75 text-[15px] max-w-[760px] mx-auto">
+        Explore our regional network designed for both business and leisure travel.
+      </p>
     </div>
-  </div>
-</div>
+  </section>
 
-<style>
-  .page-container {
-    padding: var(--spacing-2xl) 0;
-    min-height: 60vh;
-  }
+  <section class="container mx-auto px-7 max-w-[1240px] py-14 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8">
+    <div class="bg-white border border-border rounded-xl p-8">
+      <h2 class="text-brand-navy text-[24px] mb-5">By Region</h2>
+      <div class="space-y-6">
+        {#each regions as region}
+          <div>
+            <h3 class="text-brand-navy text-[17px] font-medium mb-2">{region.name}</h3>
+            <div class="flex flex-wrap gap-2">
+              {#each region.cities as city}
+                <span class="px-3 py-1.5 border border-border rounded-full text-[13px] text-text-body bg-slate-50">{city}</span>
+              {/each}
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
 
-  .header {
-    text-align: center;
-    margin-bottom: var(--spacing-2xl);
-  }
-
-  .card-placeholder {
-    background: white;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-2xl);
-    text-align: center;
-    max-width: 600px;
-    margin: 0 auto;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .empty-state h3 {
-    margin-bottom: var(--spacing-sm);
-    color: var(--color-primary-navy);
-  }
-
-  .empty-state p {
-    color: var(--color-text-secondary);
-  }
-</style>
+    <aside class="bg-white border border-border rounded-xl p-8">
+      <h3 class="text-brand-navy text-[20px] mb-4">Popular Routes</h3>
+      <ul class="space-y-3">
+        {#each popularRoutes as route}
+          <li class="text-text-body text-[14px] border border-border rounded-md px-3 py-2 bg-slate-50">{route}</li>
+        {/each}
+      </ul>
+      <a href="/search" class="btn-primary inline-flex mt-6">Search Flights</a>
+    </aside>
+  </section>
+</main>
