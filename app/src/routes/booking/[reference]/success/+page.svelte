@@ -114,8 +114,8 @@
 
         <div class="actions">
           {#if paymentState.toLowerCase() === 'paid' || ticketState === 'TICKETED'}
-            <Button variant="primary" href={`${import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/airlogix'}/bookings/${reference}/documents?type=combined&format=html`}>
-              <Download size={18} /> Download E-Ticket
+            <Button variant="primary" href={`/my-bookings/${reference}/documents`}>
+              <Download size={18} /> View E-Ticket (PDF)
             </Button>
           {:else}
             <Button variant="primary" href={`/my-bookings/${reference}`}>

@@ -7,7 +7,7 @@ ini_set('log_errors', 1); // Log errors to error log
 // CORS Headers Support
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Booking-Access-Token');
 
 // Handle Preflight OPTIONS Request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

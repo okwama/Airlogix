@@ -273,6 +273,42 @@ export const bookingService = {
   /**
    * Initiate Stripe Payment Session
    */
+  /**
+   * Fetch combined e-ticket + receipt as PDF (uses JWT and/or guest booking access token).
+   * Prefer opening from /my-bookings/[ref]/documents so the browser shows your site URL, not the API path.
+   */
+  async fetchBookingDocumentsPdf(reference: string): Promise<Blob> {
+    const headers: Record<string, string> = {};
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const jwt = localStorage.getItem('airlogix_jwt');
+        if (jwt) headers.Authorization = `Bearer ${jwt}`;
+      }
+    } catch {
+      // ignore
+    }
+    if (typeof sessionStorage !== 'undefined') {
+      const token = sessionStorage.getItem(`booking_token:${reference}`);
+      if (token) headers['X-Booking-Access-Token'] = token;
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/bookings/${reference}/documents?type=combined&format=pdf`,
+      { headers }
+    );
+
+    if (!response.ok) {
+      const ct = response.headers.get('content-type');
+      if (ct?.includes('application/json')) {
+        const j = (await response.json().catch(() => ({}))) as { message?: string };
+        throw new Error(j.message || 'Failed to load document');
+      }
+      throw new Error('Failed to load document');
+    }
+
+    return response.blob();
+  },
+
   async initiateStripePayment(bookingReference: string, amount: number, email: string) {
     try {
       const response = await fetch(`${BASE_URL}/payments/stripe/initialize`, {

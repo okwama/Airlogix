@@ -29,9 +29,6 @@
 
   onMount(loadBooking);
 
-  const apiBase = $derived(import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/airlogix');
-  const downloadHref = $derived(`${apiBase}/bookings/${reference}/documents?type=combined&format=html`);
-
   const paymentState = $derived((booking?.payment_state || booking?.payment_status || '').toString());
   const ticketState = $derived((booking?.ticket_state || '').toString());
   const bookingState = $derived((booking?.booking_state || '').toString());
@@ -153,8 +150,8 @@
               <p class="text-[12px] text-text-muted">
                 Download your combined e-ticket and receipt.
               </p>
-              <Button variant="primary" href={downloadHref} class="w-full">
-                <Download size={16} /> Download
+              <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="w-full">
+                <Download size={16} /> View e-ticket (PDF)
               </Button>
             </div>
           </Card>

@@ -525,15 +525,27 @@ class BookingController {
         Cache::set($otpKey, ['code' => $code], 600);
 
         require_once __DIR__ . '/../services/EmailService.php';
-        $sent = EmailService::getInstance()->sendBookingAccessCode(
+        $sentEmail = EmailService::getInstance()->sendBookingAccessCode(
             $bookingEmail,
             (string)($booking['passenger_name'] ?? 'Traveler'),
             $reference,
             $code
         );
 
-        if (!$sent) {
-            // Still do not leak existence; just report generic failure
+        // Optional: also send SMS if a phone number exists and Twilio is configured.
+        $sentSms = false;
+        $phone = trim((string)($booking['passenger_phone'] ?? ''));
+        if (!empty($phone)) {
+            require_once __DIR__ . '/../services/SmsService.php';
+            $sms = SmsService::getInstance();
+            if ($sms->isConfigured()) {
+                $msg = "Mc Aviation booking access code for {$reference}: {$code}. Expires in 10 minutes.";
+                $sentSms = $sms->send($phone, $msg);
+            }
+        }
+
+        // Consider it delivered if at least one channel succeeded.
+        if (!$sentEmail && !$sentSms) {
             Response::json(['status' => false, 'message' => 'Failed to send access code. Try again later.'], 500);
             return;
         }
@@ -580,7 +592,7 @@ class BookingController {
 
     /**
      * Public: retrieve booking documents.
-     * GET /bookings/{reference}/documents?type=ticket|receipt|combined&format=html|json
+     * GET /bookings/{reference}/documents?type=ticket|receipt|combined&format=html|json|pdf
      */
     public function documents($reference) {
         $reference = strtoupper(trim((string)$reference));
@@ -625,8 +637,63 @@ class BookingController {
             return;
         }
 
+        if ($format === 'pdf') {
+            $htmlForPdf = $this->buildDocumentHtmlForPdf($type, $ticketHtml, $receiptHtml);
+            $autoload = __DIR__ . '/../vendor/autoload.php';
+            if (!is_file($autoload)) {
+                Response::json(['status' => false, 'message' => 'PDF generation is not configured. Run composer install in the API directory.'], 503);
+                return;
+            }
+            require_once $autoload;
+            try {
+                $options = new \Dompdf\Options();
+                $options->set('isRemoteEnabled', true);
+                $options->set('defaultFont', 'DejaVu Sans');
+                $dompdf = new \Dompdf\Dompdf($options);
+                $dompdf->loadHtml($htmlForPdf, 'UTF-8');
+                $dompdf->setPaper('A4', 'portrait');
+                $dompdf->render();
+                header('Content-Type: application/pdf');
+                header('Content-Disposition: inline; filename="Airlogix-E-Ticket-' . $reference . '.pdf"');
+                echo $dompdf->output();
+            } catch (\Throwable $e) {
+                error_log('PDF generation failed: ' . $e->getMessage());
+                Response::json(['status' => false, 'message' => 'Could not generate PDF'], 500);
+            }
+            return;
+        }
+
         header('Content-Type: text/html; charset=utf-8');
         echo $html;
+    }
+
+    /**
+     * Build a single valid HTML document for PDF rendering (avoids nested full documents in combined view).
+     */
+    private function buildDocumentHtmlForPdf($type, $ticketHtml, $receiptHtml) {
+        $type = strtolower((string)$type);
+        if ($type === 'ticket') {
+            return $ticketHtml;
+        }
+        if ($type === 'receipt') {
+            return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:0;background:#f4f4f4;}</style></head><body>'
+                . $receiptHtml
+                . '</body></html>';
+        }
+        $ticketInner = $this->extractBodyInnerHtml($ticketHtml);
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:0;background:#f4f4f4;}</style></head><body>'
+            . '<div style="background-color:#f4f4f4;padding:20px 0;">'
+            . $ticketInner
+            . '<div style="margin:40px 0;border-top:2px dashed #ccc;"></div>'
+            . $receiptHtml
+            . '</div></body></html>';
+    }
+
+    private function extractBodyInnerHtml($html) {
+        if (preg_match('/<body[^>]*>(.*)<\/body>/is', $html, $m)) {
+            return trim($m[1]);
+        }
+        return $html;
     }
 }
 ?>
