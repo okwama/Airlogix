@@ -12,10 +12,11 @@
    * @property {string} destination_iata
    * @property {string} departure_time
    * @property {string} arrival_time
-   * @property {string} duration
-   * @property {number} base_fare
-   * @property {string} airline_name
-   */
+ * @property {string} duration
+ * @property {number} base_fare
+ * @property {number} [adult_fare]
+ * @property {string} airline_name
+ */
 
   /**
    * @typedef {Object} Props
@@ -30,7 +31,9 @@
   const depTime = $derived(flight.departure_time || '10:00');
   const arrTime = $derived(flight.arrival_time || '14:30');
   const duration = $derived(flight.duration || '4h 30m');
-  const price = $derived(flight.base_fare || 25000);
+  const price = $derived(
+    Number(flight.adult_fare ?? flight.base_fare ?? 0) || 25000
+  );
   const airline = $derived(flight.airline_name || appConfig.name);
   const flightNo = $derived(flight.flight_number || 'MC101');
 

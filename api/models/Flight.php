@@ -21,7 +21,9 @@ class Flight {
                   LEFT JOIN aircrafts a ON fs.aircraft_id = a.id
                   WHERE (d1.name LIKE :from1 OR d1.code LIKE :from2 OR d1.destination LIKE :from3)
                   AND (d2.name LIKE :to1 OR d2.code LIKE :to2 OR d2.destination LIKE :to3)
-                  AND :date BETWEEN fs.start_date AND fs.end_date";
+                  AND :date BETWEEN fs.start_date AND fs.end_date
+                  AND fs.adult_fare IS NOT NULL
+                  AND fs.adult_fare > 0";
 
         $from_term = "%{$from_city}%";
         $to_term = "%{$to_city}%";
@@ -75,7 +77,9 @@ class Flight {
                   LEFT JOIN aircrafts a ON fs.aircraft_id = a.id
                   WHERE fs.from_destination_id IN ($fromPlaceholders)
                   AND fs.to_destination_id IN ($toPlaceholders)
-                  AND ? BETWEEN fs.start_date AND fs.end_date";
+                  AND ? BETWEEN fs.start_date AND fs.end_date
+                  AND fs.adult_fare IS NOT NULL
+                  AND fs.adult_fare > 0";
 
         // Prepare parameters before try block
         $params = array_merge($fromIds, $toIds, [$date]);

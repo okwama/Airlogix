@@ -16,8 +16,19 @@
   const contactEmail = $derived(bookingStore.passengers?.[0]?.email?.trim() || '');
   const contactPhone = $derived(bookingStore.passengers?.[0]?.phone?.trim() || '');
 
-  const passengerCount = $derived(bookingStore.passengerCount || 1);
-  const baseTotal = $derived((booking?.base_fare || 0) * passengerCount);
+  const adultCount = $derived(bookingStore.adultCount || 1);
+  const childCount = $derived(bookingStore.childCount || 0);
+  const passengerCount = $derived(adultCount + childCount);
+
+  const adultFare = $derived(
+    Number(booking?.adult_fare ?? booking?.base_fare ?? 0)
+  );
+  const childFare = $derived(
+    Number(booking?.child_fare ?? booking?.adult_fare ?? booking?.base_fare ?? 0)
+  );
+  const adultsTotal = $derived(adultFare * adultCount);
+  const childrenTotal = $derived(childFare * childCount);
+  const baseTotal = $derived(adultsTotal + childrenTotal);
 
   let step = $state('passenger');
   let luggageData = $state({ checkedBags: 0, specialItems: 0, totalLuggagePrice: 0 });
@@ -34,7 +45,15 @@
       return;
     }
 
-    bookingStore.setPassengers(data);
+    const mappedPassengers = data.map((p, index) => {
+      const passengerType: Passenger['passenger_type'] = index < adultCount ? 'adult' : 'child';
+      return {
+        ...p,
+        passenger_type: passengerType
+      };
+    });
+
+    bookingStore.setPassengers(mappedPassengers);
     step = 'luggage';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -196,10 +215,19 @@
           </div>
 
           <div class="flex flex-col gap-4 pt-4 border-t-[0.5px] border-border">
-            <div class="flex justify-between items-center text-[13px]">
-              <span class="text-text-body">{passengerCount}x Passengers</span>
-              <span class="text-brand-navy font-medium">{currencyStore.format(baseTotal)}</span>
-            </div>
+            {#if adultCount > 0}
+              <div class="flex justify-between items-center text-[13px]">
+                <span class="text-text-body">{adultCount}x Adult{adultCount > 1 ? 's' : ''}</span>
+                <span class="text-brand-navy font-medium">{currencyStore.format(adultsTotal)}</span>
+              </div>
+            {/if}
+
+            {#if childCount > 0}
+              <div class="flex justify-between items-center text-[13px]">
+                <span class="text-text-body">{childCount}x Child{childCount > 1 ? 'ren' : ''}</span>
+                <span class="text-brand-navy font-medium">{currencyStore.format(childrenTotal)}</span>
+              </div>
+            {/if}
 
             {#if luggageData.totalLuggagePrice > 0}
               <div class="flex justify-between items-center text-[13px]">

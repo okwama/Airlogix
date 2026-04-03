@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 25, 2026 at 10:09 AM
+-- Generation Time: Apr 03, 2026 at 10:20 PM
 -- Server version: 10.6.24-MariaDB-cll-lve
--- PHP Version: 8.4.17
+-- PHP Version: 8.4.19
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -492,6 +492,29 @@ INSERT INTO `account_category` (`id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `account_deletion_requests`
+--
+
+CREATE TABLE `account_deletion_requests` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `full_name` varchar(150) NOT NULL,
+  `email` varchar(150) NOT NULL,
+  `reason` text DEFAULT NULL,
+  `status` enum('pending','processed') DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `account_deletion_requests`
+--
+
+INSERT INTO `account_deletion_requests` (`id`, `user_id`, `full_name`, `email`, `reason`, `status`, `created_at`) VALUES
+(1, 3, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', 't', 'pending', '2026-03-02 08:32:59');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `account_types`
 --
 
@@ -710,16 +733,19 @@ CREATE TABLE `airline_users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `password_reset_code` varchar(6) DEFAULT NULL,
-  `password_reset_expires_at` datetime DEFAULT NULL
+  `password_reset_expires_at` datetime DEFAULT NULL,
+  `deletion_status` enum('active','pending','deleted') DEFAULT 'active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `airline_users`
 --
 
-INSERT INTO `airline_users` (`id`, `phone_number`, `email`, `password_hash`, `first_name`, `last_name`, `date_of_birth`, `nationality`, `passport_number`, `passport_expiry_date`, `frequent_flyer_number`, `member_club`, `loyalty_points`, `profile_photo_url`, `status`, `created_at`, `updated_at`, `password_reset_code`, `password_reset_expires_at`) VALUES
-(1, '0706166875', 'reviewer@mcaviation.com', '$2b$10$n0rsM50QpFHZTd0UT2fgOe0B8RzASVcI2U4lj8VYM3NWqP/q3Irxm', 'Benjamin', 'Okwama', '1997-04-23', 'Kenyan', 'BK908881', '2030-12-25', NULL, 'BRONZE', 0, 'https://res.cloudinary.com/otienobryan/image/upload/v1769551316/profile_photos/ctcsdiwklunjmipdtsqj.jpg', 'active', '2025-12-01 13:31:04', '2026-01-27 23:10:08', NULL, NULL),
-(2, '0734343854', 'test-1769532570@example.com', '$2y$12$59MahfHpAOY.lay8EJRH/.SG9cV/pL/O.ekd1Rzii.VcefznW.Puq', 'Test', 'User', NULL, NULL, NULL, NULL, NULL, 'BRONZE', 0, NULL, 'active', '2026-01-27 16:49:30', '2026-01-27 16:49:31', NULL, NULL);
+INSERT INTO `airline_users` (`id`, `phone_number`, `email`, `password_hash`, `first_name`, `last_name`, `date_of_birth`, `nationality`, `passport_number`, `passport_expiry_date`, `frequent_flyer_number`, `member_club`, `loyalty_points`, `profile_photo_url`, `status`, `created_at`, `updated_at`, `password_reset_code`, `password_reset_expires_at`, `deletion_status`) VALUES
+(1, '0706166875', 'bennjiokwama@gmail.com', '$2b$10$n0rsM50QpFHZTd0UT2fgOe0B8RzASVcI2U4lj8VYM3NWqP/q3Irxm', 'Benjamin', 'Okwama', '1997-04-23', 'Kenyan', 'BK908881', '2030-12-25', NULL, 'BRONZE', 0, 'https://res.cloudinary.com/otienobryan/image/upload/v1769551316/profile_photos/ctcsdiwklunjmipdtsqj.jpg', 'active', '2025-12-01 13:31:04', '2026-02-25 09:53:36', NULL, NULL, 'active'),
+(2, '0734343854', 'test-1769532570@example.com', '$2y$12$59MahfHpAOY.lay8EJRH/.SG9cV/pL/O.ekd1Rzii.VcefznW.Puq', 'Test', 'User', NULL, NULL, NULL, NULL, NULL, 'BRONZE', 0, NULL, 'active', '2026-01-27 16:49:30', '2026-01-27 16:49:31', NULL, NULL, 'active'),
+(3, '0790193625', 'bryanotieno09@gmail.com', '$2y$10$oGea/PovBz2farBZ4YdfXuPR01BnvLjAc9nPSPAoAwT41nk4PXLJ6', 'bryan', 'otieno', NULL, NULL, NULL, NULL, NULL, 'BRONZE', 0, NULL, 'active', '2026-03-01 09:48:11', '2026-03-02 08:32:59', NULL, NULL, 'pending'),
+(4, '1234567890', 'john.doe@example.com', '$2y$10$QKl21kEfCjOBEESDcTZbj.D2NIldjkr1sIsvwDVcmGhbdvXsR/BHy', 'John', 'Doe', NULL, NULL, NULL, NULL, NULL, 'BRONZE', 0, NULL, 'active', '2026-03-02 08:45:15', '2026-03-02 08:45:15', NULL, NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -731,6 +757,7 @@ CREATE TABLE `bookings` (
   `id` int(11) NOT NULL,
   `booking_reference` varchar(50) NOT NULL,
   `flight_series_id` int(11) NOT NULL,
+  `cabin_class_id` int(11) DEFAULT NULL,
   `passenger_id` int(11) DEFAULT NULL,
   `passenger_name` varchar(255) NOT NULL,
   `passenger_email` varchar(255) DEFAULT NULL,
@@ -744,8 +771,10 @@ CREATE TABLE `bookings` (
   `total_amount` decimal(10,2) NOT NULL,
   `payment_method` varchar(50) NOT NULL,
   `payment_status` varchar(50) NOT NULL DEFAULT 'pending',
-  `status` tinyint(4) NOT NULL DEFAULT 0,
+  `status` tinyint(4) DEFAULT 0 COMMENT '0:Pending, 1:Confirmed, 2:Cancelled, 3:Partial',
   `booking_date` date NOT NULL,
+  `reservation_expires_at` datetime DEFAULT NULL,
+  `expired_at` datetime DEFAULT NULL,
   `notes` text DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -756,74 +785,92 @@ CREATE TABLE `bookings` (
 -- Dumping data for table `bookings`
 --
 
-INSERT INTO `bookings` (`id`, `booking_reference`, `flight_series_id`, `passenger_id`, `passenger_name`, `passenger_email`, `passenger_phone`, `passenger_type`, `number_of_passengers`, `fare_per_passenger`, `base_fare`, `taxes_amount`, `revenue_recognized`, `total_amount`, `payment_method`, `payment_status`, `status`, `booking_date`, `notes`, `user_id`, `created_at`, `updated_at`) VALUES
-(1, 'BKMINLLI7TXXPB', 1, 8, 'br', 'bryanotieno09@gmail.com', '34', 'adult', 3, 344.00, NULL, NULL, 0, 1032.00, 'cash', 'pending', 0, '2025-12-01', NULL, NULL, '2025-12-01 20:24:48', '2025-12-01 20:24:48'),
-(2, 'BKMINLQV3TWH91', 1, 11, 'br', 'bryanotieno09@gmail.com', '34', 'adult', 3, 344.00, NULL, NULL, 0, 1032.00, 'cash', 'pending', 0, '2025-12-01', NULL, NULL, '2025-12-01 20:28:58', '2025-12-01 20:28:58'),
-(3, 'BKMINLX1Y4NNUF', 1, 14, 'br', 'bryanotieno09@gmail.com', '34', 'adult', 3, 344.00, NULL, NULL, 0, 1032.00, 'cash', 'pending', 0, '2025-12-01', NULL, NULL, '2025-12-01 20:33:47', '2025-12-01 20:33:47'),
-(4, 'BKMINM2TPOPZ1O', 1, 17, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 344.00, NULL, NULL, 0, 344.00, 'cash', 'pending', 0, '2025-12-01', NULL, NULL, '2025-12-01 20:38:16', '2025-12-01 20:38:16'),
-(5, 'BKMINMDSYOP5EK', 2, 18, 'br', 'bryanotieno09@gmail.com', '34', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2025-12-01', NULL, NULL, '2025-12-01 20:46:48', '2025-12-01 20:46:48'),
-(6, 'BKMIRGQSIEQIXT', 3, 19, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 1100.00, NULL, NULL, 0, 1100.00, 'cash', 'pending', 0, '2025-12-04', NULL, NULL, '2025-12-04 13:20:01', '2025-12-04 13:20:01'),
-(7, '3485E6AACB', 1, NULL, 'Mr Be Fyy', '', '', 'adult', 1, 1030.00, NULL, NULL, 0, 1030.00, 'pending', 'pending', 0, '2025-12-04', 'Seats: 10C', NULL, '2025-12-04 13:39:36', '2025-12-04 13:39:36'),
-(8, '84B80689A6', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'pending', 'pending', 0, '2025-12-05', 'Seats: ', NULL, '2025-12-05 10:56:21', '2025-12-05 10:56:21'),
-(9, 'C06275EA03', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'pending', 'pending', 0, '2025-12-05', 'Seats: ', 1, '2025-12-05 11:32:59', '2025-12-07 18:07:28'),
-(10, '0D36E70515', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'test', 'pending', 0, '2025-12-05', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-05 11:43:26', '2025-12-05 13:24:59'),
-(11, 'BKMISVXKRH6OZ0', 4, 22, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'pending', 0, '2025-12-05', 'testing here', 1, '2025-12-05 13:12:58', '2025-12-05 13:24:57'),
-(12, 'BKMISW0W6JH2Z6', 4, 23, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'pending', 0, '2025-12-05', 'testing here', 1, '2025-12-05 13:15:32', '2025-12-05 13:24:54'),
-(13, 'BKMISWPCAZ242I', 4, 24, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'pending', 0, '2025-12-05', NULL, NULL, '2025-12-05 13:34:33', '2025-12-05 13:34:33'),
-(14, 'BKMISWZIQL3NQ7', 4, 25, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'pending', 0, '2025-12-05', NULL, NULL, '2025-12-05 13:42:28', '2025-12-05 13:42:28'),
-(15, 'BKMISX4UQBU8Q8', 4, 26, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'pending', 0, '2025-12-05', NULL, NULL, '2025-12-05 13:46:37', '2025-12-05 13:46:37'),
-(16, 'BKMIU6WCHOOEOT', 6, 27, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 700.00, NULL, NULL, 0, 700.00, 'cash', 'pending', 0, '2025-12-06', NULL, NULL, '2025-12-06 11:07:43', '2025-12-06 11:07:43'),
-(17, 'FF2C279BCA', 1, NULL, 'Mr John’s Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'test', 'pending', 0, '2025-12-07', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-07 11:08:19', '2025-12-07 11:15:05'),
-(18, '845271FD26', 1, NULL, 'Mr Benjamin  Okwama', '', '', 'adult', 1, 15800.00, NULL, NULL, 0, 15800.00, 'test', 'pending', 0, '2025-12-07', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-07 11:21:24', '2025-12-07 11:21:24'),
-(19, '72A90D9C8F', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 15800.00, NULL, NULL, 0, 15800.00, 'test', 'pending', 0, '2025-12-10', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-10 12:03:26', '2025-12-10 12:03:26'),
-(20, 'C973C0A032', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'paid', 1, '2025-12-10', 'Seats: ', 1, '2025-12-10 12:31:31', '2025-12-11 10:37:28'),
-(21, '7BA47EB57E', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'M-Pesa', 'pending', 0, '2025-12-10', 'Seats: ', 1, '2025-12-10 12:31:33', '2025-12-10 12:31:33'),
-(22, '5BDCCE4189', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'pending', 0, '2025-12-10', 'Seats: ', 1, '2025-12-10 14:25:35', '2025-12-10 14:25:37'),
-(23, '4C4B6309F4', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'pending', 0, '2025-12-10', 'Seats: ', 1, '2025-12-10 14:39:43', '2025-12-10 14:39:44'),
-(24, '95DE1B56D8', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'pending', 0, '2025-12-10', 'Seats: ', 1, '2025-12-10 15:02:51', '2025-12-10 15:02:53'),
-(25, '0BC10F5EAE', 1, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'test', 'pending', 0, '2025-12-10', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-10 15:03:17', '2025-12-10 15:03:17'),
-(26, '9FA80E170A', 1, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'pending', 0, '2025-12-11', 'Seats: ', 1, '2025-12-11 16:21:44', '2025-12-11 16:21:45'),
-(27, '5C4AC1FC22', 1, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'test', 'pending', 0, '2025-12-11', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-11 16:21:57', '2025-12-11 16:21:57'),
-(29, '7AC5719381', 7, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'test', 'pending', 0, '2026-01-27', 'Test booking - Payment skipped. Seats: ', 1, '2026-01-27 11:28:16', '2026-01-27 11:28:16'),
-(30, '153036A995', 8, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'pending', 0, '2026-01-27', 'Seats: ', 1, '2026-01-27 11:30:09', '2026-01-27 11:30:09'),
-(31, '6505144E39', 8, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'pending', 0, '2026-01-27', 'Seats: ', 1, '2026-01-27 11:30:12', '2026-01-27 11:30:12'),
-(32, 'E9B1C5B895', 8, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'pending', 0, '2026-01-27', 'Seats: ', 1, '2026-01-27 11:30:13', '2026-01-27 11:30:13'),
-(33, 'B7FE9E28A5', 8, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'pending', 0, '2026-01-27', 'Seats: ', 1, '2026-01-27 11:30:14', '2026-01-27 11:30:14'),
-(34, '8249A76491', 8, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'pending', 0, '2026-01-27', 'Seats: ', 1, '2026-01-27 11:30:22', '2026-01-27 11:30:22'),
-(35, 'D71F837C2D', 8, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Card (DPO)', 'pending', 0, '2026-01-27', 'Seats: ', 1, '2026-01-27 11:31:43', '2026-01-27 11:31:43'),
-(36, 'A8E3ACAE38', 7, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'Mobile Money (Onafriq)', 'pending', 0, '2026-01-27', 'Seats: ', 1, '2026-01-27 12:40:58', '2026-01-27 12:40:58'),
-(37, '27C1AACD73', 21, NULL, 'Mr Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'adult', 1, 28000.00, NULL, NULL, 0, 28000.00, 'mpesa', 'pending', 0, '2026-01-31', 'Test booking - Payment skipped. Class: Economy. Seats: ', 1, '2026-01-31 16:00:54', '2026-02-04 12:16:38'),
-(38, '2A163ADF46', 15, NULL, 'Mr Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'adult', 1, 18000.00, NULL, NULL, 0, 18000.00, 'test', 'pending', 0, '2026-02-11', 'Test booking - Payment skipped. Class: Economy. Seats: ', 1, '2026-02-11 13:39:06', '2026-02-11 13:39:06'),
-(39, 'BKMLY6LTVUAA9D', 23, 50, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-22', NULL, NULL, '2026-02-22 20:09:44', '2026-02-22 20:09:44'),
-(40, 'BKMLYVGWPBOGNG', 24, 51, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 07:45:45', '2026-02-23 07:45:45'),
-(41, 'BKMLYVMXV0Y6JX', 24, 52, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 07:50:26', '2026-02-23 07:50:26'),
-(42, 'BKMLYVQJDVWSVI', 24, 53, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 07:53:14', '2026-02-23 07:53:14'),
-(43, 'BKMLYVU8CW35N6', 24, 54, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 07:56:06', '2026-02-23 07:56:06'),
-(44, 'BKMLYVYD9J687I', 24, 55, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 07:59:20', '2026-02-23 07:59:20'),
-(45, 'BKMLYVZN170F52', 24, 56, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 08:00:19', '2026-02-23 08:00:19'),
-(46, 'BKMLYW3JISN5MI', 24, 57, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 08:03:21', '2026-02-23 08:03:21'),
-(47, 'BKMLYWUEAW0QYT', 24, 58, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 08:24:14', '2026-02-23 08:24:14'),
-(48, 'BKMLYWX2BL62FD', 24, 59, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 08:26:18', '2026-02-23 08:26:18'),
-(49, 'BKMLYX61YPZ9PV', 24, 60, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', 'ess', NULL, '2026-02-23 08:33:17', '2026-02-23 08:33:17'),
-(50, 'BKMLYY8SXPF3K1', 24, 61, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:03:25', '2026-02-23 09:03:25'),
-(51, 'BKMLYYML52VIHG', 24, 63, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:14:09', '2026-02-23 09:14:09'),
-(52, 'BKMLYYO4S5ZE70', 24, 64, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:15:21', '2026-02-23 09:15:21'),
-(53, 'BKMLYYUJG4JYQL', 24, 65, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:20:20', '2026-02-23 09:20:20'),
-(54, 'BKMLYYVTLA7Z3J', 24, 66, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:21:20', '2026-02-23 09:21:20'),
-(55, 'BKMLYZ26VYQT2O', 24, 67, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:26:17', '2026-02-23 09:26:17'),
-(56, 'BKMLYZ3JYL173H', 24, 68, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 344.83, 55.17, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:27:20', '2026-02-23 09:27:20'),
-(57, 'BKMLYZAZP8P4Y7', 24, 69, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:33:07', '2026-02-23 09:33:07'),
-(58, 'BKMLYZH3QDKL93', 24, 70, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:37:52', '2026-02-23 09:37:52'),
-(59, 'BKMLYZH6JLVTMI', 24, 71, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:37:56', '2026-02-23 09:37:56'),
-(60, 'BKMLYZJRV2GJLL', 24, 72, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:39:57', '2026-02-23 09:39:57'),
-(61, 'BKMLYZQ20HJZIV', 24, 73, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:44:50', '2026-02-23 09:44:50'),
-(62, 'BKMLYZQLP3XQES', 24, 74, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:45:15', '2026-02-23 09:45:15'),
-(63, 'BKMLYZWRKD5GRH', 24, 75, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 344.83, 55.17, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:50:03', '2026-02-23 09:50:03'),
-(64, 'BKMLZ091XN9UF4', 24, 76, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 09:59:36', '2026-02-23 09:59:36'),
-(65, 'BKMLZ0D9R7E4QV', 24, 77, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 10:02:53', '2026-02-23 10:02:53'),
-(66, 'BKMLZ0IJQXAKRG', 24, 78, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'pending', 0, '2026-02-23', NULL, NULL, '2026-02-23 10:07:00', '2026-02-23 10:07:00'),
-(67, '9CC7C72686', 7, NULL, 'Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'pending', 0, '2026-02-24', NULL, 1, '2026-02-24 12:43:53', '2026-02-24 12:43:53'),
-(68, '7E56BD8FCB', 8, NULL, 'Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'Adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'M-Pesa', 'pending', 0, '2026-02-24', NULL, 1, '2026-02-24 13:36:17', '2026-02-24 13:36:17');
+INSERT INTO `bookings` (`id`, `booking_reference`, `flight_series_id`, `cabin_class_id`, `passenger_id`, `passenger_name`, `passenger_email`, `passenger_phone`, `passenger_type`, `number_of_passengers`, `fare_per_passenger`, `base_fare`, `taxes_amount`, `revenue_recognized`, `total_amount`, `payment_method`, `payment_status`, `status`, `booking_date`, `reservation_expires_at`, `expired_at`, `notes`, `user_id`, `created_at`, `updated_at`) VALUES
+(1, 'BKMINLLI7TXXPB', 1, NULL, 8, 'br', 'bryanotieno09@gmail.com', '34', 'adult', 3, 344.00, NULL, NULL, 0, 1032.00, 'cash', 'cancelled', 2, '2025-12-01', '2025-12-01 22:54:48', '2026-04-03 17:04:11', NULL, NULL, '2025-12-01 20:24:48', '2026-04-03 15:04:11'),
+(2, 'BKMINLQV3TWH91', 1, NULL, 11, 'br', 'bryanotieno09@gmail.com', '34', 'adult', 3, 344.00, NULL, NULL, 0, 1032.00, 'cash', 'cancelled', 2, '2025-12-01', '2025-12-01 22:58:58', '2026-04-03 17:04:11', NULL, NULL, '2025-12-01 20:28:58', '2026-04-03 15:04:11'),
+(3, 'BKMINLX1Y4NNUF', 1, NULL, 14, 'br', 'bryanotieno09@gmail.com', '34', 'adult', 3, 344.00, NULL, NULL, 0, 1032.00, 'cash', 'cancelled', 2, '2025-12-01', '2025-12-01 23:03:47', '2026-04-03 17:04:11', NULL, NULL, '2025-12-01 20:33:47', '2026-04-03 15:04:11'),
+(4, 'BKMINM2TPOPZ1O', 1, NULL, 17, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 344.00, NULL, NULL, 0, 344.00, 'cash', 'cancelled', 2, '2025-12-01', '2025-12-01 23:08:16', '2026-04-03 17:04:11', NULL, NULL, '2025-12-01 20:38:16', '2026-04-03 15:04:11'),
+(5, 'BKMINMDSYOP5EK', 2, NULL, 18, 'br', 'bryanotieno09@gmail.com', '34', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2025-12-01', '2025-12-01 23:16:48', '2026-04-03 17:04:11', NULL, NULL, '2025-12-01 20:46:48', '2026-04-03 15:04:11'),
+(6, 'BKMIRGQSIEQIXT', 3, NULL, 19, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 1100.00, NULL, NULL, 0, 1100.00, 'cash', 'cancelled', 2, '2025-12-04', '2025-12-04 15:50:01', '2026-04-03 17:04:11', NULL, NULL, '2025-12-04 13:20:01', '2026-04-03 15:04:11'),
+(7, '3485E6AACB', 1, NULL, NULL, 'Mr Be Fyy', '', '', 'adult', 1, 1030.00, NULL, NULL, 0, 1030.00, 'pending', 'cancelled', 2, '2025-12-04', '2025-12-04 16:09:36', '2026-04-03 17:04:11', 'Seats: 10C', NULL, '2025-12-04 13:39:36', '2026-04-03 15:04:11'),
+(8, '84B80689A6', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'pending', 'cancelled', 2, '2025-12-05', '2025-12-05 13:26:21', '2026-04-03 17:04:11', 'Seats: ', NULL, '2025-12-05 10:56:21', '2026-04-03 15:04:11'),
+(9, 'C06275EA03', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'pending', 'cancelled', 2, '2025-12-05', '2025-12-05 14:02:59', '2026-04-03 17:04:11', 'Seats: ', 1, '2025-12-05 11:32:59', '2026-04-03 15:04:11'),
+(10, '0D36E70515', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'test', 'cancelled', 2, '2025-12-05', '2025-12-05 14:13:26', '2026-04-03 17:04:11', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-05 11:43:26', '2026-04-03 15:04:11'),
+(11, 'BKMISVXKRH6OZ0', 4, NULL, 22, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'cancelled', 2, '2025-12-05', '2025-12-05 15:42:58', '2026-04-03 17:04:11', 'testing here', 1, '2025-12-05 13:12:58', '2026-04-03 15:04:11'),
+(12, 'BKMISW0W6JH2Z6', 4, NULL, 23, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'cancelled', 2, '2025-12-05', '2025-12-05 15:45:32', '2026-04-03 17:04:11', 'testing here', 1, '2025-12-05 13:15:32', '2026-04-03 15:04:11'),
+(13, 'BKMISWPCAZ242I', 4, NULL, 24, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'cancelled', 2, '2025-12-05', '2025-12-05 16:04:33', '2026-04-03 17:04:11', NULL, NULL, '2025-12-05 13:34:33', '2026-04-03 15:04:11'),
+(14, 'BKMISWZIQL3NQ7', 4, NULL, 25, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'cancelled', 2, '2025-12-05', '2025-12-05 16:12:28', '2026-04-03 17:04:11', NULL, NULL, '2025-12-05 13:42:28', '2026-04-03 15:04:11'),
+(15, 'BKMISX4UQBU8Q8', 4, NULL, 26, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 300.00, NULL, NULL, 0, 300.00, 'cash', 'cancelled', 2, '2025-12-05', '2025-12-05 16:16:37', '2026-04-03 17:04:11', NULL, NULL, '2025-12-05 13:46:37', '2026-04-03 15:04:11'),
+(16, 'BKMIU6WCHOOEOT', 6, NULL, 27, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 700.00, NULL, NULL, 0, 700.00, 'cash', 'cancelled', 2, '2025-12-06', '2025-12-06 13:37:43', '2026-04-03 17:04:11', NULL, NULL, '2025-12-06 11:07:43', '2026-04-03 15:04:11'),
+(17, 'FF2C279BCA', 1, NULL, NULL, 'Mr John’s Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'test', 'cancelled', 2, '2025-12-07', '2025-12-07 13:38:19', '2026-04-03 17:04:11', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-07 11:08:19', '2026-04-03 15:04:11'),
+(18, '845271FD26', 1, NULL, NULL, 'Mr Benjamin  Okwama', '', '', 'adult', 1, 15800.00, NULL, NULL, 0, 15800.00, 'test', 'cancelled', 2, '2025-12-07', '2025-12-07 13:51:24', '2026-04-03 17:04:11', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-07 11:21:24', '2026-04-03 15:04:11'),
+(19, '72A90D9C8F', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 15800.00, NULL, NULL, 0, 15800.00, 'test', 'cancelled', 2, '2025-12-10', '2025-12-10 14:33:26', '2026-04-03 17:04:11', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-10 12:03:26', '2026-04-03 15:04:11'),
+(20, 'C973C0A032', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'paid', 1, '2025-12-10', NULL, NULL, 'Seats: ', 1, '2025-12-10 12:31:31', '2025-12-11 10:37:28'),
+(21, '7BA47EB57E', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'M-Pesa', 'cancelled', 2, '2025-12-10', '2025-12-10 15:01:33', '2026-04-03 17:04:11', 'Seats: ', 1, '2025-12-10 12:31:33', '2026-04-03 15:04:11'),
+(22, '5BDCCE4189', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'cancelled', 2, '2025-12-10', '2025-12-10 16:55:35', '2026-04-03 17:04:11', 'Seats: ', 1, '2025-12-10 14:25:35', '2026-04-03 15:04:11'),
+(23, '4C4B6309F4', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'cancelled', 2, '2025-12-10', '2025-12-10 17:09:43', '2026-04-03 17:04:11', 'Seats: ', 1, '2025-12-10 14:39:43', '2026-04-03 15:04:11'),
+(24, '95DE1B56D8', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'cancelled', 2, '2025-12-10', '2025-12-10 17:32:51', '2026-04-03 17:04:11', 'Seats: ', 1, '2025-12-10 15:02:51', '2026-04-03 15:04:11'),
+(25, '0BC10F5EAE', 1, NULL, NULL, 'Mr John Doe', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'test', 'cancelled', 2, '2025-12-10', '2025-12-10 17:33:17', '2026-04-03 17:04:11', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-10 15:03:17', '2026-04-03 15:04:11'),
+(26, '9FA80E170A', 1, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'mpesa', 'cancelled', 2, '2025-12-11', '2025-12-11 18:51:44', '2026-04-03 17:04:11', 'Seats: ', 1, '2025-12-11 16:21:44', '2026-04-03 15:04:11'),
+(27, '5C4AC1FC22', 1, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'test', 'cancelled', 2, '2025-12-11', '2025-12-11 18:51:57', '2026-04-03 17:04:11', 'Test booking - Payment skipped. Seats: ', 1, '2025-12-11 16:21:57', '2026-04-03 15:04:11'),
+(29, '7AC5719381', 7, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'test', 'cancelled', 2, '2026-01-27', '2026-01-27 13:58:16', '2026-04-03 17:04:11', 'Test booking - Payment skipped. Seats: ', 1, '2026-01-27 11:28:16', '2026-04-03 15:04:11'),
+(30, '153036A995', 8, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'cancelled', 2, '2026-01-27', '2026-01-27 14:00:09', '2026-04-03 17:04:11', 'Seats: ', 1, '2026-01-27 11:30:09', '2026-04-03 15:04:11'),
+(31, '6505144E39', 8, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'cancelled', 2, '2026-01-27', '2026-01-27 14:00:12', '2026-04-03 17:04:11', 'Seats: ', 1, '2026-01-27 11:30:12', '2026-04-03 15:04:11'),
+(32, 'E9B1C5B895', 8, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'cancelled', 2, '2026-01-27', '2026-01-27 14:00:13', '2026-04-03 17:04:11', 'Seats: ', 1, '2026-01-27 11:30:13', '2026-04-03 15:04:11'),
+(33, 'B7FE9E28A5', 8, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'cancelled', 2, '2026-01-27', '2026-01-27 14:00:14', '2026-04-03 17:04:11', 'Seats: ', 1, '2026-01-27 11:30:14', '2026-04-03 15:04:11'),
+(34, '8249A76491', 8, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Mobile Money (Onafriq)', 'cancelled', 2, '2026-01-27', '2026-01-27 14:00:22', '2026-04-03 17:04:11', 'Seats: ', 1, '2026-01-27 11:30:22', '2026-04-03 15:04:11'),
+(35, 'D71F837C2D', 8, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Card (DPO)', 'cancelled', 2, '2026-01-27', '2026-01-27 14:01:43', '2026-04-03 17:04:11', 'Seats: ', 1, '2026-01-27 11:31:43', '2026-04-03 15:04:11'),
+(36, 'A8E3ACAE38', 7, NULL, NULL, 'Mr Benjamin Okwama', 'john.doe@example.com', '0706166875', 'adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'Mobile Money (Onafriq)', 'cancelled', 2, '2026-01-27', '2026-01-27 15:10:58', '2026-04-03 17:04:11', 'Seats: ', 1, '2026-01-27 12:40:58', '2026-04-03 15:04:11'),
+(37, '27C1AACD73', 21, NULL, NULL, 'Mr Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'adult', 1, 28000.00, NULL, NULL, 0, 28000.00, 'mpesa', 'cancelled', 2, '2026-01-31', '2026-01-31 18:30:54', '2026-04-03 17:04:11', 'Test booking - Payment skipped. Class: Economy. Seats: ', 1, '2026-01-31 16:00:54', '2026-04-03 15:04:11'),
+(38, '2A163ADF46', 15, NULL, NULL, 'Mr Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'adult', 1, 18000.00, NULL, NULL, 0, 18000.00, 'test', 'cancelled', 2, '2026-02-11', '2026-02-11 16:09:06', '2026-04-03 17:04:11', 'Test booking - Payment skipped. Class: Economy. Seats: ', 1, '2026-02-11 13:39:06', '2026-04-03 15:04:11'),
+(39, 'BKMLY6LTVUAA9D', 23, NULL, 50, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-22', '2026-02-22 22:39:44', '2026-04-03 17:04:11', NULL, NULL, '2026-02-22 20:09:44', '2026-04-03 15:04:11'),
+(40, 'BKMLYVGWPBOGNG', 24, NULL, 51, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 10:15:45', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 07:45:45', '2026-04-03 15:04:11'),
+(41, 'BKMLYVMXV0Y6JX', 24, NULL, 52, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 10:20:26', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 07:50:26', '2026-04-03 15:04:11'),
+(42, 'BKMLYVQJDVWSVI', 24, NULL, 53, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 10:23:14', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 07:53:14', '2026-04-03 15:04:11'),
+(43, 'BKMLYVU8CW35N6', 24, NULL, 54, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 10:26:06', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 07:56:06', '2026-04-03 15:04:11'),
+(44, 'BKMLYVYD9J687I', 24, NULL, 55, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 10:29:20', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 07:59:20', '2026-04-03 15:04:11'),
+(45, 'BKMLYVZN170F52', 24, NULL, 56, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 10:30:19', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 08:00:19', '2026-04-03 15:04:11'),
+(46, 'BKMLYW3JISN5MI', 24, NULL, 57, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 10:33:21', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 08:03:21', '2026-04-03 15:04:11'),
+(47, 'BKMLYWUEAW0QYT', 24, NULL, 58, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 10:54:14', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 08:24:14', '2026-04-03 15:04:11'),
+(48, 'BKMLYWX2BL62FD', 24, NULL, 59, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 10:56:18', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 08:26:18', '2026-04-03 15:04:11'),
+(49, 'BKMLYX61YPZ9PV', 24, NULL, 60, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 11:03:17', '2026-04-03 17:04:11', 'ess', NULL, '2026-02-23 08:33:17', '2026-04-03 15:04:11'),
+(50, 'BKMLYY8SXPF3K1', 24, NULL, 61, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 11:33:25', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:03:25', '2026-04-03 15:04:11'),
+(51, 'BKMLYYML52VIHG', 24, NULL, 63, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 11:44:09', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:14:09', '2026-04-03 15:04:11'),
+(52, 'BKMLYYO4S5ZE70', 24, NULL, 64, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 11:45:21', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:15:21', '2026-04-03 15:04:11'),
+(53, 'BKMLYYUJG4JYQL', 24, NULL, 65, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 11:50:20', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:20:20', '2026-04-03 15:04:11'),
+(54, 'BKMLYYVTLA7Z3J', 24, NULL, 66, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 11:51:20', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:21:20', '2026-04-03 15:04:11'),
+(55, 'BKMLYZ26VYQT2O', 24, NULL, 67, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 11:56:17', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:26:17', '2026-04-03 15:04:11'),
+(56, 'BKMLYZ3JYL173H', 24, NULL, 68, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 344.83, 55.17, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 11:57:20', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:27:20', '2026-04-03 15:04:11'),
+(57, 'BKMLYZAZP8P4Y7', 24, NULL, 69, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:03:07', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:33:07', '2026-04-03 15:04:11'),
+(58, 'BKMLYZH3QDKL93', 24, NULL, 70, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:07:52', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:37:52', '2026-04-03 15:04:11'),
+(59, 'BKMLYZH6JLVTMI', 24, NULL, 71, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:07:56', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:37:56', '2026-04-03 15:04:11'),
+(60, 'BKMLYZJRV2GJLL', 24, NULL, 72, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:09:57', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:39:57', '2026-04-03 15:04:11'),
+(61, 'BKMLYZQ20HJZIV', 24, NULL, 73, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:14:50', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:44:50', '2026-04-03 15:04:11'),
+(62, 'BKMLYZQLP3XQES', 24, NULL, 74, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:15:15', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:45:15', '2026-04-03 15:04:11'),
+(63, 'BKMLYZWRKD5GRH', 24, NULL, 75, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 344.83, 55.17, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:20:03', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:50:03', '2026-04-03 15:04:11'),
+(64, 'BKMLZ091XN9UF4', 24, NULL, 76, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, 363.64, 36.36, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:29:36', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 09:59:36', '2026-04-03 15:04:11'),
+(65, 'BKMLZ0D9R7E4QV', 24, NULL, 77, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'child', 1, 200.00, 181.82, 18.18, 0, 200.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:32:53', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 10:02:53', '2026-04-03 15:04:11'),
+(66, 'BKMLZ0IJQXAKRG', 24, NULL, 78, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'adult', 1, 400.00, NULL, NULL, 0, 400.00, 'cash', 'cancelled', 2, '2026-02-23', '2026-02-23 12:37:00', '2026-04-03 17:04:11', NULL, NULL, '2026-02-23 10:07:00', '2026-04-03 15:04:11'),
+(67, '9CC7C72686', 7, NULL, NULL, 'Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-24', '2026-02-24 15:13:53', '2026-04-03 17:04:11', NULL, 1, '2026-02-24 12:43:53', '2026-04-03 15:04:11'),
+(68, '7E56BD8FCB', 8, NULL, NULL, 'Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'Adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'M-Pesa', 'cancelled', 2, '2026-02-24', '2026-02-24 16:06:17', '2026-04-03 17:04:11', NULL, 1, '2026-02-24 13:36:17', '2026-04-03 15:04:11'),
+(69, '82EF701489', 8, NULL, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'M-Pesa', 'cancelled', 2, '2026-02-25', '2026-02-25 13:42:09', '2026-04-03 17:04:11', NULL, 1, '2026-02-25 11:12:09', '2026-04-03 15:04:11'),
+(70, '97GSWM', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-26', '2026-02-26 15:33:00', '2026-04-03 17:04:11', NULL, 1, '2026-02-26 13:03:00', '2026-04-03 15:04:11'),
+(71, 'GR0ACV', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-26', '2026-02-26 15:33:23', '2026-04-03 17:04:11', NULL, 1, '2026-02-26 13:03:23', '2026-04-03 15:04:11'),
+(72, 'ZB86IV', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-26', '2026-02-26 20:43:02', '2026-04-03 17:04:11', NULL, 1, '2026-02-26 18:13:02', '2026-04-03 15:04:11'),
+(73, 'G31KQW', 9, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 12500.00, NULL, NULL, 0, 12500.00, 'M-Pesa', 'cancelled', 2, '2026-02-26', '2026-02-26 21:11:15', '2026-04-03 17:04:11', NULL, 1, '2026-02-26 18:41:15', '2026-04-03 15:04:11'),
+(74, 'BXC2TW', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 12:28:58', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 09:58:58', '2026-04-03 15:04:11'),
+(75, 'HU61FK', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 12:29:02', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 09:59:02', '2026-04-03 15:04:11'),
+(76, 'UY1ZW6', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 12:29:04', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 09:59:04', '2026-04-03 15:04:11'),
+(77, '8IS0XF', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 12:38:42', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 10:08:42', '2026-04-03 15:04:11'),
+(78, 'JT6AVS', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 12:51:15', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 10:21:15', '2026-04-03 15:04:11'),
+(79, '0OTL21', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 13:00:52', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 10:30:52', '2026-04-03 15:04:11'),
+(80, 'QKTS2D', 8, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 13:21:56', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 10:51:56', '2026-04-03 15:04:11'),
+(81, 'J6IG3B', 8, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'Onafriq', 'cancelled', 2, '2026-02-27', '2026-02-27 13:23:13', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 10:53:13', '2026-04-03 15:04:11'),
+(82, 'M9TWYO', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 850.00, NULL, NULL, 0, 850.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 13:41:50', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 11:11:50', '2026-04-03 15:04:11'),
+(83, 'IO4P0U', 7, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 850.00, NULL, NULL, 0, 850.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 13:45:36', '2026-04-03 17:04:11', NULL, 1, '2026-02-27 11:15:36', '2026-04-03 15:04:11'),
+(84, 'CZKMOU', 8, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Adult', 1, 920.00, NULL, NULL, 0, 920.00, 'M-Pesa', 'cancelled', 2, '2026-02-27', '2026-02-27 15:50:55', '2026-04-03 21:08:23', NULL, 1, '2026-02-27 13:20:55', '2026-04-03 18:08:23'),
+(85, '7XDYM3', 2, 1, NULL, 'Benjamin Okwama', 'gizmojunction@outlook.com', NULL, 'adult', 1, 9200.00, NULL, NULL, 0, 9200.00, 'pending', 'cancelled', 2, '2026-04-01', '2026-04-01 10:19:52', '2026-04-03 17:04:11', NULL, NULL, '2026-04-01 07:49:52', '2026-04-03 15:04:11'),
+(86, 'YFIOS0', 1, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', NULL, 'adult', 1, 8500.00, NULL, NULL, 0, 8500.00, 'pending', 'cancelled', 2, '2026-04-01', '2026-04-01 11:30:52', '2026-04-03 17:04:11', NULL, NULL, '2026-04-01 09:00:52', '2026-04-03 15:04:11');
 
 -- --------------------------------------------------------
 
@@ -837,6 +884,9 @@ CREATE TABLE `booking_passengers` (
   `passenger_id` int(11) NOT NULL,
   `passenger_type` varchar(20) NOT NULL,
   `fare_amount` decimal(10,2) NOT NULL,
+  `ticket_number` varchar(20) DEFAULT NULL,
+  `ticket_status` enum('OPEN','USED','VOID','REFUNDED') DEFAULT 'OPEN',
+  `issued_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
@@ -844,72 +894,90 @@ CREATE TABLE `booking_passengers` (
 -- Dumping data for table `booking_passengers`
 --
 
-INSERT INTO `booking_passengers` (`id`, `booking_id`, `passenger_id`, `passenger_type`, `fare_amount`, `created_at`) VALUES
-(1, 3, 14, 'adult', 344.00, '2025-12-01 20:33:47'),
-(2, 3, 15, 'adult', 344.00, '2025-12-01 20:33:47'),
-(3, 3, 16, 'adult', 344.00, '2025-12-01 20:33:48'),
-(4, 4, 17, 'adult', 344.00, '2025-12-01 20:38:16'),
-(5, 5, 18, 'adult', 400.00, '2025-12-01 20:46:49'),
-(6, 6, 19, 'adult', 1100.00, '2025-12-04 13:20:02'),
-(7, 9, 20, 'adult', 12500.00, '2025-12-05 11:33:00'),
-(8, 10, 21, 'adult', 12500.00, '2025-12-05 11:43:26'),
-(9, 11, 22, 'adult', 300.00, '2025-12-05 13:12:58'),
-(10, 12, 23, 'adult', 300.00, '2025-12-05 13:15:33'),
-(11, 13, 24, 'adult', 300.00, '2025-12-05 13:34:33'),
-(12, 14, 25, 'adult', 300.00, '2025-12-05 13:42:28'),
-(13, 15, 26, 'adult', 300.00, '2025-12-05 13:46:37'),
-(14, 16, 27, 'adult', 700.00, '2025-12-06 11:07:43'),
-(15, 17, 28, 'adult', 12500.00, '2025-12-07 11:08:19'),
-(16, 18, 29, 'adult', 15800.00, '2025-12-07 11:21:24'),
-(17, 19, 30, 'adult', 15800.00, '2025-12-10 12:03:26'),
-(18, 20, 31, 'adult', 12500.00, '2025-12-10 12:31:31'),
-(19, 21, 32, 'adult', 12500.00, '2025-12-10 12:31:33'),
-(20, 22, 33, 'adult', 12500.00, '2025-12-10 14:25:35'),
-(21, 23, 34, 'adult', 12500.00, '2025-12-10 14:39:43'),
-(22, 24, 35, 'adult', 12500.00, '2025-12-10 15:02:51'),
-(23, 25, 36, 'adult', 12500.00, '2025-12-10 15:03:17'),
-(24, 26, 37, 'adult', 12500.00, '2025-12-11 16:21:44'),
-(25, 27, 38, 'adult', 12500.00, '2025-12-11 16:21:57'),
-(26, 29, 39, 'adult', 8500.00, '2026-01-27 11:28:16'),
-(27, 30, 40, 'adult', 9200.00, '2026-01-27 11:30:09'),
-(28, 31, 41, 'adult', 9200.00, '2026-01-27 11:30:12'),
-(29, 32, 42, 'adult', 9200.00, '2026-01-27 11:30:13'),
-(30, 33, 43, 'adult', 9200.00, '2026-01-27 11:30:14'),
-(31, 34, 44, 'adult', 9200.00, '2026-01-27 11:30:22'),
-(32, 35, 45, 'adult', 9200.00, '2026-01-27 11:31:43'),
-(33, 36, 46, 'adult', 8500.00, '2026-01-27 12:40:58'),
-(34, 37, 47, 'adult', 28000.00, '2026-01-31 16:00:54'),
-(35, 38, 48, 'adult', 18000.00, '2026-02-11 13:39:06'),
-(36, 39, 50, 'adult', 400.00, '2026-02-22 20:09:44'),
-(37, 40, 51, 'adult', 400.00, '2026-02-23 07:45:45'),
-(38, 41, 52, 'adult', 400.00, '2026-02-23 07:50:26'),
-(39, 42, 53, 'adult', 400.00, '2026-02-23 07:53:14'),
-(40, 43, 54, 'adult', 400.00, '2026-02-23 07:56:07'),
-(41, 44, 55, 'adult', 400.00, '2026-02-23 07:59:20'),
-(42, 45, 56, 'adult', 400.00, '2026-02-23 08:00:20'),
-(43, 46, 57, 'adult', 400.00, '2026-02-23 08:03:21'),
-(44, 47, 58, 'adult', 400.00, '2026-02-23 08:24:14'),
-(45, 48, 59, 'adult', 400.00, '2026-02-23 08:26:18'),
-(46, 49, 60, 'adult', 400.00, '2026-02-23 08:33:18'),
-(47, 50, 61, 'adult', 400.00, '2026-02-23 09:03:26'),
-(48, 51, 63, 'adult', 400.00, '2026-02-23 09:14:09'),
-(49, 52, 64, 'adult', 400.00, '2026-02-23 09:15:21'),
-(50, 53, 65, 'child', 200.00, '2026-02-23 09:20:20'),
-(51, 54, 66, 'child', 200.00, '2026-02-23 09:21:20'),
-(52, 55, 67, 'adult', 400.00, '2026-02-23 09:26:17'),
-(53, 56, 68, 'adult', 400.00, '2026-02-23 09:27:21'),
-(54, 57, 69, 'adult', 400.00, '2026-02-23 09:33:07'),
-(55, 58, 70, 'child', 200.00, '2026-02-23 09:37:53'),
-(56, 59, 71, 'child', 200.00, '2026-02-23 09:37:56'),
-(57, 60, 72, 'adult', 400.00, '2026-02-23 09:39:58'),
-(58, 61, 73, 'child', 200.00, '2026-02-23 09:44:50'),
-(59, 62, 74, 'adult', 400.00, '2026-02-23 09:45:16'),
-(60, 63, 75, 'adult', 400.00, '2026-02-23 09:50:03'),
-(61, 64, 76, 'adult', 400.00, '2026-02-23 09:59:37'),
-(62, 65, 77, 'child', 200.00, '2026-02-23 10:02:53'),
-(63, 66, 78, 'adult', 400.00, '2026-02-23 10:07:00'),
-(64, 67, 79, 'Adult', 8500.00, '2026-02-24 12:43:53'),
-(65, 68, 80, 'Adult', 9200.00, '2026-02-24 13:36:17');
+INSERT INTO `booking_passengers` (`id`, `booking_id`, `passenger_id`, `passenger_type`, `fare_amount`, `ticket_number`, `ticket_status`, `issued_at`, `created_at`) VALUES
+(1, 3, 14, 'adult', 344.00, NULL, 'OPEN', NULL, '2025-12-01 20:33:47'),
+(2, 3, 15, 'adult', 344.00, NULL, 'OPEN', NULL, '2025-12-01 20:33:47'),
+(3, 3, 16, 'adult', 344.00, NULL, 'OPEN', NULL, '2025-12-01 20:33:48'),
+(4, 4, 17, 'adult', 344.00, NULL, 'OPEN', NULL, '2025-12-01 20:38:16'),
+(5, 5, 18, 'adult', 400.00, NULL, 'OPEN', NULL, '2025-12-01 20:46:49'),
+(6, 6, 19, 'adult', 1100.00, NULL, 'OPEN', NULL, '2025-12-04 13:20:02'),
+(7, 9, 20, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-05 11:33:00'),
+(8, 10, 21, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-05 11:43:26'),
+(9, 11, 22, 'adult', 300.00, NULL, 'OPEN', NULL, '2025-12-05 13:12:58'),
+(10, 12, 23, 'adult', 300.00, NULL, 'OPEN', NULL, '2025-12-05 13:15:33'),
+(11, 13, 24, 'adult', 300.00, NULL, 'OPEN', NULL, '2025-12-05 13:34:33'),
+(12, 14, 25, 'adult', 300.00, NULL, 'OPEN', NULL, '2025-12-05 13:42:28'),
+(13, 15, 26, 'adult', 300.00, NULL, 'OPEN', NULL, '2025-12-05 13:46:37'),
+(14, 16, 27, 'adult', 700.00, NULL, 'OPEN', NULL, '2025-12-06 11:07:43'),
+(15, 17, 28, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-07 11:08:19'),
+(16, 18, 29, 'adult', 15800.00, NULL, 'OPEN', NULL, '2025-12-07 11:21:24'),
+(17, 19, 30, 'adult', 15800.00, NULL, 'OPEN', NULL, '2025-12-10 12:03:26'),
+(18, 20, 31, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-10 12:31:31'),
+(19, 21, 32, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-10 12:31:33'),
+(20, 22, 33, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-10 14:25:35'),
+(21, 23, 34, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-10 14:39:43'),
+(22, 24, 35, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-10 15:02:51'),
+(23, 25, 36, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-10 15:03:17'),
+(24, 26, 37, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-11 16:21:44'),
+(25, 27, 38, 'adult', 12500.00, NULL, 'OPEN', NULL, '2025-12-11 16:21:57'),
+(26, 29, 39, 'adult', 8500.00, NULL, 'OPEN', NULL, '2026-01-27 11:28:16'),
+(27, 30, 40, 'adult', 9200.00, NULL, 'OPEN', NULL, '2026-01-27 11:30:09'),
+(28, 31, 41, 'adult', 9200.00, NULL, 'OPEN', NULL, '2026-01-27 11:30:12'),
+(29, 32, 42, 'adult', 9200.00, NULL, 'OPEN', NULL, '2026-01-27 11:30:13'),
+(30, 33, 43, 'adult', 9200.00, NULL, 'OPEN', NULL, '2026-01-27 11:30:14'),
+(31, 34, 44, 'adult', 9200.00, NULL, 'OPEN', NULL, '2026-01-27 11:30:22'),
+(32, 35, 45, 'adult', 9200.00, NULL, 'OPEN', NULL, '2026-01-27 11:31:43'),
+(33, 36, 46, 'adult', 8500.00, NULL, 'OPEN', NULL, '2026-01-27 12:40:58'),
+(34, 37, 47, 'adult', 28000.00, NULL, 'OPEN', NULL, '2026-01-31 16:00:54'),
+(35, 38, 48, 'adult', 18000.00, NULL, 'OPEN', NULL, '2026-02-11 13:39:06'),
+(36, 39, 50, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-22 20:09:44'),
+(37, 40, 51, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 07:45:45'),
+(38, 41, 52, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 07:50:26'),
+(39, 42, 53, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 07:53:14'),
+(40, 43, 54, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 07:56:07'),
+(41, 44, 55, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 07:59:20'),
+(42, 45, 56, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 08:00:20'),
+(43, 46, 57, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 08:03:21'),
+(44, 47, 58, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 08:24:14'),
+(45, 48, 59, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 08:26:18'),
+(46, 49, 60, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 08:33:18'),
+(47, 50, 61, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:03:26'),
+(48, 51, 63, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:14:09'),
+(49, 52, 64, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:15:21'),
+(50, 53, 65, 'child', 200.00, NULL, 'OPEN', NULL, '2026-02-23 09:20:20'),
+(51, 54, 66, 'child', 200.00, NULL, 'OPEN', NULL, '2026-02-23 09:21:20'),
+(52, 55, 67, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:26:17'),
+(53, 56, 68, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:27:21'),
+(54, 57, 69, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:33:07'),
+(55, 58, 70, 'child', 200.00, NULL, 'OPEN', NULL, '2026-02-23 09:37:53'),
+(56, 59, 71, 'child', 200.00, NULL, 'OPEN', NULL, '2026-02-23 09:37:56'),
+(57, 60, 72, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:39:58'),
+(58, 61, 73, 'child', 200.00, NULL, 'OPEN', NULL, '2026-02-23 09:44:50'),
+(59, 62, 74, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:45:16'),
+(60, 63, 75, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:50:03'),
+(61, 64, 76, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 09:59:37'),
+(62, 65, 77, 'child', 200.00, NULL, 'OPEN', NULL, '2026-02-23 10:02:53'),
+(63, 66, 78, 'adult', 400.00, NULL, 'OPEN', NULL, '2026-02-23 10:07:00'),
+(64, 67, 79, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-24 12:43:53'),
+(65, 68, 80, 'Adult', 9200.00, NULL, 'OPEN', NULL, '2026-02-24 13:36:17'),
+(66, 69, 81, 'Adult', 9200.00, NULL, 'OPEN', NULL, '2026-02-25 11:12:09'),
+(67, 70, 82, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-26 13:03:00'),
+(68, 71, 83, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-26 13:03:23'),
+(69, 72, 84, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-26 18:13:02'),
+(70, 73, 85, 'Adult', 12500.00, NULL, 'OPEN', NULL, '2026-02-26 18:41:15'),
+(71, 74, 86, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-27 09:58:58'),
+(72, 75, 87, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-27 09:59:02'),
+(73, 76, 88, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-27 09:59:04'),
+(74, 77, 89, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-27 10:08:42'),
+(75, 78, 90, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-27 10:21:15'),
+(76, 79, 91, 'Adult', 8500.00, NULL, 'OPEN', NULL, '2026-02-27 10:30:52'),
+(77, 80, 92, 'Adult', 9200.00, NULL, 'OPEN', NULL, '2026-02-27 10:51:56'),
+(78, 81, 93, 'Adult', 9200.00, NULL, 'OPEN', NULL, '2026-02-27 10:53:13'),
+(79, 82, 94, 'Adult', 850.00, NULL, 'OPEN', NULL, '2026-02-27 11:11:50'),
+(80, 83, 95, 'Adult', 850.00, NULL, 'OPEN', NULL, '2026-02-27 11:15:36'),
+(81, 84, 96, 'Adult', 920.00, NULL, 'OPEN', NULL, '2026-02-27 13:20:55'),
+(82, 85, 97, 'adult', 9200.00, NULL, 'OPEN', NULL, '2026-04-01 07:49:52'),
+(83, 86, 98, 'adult', 8500.00, NULL, 'OPEN', NULL, '2026-04-01 09:00:52');
 
 -- --------------------------------------------------------
 
@@ -940,6 +1008,44 @@ INSERT INTO `cabin_classes` (`id`, `name`, `subtitle`, `base_price`, `baggage_al
 (1, 'Economy', 'Classic', 100.00, 20, 7, 0, 0, 0, NULL, 0, '2025-12-01 13:31:03'),
 (2, 'Business', 'Premium', 500.00, 40, 15, 1, 1, 0, NULL, 0, '2025-12-01 13:31:03'),
 (3, 'First', 'Luxury', 1500.00, 50, 20, 1, 1, 0, NULL, 0, '2025-12-01 13:31:03');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cargo_bookings`
+--
+
+CREATE TABLE `cargo_bookings` (
+  `id` int(11) NOT NULL,
+  `awb_number` varchar(20) NOT NULL,
+  `flight_series_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `shipper_name` varchar(255) NOT NULL,
+  `shipper_company` varchar(255) DEFAULT NULL,
+  `shipper_phone` varchar(50) NOT NULL,
+  `shipper_email` varchar(255) DEFAULT NULL,
+  `shipper_address` text NOT NULL,
+  `consignee_name` varchar(255) NOT NULL,
+  `consignee_company` varchar(255) DEFAULT NULL,
+  `consignee_phone` varchar(50) NOT NULL,
+  `consignee_email` varchar(255) DEFAULT NULL,
+  `consignee_address` text NOT NULL,
+  `commodity_type` varchar(100) NOT NULL,
+  `weight_kg` decimal(10,2) NOT NULL,
+  `pieces` int(11) NOT NULL DEFAULT 1,
+  `volumetric_weight` decimal(10,2) DEFAULT NULL,
+  `dimensions_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`dimensions_json`)),
+  `declared_value` decimal(15,2) DEFAULT 0.00,
+  `total_amount` decimal(15,2) NOT NULL,
+  `currency` varchar(3) DEFAULT 'USD',
+  `payment_method` varchar(50) DEFAULT 'pending',
+  `payment_status` enum('pending','paid','cancelled','refunded') DEFAULT 'pending',
+  `status` enum('booked','manifested','in-transit','arrived','delivered') DEFAULT 'booked',
+  `notes` text DEFAULT NULL,
+  `booking_date` date NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -1290,8 +1396,10 @@ CREATE TABLE `destinations` (
   `latitude` decimal(10,7) DEFAULT NULL,
   `timezone` varchar(100) DEFAULT NULL,
   `status` varchar(50) NOT NULL DEFAULT 'active',
+  `is_popular` tinyint(1) NOT NULL DEFAULT 0,
   `father_code` varchar(50) DEFAULT NULL,
   `destination` varchar(255) DEFAULT NULL,
+  `image_url` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1300,20 +1408,20 @@ CREATE TABLE `destinations` (
 -- Dumping data for table `destinations`
 --
 
-INSERT INTO `destinations` (`id`, `code`, `name`, `country_id`, `longitude`, `latitude`, `timezone`, `status`, `father_code`, `destination`, `created_at`, `updated_at`) VALUES
-(1, 'NWA', 'Moheli', 2, 36.8018412, -1.3009875, 'America/Phoenix', 'active', '22', 'Moheli Bandar Es Eslam Airport (NWA)', '2025-11-28 20:34:49', '2025-12-06 05:28:21'),
-(5, 'MBA', 'Mombasa', 2, 36.8018412, -1.3009875, 'America/Toronto', 'active', '22', 'Moi International Airport (MBA)', '2025-11-29 12:10:25', '2026-01-27 10:57:15'),
-(24, 'NBO', 'Nairobi', 1, 36.9258000, -1.3192000, 'Africa/Nairobi', 'active', NULL, 'Jomo Kenyatta International Airport (NBO)', '2026-01-27 10:57:15', '2026-01-27 10:57:15'),
-(25, 'DAR', 'Dar es Salaam', 2, 39.2026000, -6.8781000, 'Africa/Dar_es_Salaam', 'active', NULL, 'Julius Nyerere International Airport (DAR)', '2026-01-27 10:57:15', '2026-01-27 10:57:15'),
-(26, 'EBB', 'Entebbe', 5, 32.4435000, 0.0424000, 'Africa/Kampala', 'active', NULL, 'Entebbe International Airport (EBB)', '2026-01-27 10:57:15', '2026-01-27 10:57:15'),
-(27, 'KGL', 'Kigali', 6, 30.1395000, -1.9686000, 'Africa/Kigali', 'active', NULL, 'Kigali International Airport (KGL)', '2026-01-27 10:57:15', '2026-01-27 10:57:15'),
-(28, 'FIH', 'Kinshasa', 7, 15.4446000, -4.3857000, 'Africa/Kinshasa', 'active', NULL, 'N\'djili International Airport (FIH)', '2026-01-27 10:57:15', '2026-01-27 10:57:15'),
-(29, 'DLA', 'Douala', 8, 9.7195000, 4.0061000, 'Africa/Douala', 'active', NULL, 'Douala International Airport (DLA)', '2026-01-27 10:57:15', '2026-01-27 10:57:15'),
-(30, 'LBV', 'Libreville', 9, 9.4123000, 0.4586000, 'Africa/Libreville', 'active', NULL, 'Libreville International Airport (LBV)', '2026-01-27 10:57:15', '2026-01-27 10:57:15'),
-(31, 'HAH', 'Moroni', 3, 43.2719000, -11.5337000, 'Indian/Comoro', 'active', NULL, 'Prince Said Ibrahim International Airport (HAH)', '2026-01-27 10:57:15', '2026-01-27 10:57:15'),
-(32, 'TNR', 'Antananarivo', 10, 47.4788000, -18.7969000, 'Indian/Antananarivo', 'active', NULL, 'Ivato International Airport (TNR)', '2026-01-27 10:57:15', '2026-01-27 10:57:15'),
-(33, 'BJR', 'Bahir Dar Airport', 3, 37.3216000, 11.6081000, 'Europe/Rome', 'active', '887', 'Helipad', '2026-02-21 18:04:19', '2026-02-21 18:04:19'),
-(34, 'ADJ', 'Amman Civil Airport (Marka International Airport)', 3, 35.9916000, 31.9727000, 'Europe/Rome', 'active', '666', 'Moheli Bandar Es Eslam Airport (NWA)', '2026-02-21 18:05:00', '2026-02-21 18:05:00');
+INSERT INTO `destinations` (`id`, `code`, `name`, `country_id`, `longitude`, `latitude`, `timezone`, `status`, `is_popular`, `father_code`, `destination`, `image_url`, `created_at`, `updated_at`) VALUES
+(1, 'NWA', 'Moheli', 2, 36.8018412, -1.3009875, 'America/Phoenix', 'active', 0, '22', 'Moheli Bandar Es Eslam Airport (NWA)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2025-11-28 20:34:49', '2026-02-26 16:06:26'),
+(5, 'MBA', 'Mombasa', 2, 36.8018412, -1.3009875, 'America/Toronto', 'active', 1, '22', 'Moi International Airport (MBA)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2025-11-29 12:10:25', '2026-02-26 16:06:26'),
+(24, 'NBO', 'Nairobi', 1, 36.9258000, -1.3192000, 'Africa/Nairobi', 'active', 1, NULL, 'Jomo Kenyatta International Airport (NBO)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-01-27 10:57:15', '2026-02-26 16:06:26'),
+(25, 'DAR', 'Dar es Salaam', 2, 39.2026000, -6.8781000, 'Africa/Dar_es_Salaam', 'active', 1, NULL, 'Julius Nyerere International Airport (DAR)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-01-27 10:57:15', '2026-02-26 16:06:26'),
+(26, 'EBB', 'Entebbe', 5, 32.4435000, 0.0424000, 'Africa/Kampala', 'active', 1, NULL, 'Entebbe International Airport (EBB)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-01-27 10:57:15', '2026-02-26 16:06:26'),
+(27, 'KGL', 'Kigali', 6, 30.1395000, -1.9686000, 'Africa/Kigali', 'active', 0, NULL, 'Kigali International Airport (KGL)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-01-27 10:57:15', '2026-02-26 16:06:26'),
+(28, 'FIH', 'Kinshasa', 7, 15.4446000, -4.3857000, 'Africa/Kinshasa', 'active', 0, NULL, 'N\'djili International Airport (FIH)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-01-27 10:57:15', '2026-02-26 16:06:26'),
+(29, 'DLA', 'Douala', 8, 9.7195000, 4.0061000, 'Africa/Douala', 'active', 0, NULL, 'Douala International Airport (DLA)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-01-27 10:57:15', '2026-02-26 16:06:26'),
+(30, 'LBV', 'Libreville', 9, 9.4123000, 0.4586000, 'Africa/Libreville', 'active', 0, NULL, 'Libreville International Airport (LBV)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-01-27 10:57:15', '2026-02-26 16:06:26'),
+(31, 'HAH', 'Moroni', 3, 43.2719000, -11.5337000, 'Indian/Comoro', 'active', 0, NULL, 'Prince Said Ibrahim International Airport (HAH)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-01-27 10:57:15', '2026-02-26 16:06:26'),
+(32, 'TNR', 'Antananarivo', 10, 47.4788000, -18.7969000, 'Indian/Antananarivo', 'active', 0, NULL, 'Ivato International Airport (TNR)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-01-27 10:57:15', '2026-02-26 16:06:26'),
+(33, 'BJR', 'Bahir Dar Airport', 3, 37.3216000, 11.6081000, 'Europe/Rome', 'active', 0, '887', 'Helipad', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-02-21 18:04:19', '2026-02-26 16:06:26'),
+(34, 'ADJ', 'Amman Civil Airport (Marka International Airport)', 3, 35.9916000, 31.9727000, 'Europe/Rome', 'active', 0, '666', 'Moheli Bandar Es Eslam Airport (NWA)', 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg?updatedAt=1772106491541', '2026-02-21 18:05:00', '2026-02-26 16:06:26');
 
 -- --------------------------------------------------------
 
@@ -1481,30 +1589,31 @@ CREATE TABLE `flight_series` (
 --
 
 INSERT INTO `flight_series` (`id`, `flt`, `aircraft_id`, `flight_type`, `start_date`, `end_date`, `std`, `sta`, `number_of_seats`, `from_destination_id`, `from_terminal`, `to_terminal`, `via_destination_id`, `via_std`, `via_sta`, `to_destination_id`, `adult_fare`, `child_fare`, `infant_fare`, `created_at`, `updated_at`, `status`, `actual_std`, `actual_sta`) VALUES
-(1, 'a11', 7, 'From-To', '2025-12-01', '2025-12-05', '14:00:00', '12:57:00', 37, 5, NULL, NULL, NULL, NULL, NULL, 1, 344.00, 555.00, 0.00, '2025-11-29 11:57:35', '2025-12-04 12:48:23', 'Scheduled', NULL, NULL),
+(1, 'a11', 7, 'From-To', '2026-04-06', '2026-12-01', '14:00:00', '12:57:00', 37, 5, NULL, NULL, NULL, NULL, NULL, 24, 344.00, 555.00, 0.00, '2025-11-29 11:57:35', '2026-04-03 19:57:42', 'Scheduled', NULL, NULL),
 (2, '55', 6, 'From-Via_To', '2025-11-29', '2025-11-30', '21:47:00', '21:47:00', NULL, 5, 'terminal A', 'tt', 5, '21:45:00', '21:44:00', 1, 400.00, 400.00, 0.00, '2025-11-29 18:48:11', '2025-12-01 20:46:31', 'Scheduled', NULL, NULL),
 (3, 'TEST1112', 7, 'From-To', '2025-12-04', '2025-12-04', '16:20:00', '19:18:00', 19, 1, 'terminal 1', 'terminal2', NULL, NULL, NULL, 5, 1100.00, 700.00, NULL, '2025-12-04 13:18:27', '2025-12-04 13:19:43', 'Scheduled', NULL, NULL),
 (4, 'FLIGHT002', 7, 'From-To', '2025-12-05', '2025-12-05', '16:00:00', '18:52:00', 19, 1, 'terminal A', 'terminal2', NULL, NULL, NULL, 5, 300.00, NULL, NULL, '2025-12-05 12:52:27', '2025-12-05 13:01:21', 'Scheduled', NULL, NULL),
 (5, 'AA11', 7, 'From-To', '2025-12-06', '2025-12-06', '14:00:00', '16:03:00', 19, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-06 11:05:14', '2025-12-06 11:05:14', 'Scheduled', NULL, NULL),
 (6, 'BB112', 7, 'From-To', '2025-12-06', '2025-12-06', '14:06:00', '17:06:00', 19, 1, 'terminal A', 'terminal2', NULL, NULL, NULL, 5, 700.00, 700.00, 0.00, '2025-12-06 11:06:16', '2025-12-06 11:06:34', 'Scheduled', NULL, NULL),
-(7, 'RA101', 7, 'From-To', '2026-01-27', '2026-02-26', '06:00:00', '07:15:00', 150, 24, NULL, NULL, NULL, NULL, NULL, 5, 8500.00, 5500.00, 1500.00, '2026-01-27 10:57:16', '2026-01-27 11:13:18', 'Delayed', '06:45:00', NULL),
-(8, 'RA103', 7, 'From-To', '2026-01-27', '2026-02-26', '14:30:00', '15:45:00', 150, 24, NULL, NULL, NULL, NULL, NULL, 5, 9200.00, 6000.00, 1800.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(9, 'RA105', 6, 'From-To', '2026-01-27', '2026-02-26', '19:00:00', '20:15:00', 120, 24, NULL, NULL, NULL, NULL, NULL, 5, 12500.00, 8000.00, 2500.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(10, 'RA102', 7, 'From-To', '2026-01-27', '2026-02-26', '08:00:00', '09:15:00', 150, 5, NULL, NULL, NULL, NULL, NULL, 24, 8500.00, 5500.00, 1500.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(11, 'RA104', 7, 'From-To', '2026-01-27', '2026-02-26', '16:00:00', '17:15:00', 150, 5, NULL, NULL, NULL, NULL, NULL, 24, 9200.00, 6000.00, 1800.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(12, 'RA106', 6, 'From-To', '2026-01-27', '2026-02-26', '20:30:00', '21:45:00', 120, 5, NULL, NULL, NULL, NULL, NULL, 24, 12500.00, 8000.00, 2500.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(13, 'RA201', 7, 'From-To', '2026-01-27', '2026-02-26', '10:00:00', '11:30:00', 180, 24, NULL, NULL, NULL, NULL, NULL, 25, 15000.00, 10000.00, 3000.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(14, 'RA202', 7, 'From-To', '2026-01-27', '2026-02-26', '12:30:00', '14:00:00', 180, 25, NULL, NULL, NULL, NULL, NULL, 24, 15000.00, 10000.00, 3000.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(15, 'RA301', 6, 'From-To', '2026-01-27', '2026-02-26', '07:30:00', '09:00:00', 120, 24, NULL, NULL, NULL, NULL, NULL, 26, 18000.00, 12000.00, 3500.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(16, 'RA302', 6, 'From-To', '2026-01-27', '2026-02-26', '15:00:00', '16:30:00', 120, 26, NULL, NULL, NULL, NULL, NULL, 24, 18000.00, 12000.00, 3500.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(17, 'RA401', 7, 'From-To', '2026-01-27', '2026-02-26', '11:00:00', '13:30:00', 150, 5, NULL, NULL, NULL, NULL, NULL, 31, 22000.00, 15000.00, 4000.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(18, 'RA402', 7, 'From-To', '2026-01-27', '2026-02-26', '14:30:00', '17:00:00', 150, 31, NULL, NULL, NULL, NULL, NULL, 5, 22000.00, 15000.00, 4000.00, '2026-01-27 10:57:16', '2026-01-27 10:57:16', 'Scheduled', NULL, NULL),
-(19, 'RA501', 6, 'From-To', '2026-01-27', '2026-02-26', '09:00:00', '13:00:00', 120, 24, NULL, NULL, NULL, NULL, NULL, 28, 35000.00, 25000.00, 7000.00, '2026-01-27 10:57:17', '2026-01-27 10:57:17', 'Scheduled', NULL, NULL),
-(20, 'RA502', 6, 'From-To', '2026-01-27', '2026-02-26', '14:00:00', '18:00:00', 120, 28, NULL, NULL, NULL, NULL, NULL, 24, 35000.00, 25000.00, 7000.00, '2026-01-27 10:57:17', '2026-01-27 10:57:17', 'Scheduled', NULL, NULL),
-(21, 'RA601', 7, 'From-To', '2026-01-27', '2026-02-26', '08:00:00', '10:30:00', 150, 28, NULL, NULL, NULL, NULL, NULL, 29, 28000.00, 18000.00, 5000.00, '2026-01-27 10:57:17', '2026-01-27 10:57:17', 'Scheduled', NULL, NULL),
-(22, 'RA602', 7, 'From-To', '2026-01-27', '2026-02-26', '16:00:00', '18:30:00', 150, 29, NULL, NULL, NULL, NULL, NULL, 28, 28000.00, 18000.00, 5000.00, '2026-01-27 10:57:17', '2026-01-27 10:57:17', 'Scheduled', NULL, NULL),
+(7, 'RA101', 7, 'From-To', '2026-01-27', '2026-02-26', '06:00:00', '07:15:00', 150, 24, NULL, NULL, NULL, NULL, NULL, 5, 850.00, 5500.00, 1500.00, '2026-01-27 10:57:16', '2026-02-27 10:54:33', 'Delayed', '06:45:00', NULL),
+(8, 'RA103', 7, 'From-To', '2026-01-27', '2026-02-26', '14:30:00', '15:45:00', 150, 24, NULL, NULL, NULL, NULL, NULL, 5, 920.00, 6000.00, 1800.00, '2026-01-27 10:57:16', '2026-02-27 10:54:40', 'Scheduled', NULL, NULL),
+(9, 'RA105', 6, 'From-To', '2026-01-27', '2026-02-26', '19:00:00', '20:15:00', 120, 24, NULL, NULL, NULL, NULL, NULL, 5, 1250.00, 8000.00, 2500.00, '2026-01-27 10:57:16', '2026-02-27 10:54:27', 'Scheduled', NULL, NULL),
+(10, 'RA102', 7, 'From-To', '2026-01-27', '2026-02-26', '08:00:00', '09:15:00', 150, 5, NULL, NULL, NULL, NULL, NULL, 24, 850.00, 5500.00, 1500.00, '2026-01-27 10:57:16', '2026-02-27 10:54:46', 'Scheduled', NULL, NULL),
+(11, 'RA104', 7, 'From-To', '2026-01-27', '2026-02-26', '16:00:00', '17:15:00', 150, 5, NULL, NULL, NULL, NULL, NULL, 24, 920.00, 6000.00, 1800.00, '2026-01-27 10:57:16', '2026-02-27 10:54:51', 'Scheduled', NULL, NULL),
+(12, 'RA106', 6, 'From-To', '2026-01-27', '2026-02-26', '20:30:00', '21:45:00', 120, 5, NULL, NULL, NULL, NULL, NULL, 24, 1250.00, 8000.00, 2500.00, '2026-01-27 10:57:16', '2026-02-27 10:54:58', 'Scheduled', NULL, NULL),
+(13, 'RA201', 7, 'From-To', '2026-01-27', '2026-02-26', '10:00:00', '11:30:00', 180, 24, NULL, NULL, NULL, NULL, NULL, 25, 1500.00, 10000.00, 3000.00, '2026-01-27 10:57:16', '2026-02-27 10:55:03', 'Scheduled', NULL, NULL),
+(14, 'RA202', 7, 'From-To', '2026-01-27', '2026-02-26', '12:30:00', '14:00:00', 180, 25, NULL, NULL, NULL, NULL, NULL, 24, 1500.00, 10000.00, 3000.00, '2026-01-27 10:57:16', '2026-02-27 10:55:09', 'Scheduled', NULL, NULL),
+(15, 'RA301', 6, 'From-To', '2026-01-27', '2026-02-26', '07:30:00', '09:00:00', 120, 24, NULL, NULL, NULL, NULL, NULL, 26, 1800.00, 12000.00, 3500.00, '2026-01-27 10:57:16', '2026-02-27 10:55:14', 'Scheduled', NULL, NULL),
+(16, 'RA302', 6, 'From-To', '2026-01-27', '2026-02-26', '15:00:00', '16:30:00', 120, 26, NULL, NULL, NULL, NULL, NULL, 24, 1800.00, 12000.00, 3500.00, '2026-01-27 10:57:16', '2026-02-27 10:56:13', 'Scheduled', NULL, NULL),
+(17, 'RA401', 7, 'From-To', '2026-01-27', '2026-02-26', '11:00:00', '13:30:00', 150, 5, NULL, NULL, NULL, NULL, NULL, 31, 220.00, 15000.00, 4000.00, '2026-01-27 10:57:16', '2026-02-27 10:56:09', 'Scheduled', NULL, NULL),
+(18, 'RA402', 7, 'From-To', '2026-01-27', '2026-02-26', '14:30:00', '17:00:00', 150, 31, NULL, NULL, NULL, NULL, NULL, 5, 1000.00, 15000.00, 4000.00, '2026-01-27 10:57:16', '2026-02-27 10:56:05', 'Scheduled', NULL, NULL),
+(19, 'RA501', 6, 'From-To', '2026-01-27', '2026-02-26', '09:00:00', '13:00:00', 120, 24, NULL, NULL, NULL, NULL, NULL, 28, 500.00, 25000.00, 7000.00, '2026-01-27 10:57:17', '2026-02-27 10:55:51', 'Scheduled', NULL, NULL),
+(20, 'RA502', 6, 'From-To', '2026-01-27', '2026-02-26', '14:00:00', '18:00:00', 120, 28, NULL, NULL, NULL, NULL, NULL, 24, 500.00, 25000.00, 7000.00, '2026-01-27 10:57:17', '2026-02-27 10:55:45', 'Scheduled', NULL, NULL),
+(21, 'RA601', 7, 'From-To', '2026-01-27', '2026-02-26', '08:00:00', '10:30:00', 150, 28, NULL, NULL, NULL, NULL, NULL, 29, 800.00, 18000.00, 5000.00, '2026-01-27 10:57:17', '2026-02-27 10:55:35', 'Scheduled', NULL, NULL),
+(22, 'RA602', 7, 'From-To', '2026-01-27', '2026-02-26', '16:00:00', '18:30:00', 150, 29, NULL, NULL, NULL, NULL, NULL, 28, 800.00, 18000.00, 5000.00, '2026-01-27 10:57:17', '2026-02-27 10:55:22', 'Scheduled', NULL, NULL),
 (23, 'FLIGHT002', 7, 'From-To', '2026-02-22', '2026-02-22', '07:20:00', '09:18:00', 19, 25, 'terminal A', 'terminal2', NULL, NULL, NULL, 27, 400.00, 350.00, 300.00, '2026-02-21 18:18:41', '2026-02-22 20:03:28', 'Scheduled', NULL, NULL),
-(24, 'FLIGHT006', 1, 'From-To', '2026-02-23', '2026-02-23', '10:30:00', '12:30:00', 30, 24, 'terminal A', 'terminal2', NULL, NULL, NULL, 31, 400.00, 200.00, 200.00, '2026-02-23 07:20:30', '2026-02-23 07:25:02', 'Scheduled', NULL, NULL);
+(24, 'FLIGHT006', 1, 'From-To', '2026-02-23', '2026-02-23', '10:30:00', '12:30:00', 30, 24, 'terminal A', 'terminal2', NULL, NULL, NULL, 31, 400.00, 200.00, 200.00, '2026-02-23 07:20:30', '2026-02-23 07:25:02', 'Scheduled', NULL, NULL),
+(25, 'FLIGHT006', 7, 'From-To', '2026-03-24', '2026-03-25', '23:20:00', '05:19:00', 19, 25, 'Terminal A', 'terminal2', NULL, NULL, NULL, 1, NULL, NULL, NULL, '2026-03-24 18:19:44', '2026-03-24 18:19:44', 'Scheduled', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1550,9 +1659,12 @@ CREATE TABLE `hotels` (
   `name` varchar(255) NOT NULL,
   `location` varchar(255) NOT NULL,
   `description` text DEFAULT NULL,
+  `amenities` text DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   `price_per_night` decimal(10,2) DEFAULT NULL,
   `rating` decimal(2,1) DEFAULT NULL,
+  `review_count` int(11) NOT NULL DEFAULT 0,
+  `booking_url` varchar(255) DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
@@ -1561,9 +1673,9 @@ CREATE TABLE `hotels` (
 -- Dumping data for table `hotels`
 --
 
-INSERT INTO `hotels` (`id`, `name`, `location`, `description`, `image_url`, `price_per_night`, `rating`, `is_active`, `created_at`) VALUES
-(1, 'Royal Palm Hotel', 'Moroni, Comoros', NULL, NULL, 150.00, 4.8, 1, '2026-01-08 11:25:40'),
-(2, 'Ocean Breeze Resort', 'Nairobi, Kenya', NULL, NULL, 120.00, 4.5, 1, '2026-01-08 11:25:40');
+INSERT INTO `hotels` (`id`, `name`, `location`, `description`, `amenities`, `image_url`, `price_per_night`, `rating`, `review_count`, `booking_url`, `is_active`, `created_at`) VALUES
+(1, 'Royal Palm Hotel', 'Moroni, Comoros', 'Located on the Island’s prime location of the Indian Ocean, Itsandra Beach Hotel & Resort reflecting the spirit of the archipelago. This 4 stars Hotel has charming design and elegantly appointed Rooms & Suites making you feel peace with a private beach, a Gym & Massage service . Be ready for an unforgettable culinary journey with 3 Restaurants & Bars and a friendly team to welcome you. End your stay feeling refreshed and pampered in an Urban Oasis.', NULL, 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/palm%20hotel_NEoSo8Elmx.jpg', 150.00, 4.8, 0, 'https://booking.com/royal-palm-hotel', 1, '2026-01-08 11:25:40'),
+(2, 'Itsandra Beach Hotel & Resort', 'Nairobi, Kenya', NULL, NULL, 'https://ik.imagekit.io/bja2qwwdjjy/Airlogix/juan-burgos-sRQclM9FkHI-unsplash_EyhBjTEC2.jpg', 120.00, 4.5, 0, NULL, 1, '2026-01-08 11:25:40');
 
 -- --------------------------------------------------------
 
@@ -6207,7 +6319,7 @@ INSERT INTO `offers` (`id`, `title`, `description`, `image_url`, `promo_code`, `
 
 CREATE TABLE `passengers` (
   `id` int(11) NOT NULL,
-  `pnr` varchar(10) NOT NULL,
+  `pnr` varchar(20) NOT NULL,
   `name` varchar(255) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `contact` varchar(50) DEFAULT NULL,
@@ -6304,7 +6416,25 @@ INSERT INTO `passengers` (`id`, `pnr`, `name`, `email`, `contact`, `nationality`
 (77, 'RJVIE25OGJ', 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', NULL, NULL, NULL, NULL, NULL, '2026-02-23 10:02:53', '2026-02-23 10:02:53'),
 (78, 'FCG02CG13K', 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'dd', NULL, NULL, NULL, NULL, '2026-02-23 10:06:59', '2026-02-23 10:06:59'),
 (79, '64XLLVJD6A', 'Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'Kenyan ', 'BK34011563', NULL, NULL, NULL, '2026-02-24 12:43:53', '2026-02-24 12:43:53'),
-(80, 'JZCCUD263Y', 'Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'Kenyan', 'BK34011563', NULL, NULL, NULL, '2026-02-24 13:36:17', '2026-02-24 13:36:17');
+(80, 'JZCCUD263Y', 'Benjamin Okwama', 'reviewer@mcaviation.com', '0706166875', 'Kenyan', 'BK34011563', NULL, NULL, NULL, '2026-02-24 13:36:17', '2026-02-24 13:36:17'),
+(81, '9988417640374', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Japanese', 'PD3456798', NULL, NULL, NULL, '2026-02-25 11:12:09', '2026-02-25 11:12:09'),
+(82, '9986878827837', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Nairobi', '1244', NULL, NULL, NULL, '2026-02-26 13:03:00', '2026-02-26 13:03:00'),
+(83, '9984402423882', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Nairobi', '1244', NULL, NULL, NULL, '2026-02-26 13:03:23', '2026-02-26 13:03:23'),
+(84, '9986677047806', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Kenya', '124455888', NULL, NULL, NULL, '2026-02-26 18:13:02', '2026-02-26 18:13:02'),
+(85, '9987850770192', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'UK', 'KOKIUYTR', NULL, 'Mr', NULL, '2026-02-26 18:41:15', '2026-02-26 18:41:15'),
+(86, '9983801199212', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Japanese ', 'JK088665', NULL, NULL, NULL, '2026-02-27 09:58:58', '2026-02-27 09:58:58'),
+(87, '9985832677200', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Japanese ', 'JK088665', NULL, NULL, NULL, '2026-02-27 09:59:02', '2026-02-27 09:59:02'),
+(88, '9989283183251', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Japanese ', 'JK088665', NULL, NULL, NULL, '2026-02-27 09:59:04', '2026-02-27 09:59:04'),
+(89, '9981869059876', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'JAPANESE ', 'JK688999', NULL, NULL, NULL, '2026-02-27 10:08:42', '2026-02-27 10:08:42'),
+(90, '9980485502098', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Ugandan ', 'UGX64846488', NULL, 'Mr', NULL, '2026-02-27 10:21:15', '2026-02-27 10:21:15'),
+(91, '9988730952311', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Ugandan ', 'UGX64846488', NULL, 'Mr', NULL, '2026-02-27 10:30:52', '2026-02-27 10:30:52'),
+(92, '9982963706061', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Ugcx', 'ASREWQ', NULL, 'Mr', NULL, '2026-02-27 10:51:56', '2026-02-27 10:51:56'),
+(93, '9981322953467', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Ugcx', 'ASREWQ', NULL, 'Mr', NULL, '2026-02-27 10:53:13', '2026-02-27 10:53:13'),
+(94, '9984784076312', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Hu', 'SD45666', NULL, NULL, NULL, '2026-02-27 11:11:50', '2026-02-27 11:11:50'),
+(95, '9988028964600', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Hu', 'SD45666', NULL, NULL, NULL, '2026-02-27 11:15:36', '2026-02-27 11:15:36'),
+(96, '9983546392217', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'ASDYY', '456677787', NULL, 'Mr', NULL, '2026-02-27 13:20:55', '2026-02-27 13:20:55'),
+(97, '9986724736502', 'Benjamin Okwama', 'gizmojunction@outlook.com', NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-01 07:49:52', '2026-04-01 07:49:52'),
+(98, '9980934335035', 'Benjamin Okwama', 'bennjiokwama@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, '2026-04-01 09:00:52', '2026-04-01 09:00:52');
 
 -- --------------------------------------------------------
 
@@ -6330,9 +6460,9 @@ CREATE TABLE `password_resets` (
 CREATE TABLE `payment_transactions` (
   `id` int(11) NOT NULL,
   `booking_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
-  `currency` varchar(3) DEFAULT 'KES',
+  `currency` varchar(3) DEFAULT 'USD',
   `payment_method` varchar(50) NOT NULL COMMENT 'M-Pesa, Card, etc',
   `payment_reference` varchar(100) DEFAULT NULL,
   `transaction_id` varchar(100) DEFAULT NULL COMMENT 'External payment gateway ID',
@@ -6342,6 +6472,13 @@ CREATE TABLE `payment_transactions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `payment_transactions`
+--
+
+INSERT INTO `payment_transactions` (`id`, `booking_id`, `user_id`, `amount`, `currency`, `payment_method`, `payment_reference`, `transaction_id`, `status`, `payment_date`, `metadata`, `created_at`, `updated_at`) VALUES
+(1, 84, 1, 119003.94, 'KES', 'M-Pesa', 'CZKMOU', 'ws_CO_27022026162107806706166875', 'failed', '2026-02-27 16:21:16', '{\"merchant_request_id\":\"b812-4789-a1aa-8172e88dc13313646\",\"checkout_request_id\":\"ws_CO_27022026162107806706166875\",\"result_code\":1032,\"result_desc\":\"Request Cancelled by user.\",\"booking_reference\":null,\"status\":\"failed\"}', '2026-02-27 13:21:07', '2026-02-27 13:21:16');
 
 -- --------------------------------------------------------
 
@@ -6402,6 +6539,35 @@ INSERT INTO `seat_reservations` (`id`, `flight_series_id`, `number_of_seats`, `p
 (12, 24, 1, 50, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'JP6YE1', 'booked', '2026-02-23', 'testing', NULL, '2026-02-23 07:20:55', '2026-02-23 07:56:07'),
 (13, 24, 1, 53, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'HD7DU8', 'booked', '2026-02-23', NULL, NULL, '2026-02-23 07:58:55', '2026-02-23 10:07:01'),
 (14, 24, 1, 66, 'BRYAN OTIENO ONYANGO', 'bryanotieno09@gmail.com', '0706166875', 'MJYEYA', 'booked', '2026-02-23', NULL, NULL, '2026-02-23 09:27:05', '2026-02-23 09:45:17');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `settings`
+--
+
+CREATE TABLE `settings` (
+  `id` int(11) NOT NULL,
+  `setting_key` varchar(64) NOT NULL,
+  `setting_value` text DEFAULT NULL,
+  `group_name` varchar(32) DEFAULT 'general',
+  `description` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `settings`
+--
+
+INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `group_name`, `description`, `created_at`, `updated_at`) VALUES
+(1, 'bank_beneficiary', 'ESTBRAND AVIATORS OÜ', 'payment', 'Company name for bank transfers', '2026-03-31 21:44:25', '2026-03-31 21:44:25'),
+(2, 'bank_name', 'AS SEB PANK (Estonia)', 'payment', 'Bank provider name', '2026-03-31 21:44:25', '2026-03-31 21:44:25'),
+(3, 'bank_swift_bic', 'EEUHEE2X', 'payment', 'SWIFT/BIC code for international transfers', '2026-03-31 21:44:25', '2026-03-31 21:44:25'),
+(4, 'bank_reg_code', '10004252', 'payment', 'Corporate registration number', '2026-03-31 21:44:25', '2026-03-31 21:44:25'),
+(5, 'bank_address', 'Tornimäe 2, 15010 Tallinn, Eesti Vabariik', 'payment', 'Physical bank address', '2026-03-31 21:44:25', '2026-03-31 21:44:25'),
+(6, 'bank_iban', 'EE171010220301870220', 'payment', 'Account IBAN number', '2026-03-31 21:44:25', '2026-03-31 21:44:25'),
+(7, 'payment_instruction_note', 'Please use your Booking Reference (PNR) as the transfer description.', 'payment', 'General instruction for manual bank transfers', '2026-03-31 21:44:25', '2026-03-31 21:44:25');
 
 -- --------------------------------------------------------
 
@@ -6531,6 +6697,13 @@ ALTER TABLE `account_category`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `account_deletion_requests`
+--
+ALTER TABLE `account_deletion_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `account_types`
 --
 ALTER TABLE `account_types`
@@ -6610,7 +6783,9 @@ ALTER TABLE `bookings`
   ADD KEY `idx_booking_date` (`booking_date`),
   ADD KEY `idx_payment_status` (`payment_status`),
   ADD KEY `idx_user_id` (`user_id`),
-  ADD KEY `idx_status` (`status`);
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_booking_reservation_expires_at` (`reservation_expires_at`),
+  ADD KEY `idx_booking_expired_at` (`expired_at`);
 
 --
 -- Indexes for table `booking_passengers`
@@ -6618,6 +6793,7 @@ ALTER TABLE `bookings`
 ALTER TABLE `booking_passengers`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_booking_passenger` (`booking_id`,`passenger_id`),
+  ADD UNIQUE KEY `idx_ticket_number` (`ticket_number`),
   ADD KEY `passenger_id` (`passenger_id`);
 
 --
@@ -6626,6 +6802,16 @@ ALTER TABLE `booking_passengers`
 ALTER TABLE `cabin_classes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_name` (`name`);
+
+--
+-- Indexes for table `cargo_bookings`
+--
+ALTER TABLE `cargo_bookings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `awb_number` (`awb_number`),
+  ADD KEY `flight_series_id` (`flight_series_id`),
+  ADD KEY `idx_awb_number` (`awb_number`),
+  ADD KEY `idx_cargo_booking_date` (`booking_date`);
 
 --
 -- Indexes for table `Category`
@@ -6834,7 +7020,8 @@ ALTER TABLE `notifications`
   ADD KEY `idx_user` (`user_id`),
   ADD KEY `idx_is_read` (`is_read`),
   ADD KEY `idx_type` (`type`),
-  ADD KEY `idx_notifications_user_unread` (`user_id`,`is_read`);
+  ADD KEY `idx_notifications_user_unread` (`user_id`,`is_read`),
+  ADD KEY `idx_notifications_user_read_created` (`user_id`,`is_read`,`created_at`);
 
 --
 -- Indexes for table `offers`
@@ -6866,10 +7053,12 @@ ALTER TABLE `password_resets`
 --
 ALTER TABLE `payment_transactions`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_payment_gateway_method_ref` (`payment_method`,`transaction_id`),
   ADD KEY `idx_booking` (`booking_id`),
   ADD KEY `idx_user` (`user_id`),
   ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_reference` (`payment_reference`);
+  ADD KEY `idx_reference` (`payment_reference`),
+  ADD KEY `idx_transaction_id` (`transaction_id`);
 
 --
 -- Indexes for table `payroll`
@@ -6891,6 +7080,13 @@ ALTER TABLE `seat_reservations`
   ADD KEY `idx_reservation_date` (`reservation_date`),
   ADD KEY `idx_booking_reference` (`booking_reference`),
   ADD KEY `idx_agent_id` (`agent_id`);
+
+--
+-- Indexes for table `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `setting_key` (`setting_key`);
 
 --
 -- Indexes for table `staff`
@@ -6924,6 +7120,12 @@ ALTER TABLE `supplier_ledger`
 --
 ALTER TABLE `account_category`
   MODIFY `id` int(3) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `account_deletion_requests`
+--
+ALTER TABLE `account_deletion_requests`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `account_types`
@@ -6965,25 +7167,31 @@ ALTER TABLE `aircrafts`
 -- AUTO_INCREMENT for table `airline_users`
 --
 ALTER TABLE `airline_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=87;
 
 --
 -- AUTO_INCREMENT for table `booking_passengers`
 --
 ALTER TABLE `booking_passengers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
 
 --
 -- AUTO_INCREMENT for table `cabin_classes`
 --
 ALTER TABLE `cabin_classes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `cargo_bookings`
+--
+ALTER TABLE `cargo_bookings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `Category`
@@ -7079,7 +7287,7 @@ ALTER TABLE `flight_crew`
 -- AUTO_INCREMENT for table `flight_series`
 --
 ALTER TABLE `flight_series`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `fueling`
@@ -7151,7 +7359,7 @@ ALTER TABLE `offers`
 -- AUTO_INCREMENT for table `passengers`
 --
 ALTER TABLE `passengers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
 
 --
 -- AUTO_INCREMENT for table `password_resets`
@@ -7163,7 +7371,7 @@ ALTER TABLE `password_resets`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `payroll`
@@ -7176,6 +7384,12 @@ ALTER TABLE `payroll`
 --
 ALTER TABLE `seat_reservations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT for table `settings`
+--
+ALTER TABLE `settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `staff`
@@ -7198,6 +7412,12 @@ ALTER TABLE `supplier_ledger`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `account_deletion_requests`
+--
+ALTER TABLE `account_deletion_requests`
+  ADD CONSTRAINT `account_deletion_requests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `airline_users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `agency_deposits`
@@ -7237,6 +7457,12 @@ ALTER TABLE `bookings`
 ALTER TABLE `booking_passengers`
   ADD CONSTRAINT `booking_passengers_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `booking_passengers_ibfk_2` FOREIGN KEY (`passenger_id`) REFERENCES `passengers` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `cargo_bookings`
+--
+ALTER TABLE `cargo_bookings`
+  ADD CONSTRAINT `cargo_bookings_ibfk_1` FOREIGN KEY (`flight_series_id`) REFERENCES `flight_series` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `destinations`
@@ -7301,7 +7527,7 @@ ALTER TABLE `notifications`
 --
 ALTER TABLE `payment_transactions`
   ADD CONSTRAINT `payment_transactions_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`),
-  ADD CONSTRAINT `payment_transactions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `airline_users` (`id`);
+  ADD CONSTRAINT `payment_transactions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `airline_users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `payroll`

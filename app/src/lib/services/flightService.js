@@ -131,9 +131,10 @@ export const flightService = {
 
       if (!response.ok) throw new Error('API Error');
       const result = await response.json();
-      
-      const flights = result.status ? result.data : [];
-      const suggestions = result.suggestions || [];
+      /** @param {any} f */
+      const hasBookableFare = (f) => Number(f?.adult_fare ?? f?.base_fare ?? 0) > 0;
+      const flights = (result.status ? result.data : []).filter(hasBookableFare);
+      const suggestions = (result.suggestions || []).filter(hasBookableFare);
 
       if (flights.length === 0 && suggestions.length === 0 && ENABLE_MOCKS) {
         return { flights: this.getMockFlights(query), suggestions: [] };
@@ -144,7 +145,11 @@ export const flightService = {
     } catch (error) {
       console.warn('Flight search API failed or is slow.', error);
       const cached = readCache();
-      if (cached) return { flights: cached, suggestions: [] };
+      if (cached) {
+        /** @param {any} f */
+        const hasBookableFare = (f) => Number(f?.adult_fare ?? f?.base_fare ?? 0) > 0;
+        return { flights: cached.filter(hasBookableFare), suggestions: [] };
+      }
       return ENABLE_MOCKS ? { flights: this.getMockFlights(query), suggestions: [] } : { flights: [], suggestions: [] };
     }
   },

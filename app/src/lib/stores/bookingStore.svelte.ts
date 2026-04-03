@@ -9,7 +9,10 @@ export interface Flight {
   departure_time: string;
   arrival_time?: string;
   duration?: string;
-  base_fare: number;
+  base_fare?: number;
+  adult_fare?: number;
+  child_fare?: number;
+  infant_fare?: number;
   airline_name?: string;
 }
 
