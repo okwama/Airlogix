@@ -34,6 +34,80 @@ class BookingController {
         return $user_id;
     }
 
+    private function getGuestAccessTokenTtlSeconds(array $booking): int
+    {
+        $defaultTtl = (int)env('BOOKING_ACCESS_TOKEN_TTL_SECONDS', 1800);
+        if ($defaultTtl <= 0) {
+            $defaultTtl = 1800;
+        }
+
+        $paymentStatus = strtolower((string)($booking['payment_status'] ?? 'pending'));
+        if ($paymentStatus === 'paid' || $paymentStatus === 'completed') {
+            return $defaultTtl;
+        }
+
+        $expiresAt = $booking['reservation_expires_at'] ?? null;
+        if (empty($expiresAt)) {
+            return $defaultTtl;
+        }
+
+        $remaining = strtotime((string)$expiresAt) - time();
+        if ($remaining <= 0) {
+            return 60;
+        }
+
+        return min($defaultTtl, $remaining);
+    }
+
+    private function issueGuestAccessToken(array $booking): string
+    {
+        $reference = (string)($booking['booking_reference'] ?? '');
+        $bookingId = (int)($booking['id'] ?? 0);
+        if ($reference === '' || $bookingId <= 0) {
+            throw new RuntimeException('Cannot issue access token for invalid booking');
+        }
+
+        $activeKey = "booking_access_active:{$reference}:{$bookingId}";
+        $previousTokenHash = Cache::get($activeKey);
+        if (is_string($previousTokenHash) && $previousTokenHash !== '') {
+            Cache::delete("booking_access_session:{$previousTokenHash}");
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
+
+        Cache::set("booking_access_session:{$tokenHash}", [
+            'booking_id' => $bookingId,
+            'reference' => $reference
+        ], $this->getGuestAccessTokenTtlSeconds($booking));
+        Cache::set($activeKey, $tokenHash, $this->getGuestAccessTokenTtlSeconds($booking));
+
+        return $token;
+    }
+
+    private function validateGuestAccessToken(array $booking, string $accessToken): bool
+    {
+        $bookingId = (int)($booking['id'] ?? 0);
+        $reference = (string)($booking['booking_reference'] ?? '');
+        if ($bookingId <= 0 || $reference === '' || trim($accessToken) === '') {
+            return false;
+        }
+
+        $tokenHash = hash('sha256', trim($accessToken));
+        $activeTokenHash = Cache::get("booking_access_active:{$reference}:{$bookingId}");
+        if (!is_string($activeTokenHash) || $activeTokenHash === '' || !hash_equals($activeTokenHash, $tokenHash)) {
+            return false;
+        }
+
+        $session = Cache::get("booking_access_session:{$tokenHash}");
+        if (!is_array($session)) {
+            return false;
+        }
+
+        return (int)($session['booking_id'] ?? 0) === $bookingId
+            && strtoupper((string)($session['reference'] ?? '')) === strtoupper($reference);
+    }
+
 
     public function create() {
         // Authentication optional for bookings (guests can book)
@@ -217,11 +291,11 @@ class BookingController {
                 'booking_id' => $bookingId,
                 'reference' => $bookingReference,
                 'reservation_expires_at' => $bookingResponse['data']['reservation_expires_at'] ?? $bookingData['reservation_expires_at'],
-                'access_token' => hash_hmac(
-                    'sha256',
-                    $bookingReference . '|' . $bookingId,
-                    env('JWT_SECRET', 'airlogix_default_secret')
-                ),
+                'access_token' => $this->issueGuestAccessToken($bookingSnapshot ?: [
+                    'id' => $bookingId,
+                    'booking_reference' => $bookingReference,
+                    'reservation_expires_at' => $bookingResponse['data']['reservation_expires_at'] ?? $bookingData['reservation_expires_at']
+                ]),
                 'data' => array_merge($bookingResponse['data'], [
                     'passengers' => $createdPassengers
                 ])
@@ -270,8 +344,7 @@ class BookingController {
         if (!$isAuthorized) {
             $accessToken = $headers['X-Booking-Access-Token'] ?? '';
             if (!empty($accessToken)) {
-                $expected = hash_hmac('sha256', $reference . '|' . $booking['id'], env('JWT_SECRET', 'airlogix_default_secret'));
-                $isAuthorized = hash_equals($expected, $accessToken);
+                $isAuthorized = $this->validateGuestAccessToken($booking, $accessToken);
             }
         }
 
@@ -677,9 +750,13 @@ class BookingController {
         // One-time use
         Cache::delete($otpKey);
 
-        // Generate a temporary access token for this browser session
         $booking = $this->bookingModel->getByReference($reference);
-        $accessToken = hash_hmac('sha256', $reference . '|' . $booking['id'], env('JWT_SECRET', 'airlogix_default_secret'));
+        if (!$booking) {
+            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            return;
+        }
+
+        $accessToken = $this->issueGuestAccessToken($booking);
 
         Response::json([
             'status' => true, 

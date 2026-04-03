@@ -6,6 +6,7 @@ require_once __DIR__ . '/../models/BookingPassenger.php';
 require_once __DIR__ . '/../models/AirlineUser.php';
 require_once __DIR__ . '/../models/Loyalty.php';
 require_once __DIR__ . '/../utils/Response.php';
+require_once __DIR__ . '/../utils/Cache.php';
 
 class PaymentController {
     private $paymentModel;
@@ -42,12 +43,14 @@ class PaymentController {
         if (!$isAuthorized) {
             $accessToken = $headers['X-Booking-Access-Token'] ?? '';
             if (!empty($accessToken) && !empty($booking['booking_reference']) && !empty($booking['id'])) {
-                $expected = hash_hmac(
-                    'sha256',
-                    $booking['booking_reference'] . '|' . $booking['id'],
-                    env('JWT_SECRET', 'airlogix_default_secret')
-                );
-                $isAuthorized = hash_equals($expected, $accessToken);
+                $tokenHash = hash('sha256', trim((string)$accessToken));
+                $activeTokenHash = Cache::get("booking_access_active:{$booking['booking_reference']}:{$booking['id']}");
+                if (is_string($activeTokenHash) && $activeTokenHash !== '' && hash_equals($activeTokenHash, $tokenHash)) {
+                    $session = Cache::get("booking_access_session:{$tokenHash}");
+                    $isAuthorized = is_array($session)
+                        && (int)($session['booking_id'] ?? 0) === (int)$booking['id']
+                        && strtoupper((string)($session['reference'] ?? '')) === strtoupper((string)$booking['booking_reference']);
+                }
             }
         }
 

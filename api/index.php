@@ -4,13 +4,52 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0); // Don't display errors to users
 ini_set('log_errors', 1); // Log errors to error log
 
+require_once __DIR__.'/config.php';
+
 // CORS Headers Support
-header('Access-Control-Allow-Origin: *');
+function cors_allowed_origins(): array {
+    $configured = trim((string)env('CORS_ALLOWED_ORIGINS', ''));
+    if ($configured !== '') {
+        return array_values(array_filter(array_map('trim', explode(',', $configured))));
+    }
+
+    $defaults = [];
+    $frontendUrl = trim((string)env('FRONTEND_URL', env('APP_URL_FRONTEND', env('APP_URL', ''))));
+    if ($frontendUrl !== '') {
+        $defaults[] = $frontendUrl;
+    }
+
+    $appEnv = strtolower((string)env('APP_ENV', 'production'));
+    if ($appEnv !== 'production') {
+        $defaults = array_merge($defaults, [
+            'https://airlogix-smoky.vercel.app', // Vercel preview URL (for development/testing)
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+            'http://localhost:4173',
+            'http://127.0.0.1:4173'
+
+        ]);
+    }
+
+    return array_values(array_unique(array_filter($defaults)));
+}
+
+$requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowedOrigins = cors_allowed_origins();
+if ($requestOrigin !== '' && in_array($requestOrigin, $allowedOrigins, true)) {
+    header('Access-Control-Allow-Origin: ' . $requestOrigin);
+    header('Vary: Origin');
+}
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Booking-Access-Token');
+header('Access-Control-Max-Age: 600');
 
 // Handle Preflight OPTIONS Request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    if ($requestOrigin !== '' && !in_array($requestOrigin, $allowedOrigins, true)) {
+        http_response_code(403);
+        exit();
+    }
     http_response_code(200);
     exit();
 }
@@ -34,8 +73,6 @@ register_shutdown_function(function() {
         ], JSON_UNESCAPED_UNICODE);
     }
 });
-
-require_once __DIR__.'/config.php';
 require_once __DIR__.'/utils/Response.php';
 require_once __DIR__.'/utils/Auth.php';
 require_once __DIR__.'/controllers/AirlineUserController.php';

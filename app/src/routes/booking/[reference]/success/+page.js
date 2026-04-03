@@ -5,7 +5,12 @@ export const load = async ({ params, url }) => {
   const sessionId = url.searchParams.get('session_id');
   
   // Fetch real booking from AirLogix API
-  const bookingData = await bookingService.getBooking(reference);
+  let bookingData = null;
+  try {
+    bookingData = await bookingService.getBooking(reference);
+  } catch {
+    bookingData = null;
+  }
   
   return {
     reference,

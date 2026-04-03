@@ -77,6 +77,12 @@ export const bookingService = {
     }
   },
 
+  clearAccessToken(reference: string) {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(`booking_token:${reference}`);
+    }
+  },
+
   /**
    * Retrieve booking details by PNR reference.
    */
@@ -136,6 +142,10 @@ export const bookingService = {
       });
       
       const result = await response.json();
+      if (response.status === 401) {
+        this.clearAccessToken(reference);
+        throw new Error(result.message || 'Your booking access session expired. Please verify again via Manage Booking.');
+      }
       if (!response.ok || !result.status) {
         throw new Error(result.message || 'Booking not found');
       }
@@ -143,7 +153,7 @@ export const bookingService = {
       return result.data;
     } catch (error) {
       console.error('Booking lookup error:', error);
-      return null;
+      throw error;
     }
   },
 
@@ -163,10 +173,17 @@ export const bookingService = {
             })
         });
         const result = await response.json();
+        if (response.status === 401) {
+            this.clearAccessToken(reference);
+            throw new Error(result.message || 'Your booking access session expired. Please verify again via Manage Booking.');
+        }
+        if (!response.ok || !result.status) {
+            throw new Error(result.message || 'Failed to update payment status');
+        }
         return result.status;
     } catch(err) {
         console.error(err);
-        return false;
+        throw err;
     }
   },
 
@@ -181,6 +198,10 @@ export const bookingService = {
         body: JSON.stringify({ booking_reference: reference, phone_number: phoneNumber, amount })
       });
       const result = await response.json();
+      if (response.status === 401) {
+        this.clearAccessToken(reference);
+        throw new Error(result.message || 'Your booking access session expired. Please verify again via Manage Booking.');
+      }
       if (!response.ok || !result.status) throw new Error(result.message);
       return result.data;
     } catch (error) {
@@ -317,6 +338,10 @@ export const bookingService = {
       const ct = response.headers.get('content-type');
       if (ct?.includes('application/json')) {
         const j = (await response.json().catch(() => ({}))) as { message?: string };
+        if (response.status === 401) {
+          this.clearAccessToken(reference);
+          throw new Error(j.message || 'Your booking access session expired. Please verify again via Manage Booking.');
+        }
         throw new Error(j.message || 'Failed to load document');
       }
       throw new Error('Failed to load document');
@@ -338,6 +363,10 @@ export const bookingService = {
         })
       });
       const result = await response.json();
+      if (response.status === 401) {
+        this.clearAccessToken(bookingReference);
+        throw new Error(result.message || 'Your booking access session expired. Please verify again via Manage Booking.');
+      }
       if (!response.ok || !result.status) throw new Error(result.message || 'Failed to initialize Stripe');
       return result.data; // This will contain the session URL or ID
     } catch (error) {
