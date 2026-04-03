@@ -1,12 +1,5 @@
 {
   "framework": "sveltekit",
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "outputDirectory": ".svelte-kit/vercel-tmp",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ]
+  "outputDirectory": ".svelte-kit/vercel-tmp"
 }
