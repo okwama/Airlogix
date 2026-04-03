@@ -1,4 +1,4 @@
-import { bookingService } from '$lib/services/bookingService';
+import { bookingService } from '$lib/services/booking/bookingService';
 
 export const load = async ({ params, url }) => {
   const reference = params.reference;

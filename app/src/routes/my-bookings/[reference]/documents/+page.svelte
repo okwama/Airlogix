@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { onMount, onDestroy } from 'svelte';
-  import { bookingService, ServiceError } from '$lib/services/bookingService';
+  import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
   import Button from '$lib/components/ui/Button.svelte';
@@ -27,8 +27,16 @@
       if (e instanceof ServiceError) {
         if (e.type === 'AUTH_EXPIRED') {
           error = 'Your access session expired. Please verify this booking again via Manage Booking.';
+        } else if (e.type === 'HOLD_EXPIRED') {
+          error = 'This unpaid reservation has expired, so documents are not available.';
         } else if (e.type === 'NOT_FOUND') {
           error = 'Document not found for this booking yet.';
+        } else if (e.type === 'SERVER' && e.code === 'PDF_NOT_CONFIGURED') {
+          error = 'PDF generation is not configured on the server yet. Please contact support.';
+        } else if (e.type === 'SERVER' && e.code === 'PDF_GENERATION_FAILED') {
+          error = 'We could not generate the PDF right now. Please try again shortly.';
+        } else if (e.type === 'SERVER' && e.code === 'CURRENCY_CONVERSION_UNAVAILABLE') {
+          error = 'Currency conversion is temporarily unavailable. Try again with USD.';
         } else if (e.type === 'NETWORK') {
           error = 'Network issue while loading the document. Please retry.';
         } else {

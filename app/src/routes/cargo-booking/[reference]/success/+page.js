@@ -1,4 +1,4 @@
-import { bookingService, ServiceError } from '$lib/services/bookingService';
+import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
 import { error } from '@sveltejs/kit';
 
 // @ts-ignore

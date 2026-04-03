@@ -6,7 +6,7 @@
   import { goto } from '$app/navigation';
   import { appConfig } from '$lib/config/appConfig';
 
-  import { BASE_URL, bookingService } from '$lib/services/bookingService';
+  import { BASE_URL, bookingService } from '$lib/services/booking/bookingService';
   
   let reference = $state('');
   let email = $state('');

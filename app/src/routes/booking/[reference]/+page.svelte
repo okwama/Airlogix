@@ -5,7 +5,7 @@
   import PaymentPicker from '$lib/features/payment/PaymentPicker.svelte';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { bookingStore } from '$lib/stores/bookingStore.svelte';
-  import { bookingService, type Passenger } from '$lib/services/bookingService.js';
+  import { bookingService, type Passenger } from '$lib/services/booking/bookingService';
   import { appConfig } from '$lib/config/appConfig';
   import { Lock, Check, Plane, ChevronLeft, Loader2 } from 'lucide-svelte';
 

@@ -28,7 +28,7 @@ class BookingController {
         $user_id = $this->userModel->validateToken($token);
 
         if (!$user_id) {
-            Response::json(['status' => false, 'message' => 'Unauthorized'], 401);
+            Response::fail(401, 'Unauthorized', 'AUTH_UNAUTHORIZED');
             exit();
         }
         return $user_id;
@@ -452,19 +452,17 @@ class BookingController {
                 $this->bookingModel->expireBooking((int)$booking['id']);
                 $booking = $this->bookingModel->getByReference($reference);
                 if (!$booking) {
-                    Response::json([
-                        'status' => false,
-                        'message' => 'Booking not found'
-                    ], 404);
+                    Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
                     return;
                 }
             }
 
             if (!$this->canAccessBooking($booking, $reference)) {
-                Response::json([
-                    'status' => false, 
-                    'message' => 'Unauthorized. Please use the "Manage Booking" flow to verify access via OTP.'
-                ], 401);
+                Response::fail(
+                    401,
+                    'Unauthorized. Please use the "Manage Booking" flow to verify access via OTP.',
+                    'BOOKING_ACCESS_DENIED'
+                );
                 return;
             }
 
@@ -480,7 +478,7 @@ class BookingController {
             
             Response::json(['status' => true, 'data' => $booking]);
         } else {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
         }
     }
     
@@ -520,30 +518,36 @@ class BookingController {
         }
 
         if (empty($bookingId) || empty($status)) {
-            Response::json(['status' => false, 'message' => 'Missing payment details (booking_id or booking_reference) and (status or payment_status)'], 400);
+            Response::fail(
+                400,
+                'Missing payment details (booking_id or booking_reference) and (status or payment_status)',
+                'PAYMENT_UPDATE_MISSING_FIELDS'
+            );
             return;
         }
 
         $booking = $this->bookingModel->getById((int)$bookingId);
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
 
         if (!$this->canAccessBooking($booking, (string)$booking['booking_reference'])) {
-            Response::json([
-                'status' => false,
-                'message' => 'Unauthorized. Please verify booking access before updating payment details.'
-            ], 401);
+            Response::fail(
+                401,
+                'Unauthorized. Please verify booking access before updating payment details.',
+                'BOOKING_ACCESS_DENIED'
+            );
             return;
         }
 
         if ($this->isBookingExpired($booking)) {
             $this->bookingModel->expireBooking((int)$booking['id']);
-            Response::json([
-                'status' => false,
-                'message' => 'This reservation has expired. Please search again to create a new booking.'
-            ], 409);
+            Response::fail(
+                409,
+                'This reservation has expired. Please search again to create a new booking.',
+                'BOOKING_HOLD_EXPIRED'
+            );
             return;
         }
 
@@ -554,19 +558,21 @@ class BookingController {
         // such as bank transfer instructions. Paid status must only come from a verified
         // gateway callback or an internal/admin settlement flow.
         if ($normalizedStatus !== 'pending') {
-            Response::json([
-                'status' => false,
-                'message' => 'This endpoint can only mark a booking payment as pending.'
-            ], 403);
+            Response::fail(
+                403,
+                'This endpoint can only mark a booking payment as pending.',
+                'PAYMENT_STATUS_MUTATION_FORBIDDEN'
+            );
             return;
         }
 
         $allowedMethods = ['bank_transfer', 'wire_transfer', 'bank'];
         if (!in_array($normalizedMethod, $allowedMethods, true)) {
-            Response::json([
-                'status' => false,
-                'message' => 'Unsupported payment method for this endpoint'
-            ], 400);
+            Response::fail(
+                400,
+                'Unsupported payment method for this endpoint',
+                'PAYMENT_METHOD_UNSUPPORTED'
+            );
             return;
         }
 
@@ -576,7 +582,7 @@ class BookingController {
             Response::json(['status' => true, 'message' => 'Payment status updated to pending']);
         } else {
             error_log("Failed to update payment status for booking ID: " . ($bookingId ?? 'unknown'));
-            Response::json(['status' => false, 'message' => 'Failed to update payment status'], 500);
+            Response::fail(500, 'Failed to update payment status', 'PAYMENT_UPDATE_FAILED');
         }
     }
 
@@ -704,7 +710,7 @@ class BookingController {
         $email = strtolower(trim((string)($data['email'] ?? $data['passenger_email'] ?? '')));
 
         if (empty($reference) || empty($email)) {
-            Response::json(['status' => false, 'message' => 'Missing reference or email'], 400);
+            Response::fail(400, 'Missing reference or email', 'BOOKING_ACCESS_INPUT_INVALID');
             return;
         }
 
@@ -714,7 +720,7 @@ class BookingController {
         $rate = Cache::get($rateKey);
         $count = is_array($rate) ? (int)($rate['count'] ?? 0) : 0;
         if ($count >= 5) {
-            Response::json(['status' => false, 'message' => 'Too many requests. Try again later.'], 429);
+            Response::fail(429, 'Too many requests. Try again later.', 'BOOKING_ACCESS_RATE_LIMITED');
             return;
         }
         Cache::set($rateKey, ['count' => $count + 1], 600);
@@ -760,7 +766,7 @@ class BookingController {
 
         // Consider it delivered if at least one channel succeeded.
         if (!$sentEmail && !$sentSms) {
-            Response::json(['status' => false, 'message' => 'Failed to send access code. Try again later.'], 500);
+            Response::fail(500, 'Failed to send access code. Try again later.', 'BOOKING_ACCESS_DELIVERY_FAILED');
             return;
         }
 
@@ -777,7 +783,7 @@ class BookingController {
         $code = trim((string)($data['code'] ?? ''));
 
         if (empty($reference) || empty($email) || empty($code)) {
-            Response::json(['status' => false, 'message' => 'Missing reference, email, or code'], 400);
+            Response::fail(400, 'Missing reference, email, or code', 'BOOKING_ACCESS_INPUT_INVALID');
             return;
         }
 
@@ -786,7 +792,7 @@ class BookingController {
         $storedCode = is_array($stored) ? (string)($stored['code'] ?? '') : '';
 
         if (empty($storedCode) || !hash_equals($storedCode, $code)) {
-            Response::json(['status' => false, 'message' => 'Invalid or expired code'], 403);
+            Response::fail(403, 'Invalid or expired code', 'BOOKING_ACCESS_CODE_INVALID');
             return;
         }
 
@@ -795,7 +801,7 @@ class BookingController {
 
         $booking = $this->bookingModel->getByReference($reference);
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
 
@@ -828,30 +834,32 @@ class BookingController {
         $displayCurrency = strtoupper(trim((string)($_GET['currency'] ?? 'USD')));
 
         if (!preg_match('/^[A-Z]{3}$/', $displayCurrency)) {
-            Response::json(['status' => false, 'message' => 'Invalid currency code'], 400);
+            Response::fail(400, 'Invalid currency code', 'CURRENCY_INVALID');
             return;
         }
 
         $booking = $this->bookingModel->getByReference($reference);
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
 
         if (!$this->canAccessBooking($booking, $reference)) {
-            Response::json([
-                'status' => false,
-                'message' => 'Unauthorized. Please use the "Manage Booking" flow to verify access via OTP.'
-            ], 401);
+            Response::fail(
+                401,
+                'Unauthorized. Please use the "Manage Booking" flow to verify access via OTP.',
+                'BOOKING_ACCESS_DENIED'
+            );
             return;
         }
 
         if ($this->isBookingExpired($booking)) {
             $this->bookingModel->expireBooking((int)$booking['id']);
-            Response::json([
-                'status' => false,
-                'message' => 'This reservation has expired and documents are no longer available for this pending booking.'
-            ], 409);
+            Response::fail(
+                409,
+                'This reservation has expired and documents are no longer available for this pending booking.',
+                'BOOKING_HOLD_EXPIRED'
+            );
             return;
         }
 
@@ -868,11 +876,12 @@ class BookingController {
         );
 
         if ($currencyConversionError !== null) {
-            Response::json([
-                'status' => false,
-                'message' => 'Could not convert document currency right now',
-                'details' => $currencyConversionError
-            ], 503);
+            Response::fail(
+                503,
+                'Could not convert document currency right now',
+                'CURRENCY_CONVERSION_UNAVAILABLE',
+                ['reason' => $currencyConversionError]
+            );
             return;
         }
 
@@ -911,7 +920,11 @@ class BookingController {
             $htmlForPdf = $this->buildDocumentHtmlForPdf($type, $ticketHtml, $receiptHtml);
             $autoload = __DIR__ . '/../vendor/autoload.php';
             if (!is_file($autoload)) {
-                Response::json(['status' => false, 'message' => 'PDF generation is not configured. Run composer install in the API directory.'], 503);
+                Response::fail(
+                    503,
+                    'PDF generation is not configured. Run composer install in the API directory.',
+                    'PDF_NOT_CONFIGURED'
+                );
                 return;
             }
             require_once $autoload;
@@ -928,7 +941,7 @@ class BookingController {
                 echo $dompdf->output();
             } catch (\Throwable $e) {
                 error_log('PDF generation failed: ' . $e->getMessage());
-                Response::json(['status' => false, 'message' => 'Could not generate PDF'], 500);
+                Response::fail(500, 'Could not generate PDF', 'PDF_GENERATION_FAILED');
             }
             return;
         }

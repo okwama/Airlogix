@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Building2, Save, Loader2 } from 'lucide-svelte';
   import { onMount } from 'svelte';
-  import { bookingService, ServiceError } from '$lib/services/bookingService.js';
+  import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
 
   interface Props {

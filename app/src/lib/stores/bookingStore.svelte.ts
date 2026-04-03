@@ -1,5 +1,5 @@
-import type { Passenger } from '../services/bookingService.ts';
-import { bookingService } from '$lib/services/bookingService';
+import type { Passenger } from '../services/booking/bookingService';
+import { bookingService } from '$lib/services/booking/bookingService';
 
 export interface Flight {
   id?: string;

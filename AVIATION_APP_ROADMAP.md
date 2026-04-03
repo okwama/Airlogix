@@ -10,6 +10,7 @@ This roadmap is now the live status tracker for the app hardening and product-im
 - Hold reminder email/SMS is sent after reservation creation.
 - Dedicated resume-payment page exists at `/my-bookings/[reference]/pay`.
 - Booking lookup `500` regression on existing references is resolved (header fallback + safe column-existence query).
+- Logged-in travelers can now explicitly sign out from the global navbar.
 
 ## 1. Critical Security And Revenue Protection
 
@@ -55,13 +56,13 @@ This roadmap is now the live status tracker for the app hardening and product-im
 
 - `Partially Done` Standardize backend error handling.
   Current state:
-  API responses now normalize errors through a shared contract (`status=false`, `message`, `error.code`, `error.message`, `error.request_id`), with request IDs emitted via `X-Request-Id` and unhandled exceptions/fatal errors routed through the same response utility. Booking lookup fatal paths have also been hardened to avoid runtime crashes from server/header and SQL-dialect differences.
+  API responses now normalize errors through a shared contract (`status=false`, `message`, `error.code`, `error.message`, `error.request_id`), with request IDs emitted via `X-Request-Id` and unhandled exceptions/fatal errors routed through the same response utility. Booking lookup fatal paths have also been hardened to avoid runtime crashes from server/header and SQL-dialect differences. `BookingController` high-traffic endpoints now emit explicit domain codes for access, hold expiry, payment update, currency conversion, and document/PDF failures. `PaymentController` now emits explicit domain codes across payment-init, verify, and callback/status validation paths (provider-init failures, verify failures, reference-required validation, callback payload validation, transaction-not-found, and amount mismatch).
   Target:
   Complete controller-level migration to explicit domain error codes and richer `details` fields across all major workflows.
 
 - `Partially Done` Stop swallowing frontend service failures.
   Current state:
-  Frontend booking/payment services now emit typed errors (auth expired, hold expired, network, not found, validation/server), and key booking/cargo loaders map these to clearer UI states.
+  Frontend booking/payment services now emit typed errors (auth expired, hold expired, network, not found, validation/server), and key booking/cargo loaders map these to clearer UI states. `bookingService` now classifies API failures using backend domain error codes (`error.code`) in addition to HTTP status, so payment and booking failures are handled more reliably.
   Target:
   Finish remaining route/component migration so every flow handles typed errors consistently without generic fallback paths.
 

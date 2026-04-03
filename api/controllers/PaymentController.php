@@ -22,11 +22,12 @@ class PaymentController {
 
     private function authenticate() {
         $headers = request_headers();
-        $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
+        $authHeader = $this->headerValue($headers, 'Authorization') ?? '';
+        $token = stripos($authHeader, 'Bearer ') === 0 ? trim(substr($authHeader, 7)) : '';
         $user_id = $this->userModel->validateToken($token);
 
         if (!$user_id) {
-            Response::json(['status' => false, 'message' => 'Unauthorized'], 401);
+            Response::fail(401, 'Unauthorized', 'AUTH_UNAUTHORIZED');
             exit();
         }
         return $user_id;
@@ -35,13 +36,14 @@ class PaymentController {
     private function canAccessBooking(array $booking): bool
     {
         $headers = request_headers();
-        $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
+        $authHeader = $this->headerValue($headers, 'Authorization') ?? '';
+        $token = stripos($authHeader, 'Bearer ') === 0 ? trim(substr($authHeader, 7)) : '';
 
         $authUserId = $this->userModel->validateToken($token);
         $isAuthorized = ($authUserId && (int)$authUserId === (int)($booking['user_id'] ?? 0));
 
         if (!$isAuthorized) {
-            $accessToken = $headers['X-Booking-Access-Token'] ?? '';
+            $accessToken = (string)($this->headerValue($headers, 'X-Booking-Access-Token') ?? '');
             if (!empty($accessToken) && !empty($booking['booking_reference']) && !empty($booking['id'])) {
                 $tokenHash = hash('sha256', trim((string)$accessToken));
                 $activeTokenHash = Cache::get("booking_access_active:{$booking['booking_reference']}:{$booking['id']}");
@@ -57,14 +59,29 @@ class PaymentController {
         return $isAuthorized;
     }
 
+    private function headerValue(array $headers, string $name): ?string
+    {
+        if (isset($headers[$name])) {
+            return (string)$headers[$name];
+        }
+        $lower = strtolower($name);
+        foreach ($headers as $k => $v) {
+            if (strtolower((string)$k) === $lower) {
+                return (string)$v;
+            }
+        }
+        return null;
+    }
+
     private function ensureActiveReservation(array $booking): void
     {
         if ($this->bookingModel->isReservationExpired($booking)) {
             $this->bookingModel->expireBooking((int)$booking['id']);
-            Response::json([
-                'status' => false,
-                'message' => 'This reservation has expired. Please search again to create a new booking.'
-            ], 409);
+            Response::fail(
+                409,
+                'This reservation has expired. Please search again to create a new booking.',
+                'BOOKING_HOLD_EXPIRED'
+            );
             exit();
         }
     }
@@ -234,7 +251,7 @@ class PaymentController {
         $data = request_json();
         
         if (empty($data['booking_id']) || empty($data['status'])) {
-            Response::json(['status' => false, 'message' => 'Missing payment details'], 400);
+            Response::fail(400, 'Missing payment details', 'PAYMENT_UPDATE_MISSING_FIELDS');
             return;
         }
 
@@ -247,7 +264,7 @@ class PaymentController {
         if ($success) {
             Response::json(['status' => true, 'message' => 'Payment status updated']);
         } else {
-            Response::json(['status' => false, 'message' => 'Failed to update payment status'], 500);
+            Response::fail(500, 'Failed to update payment status', 'PAYMENT_UPDATE_FAILED');
         }
     }
 
@@ -256,29 +273,29 @@ class PaymentController {
 
         // Validate required fields
         if (empty($data['email']) || empty($data['booking_reference'])) {
-            Response::json(['status' => false, 'message' => 'Missing required payment details'], 400);
+            Response::fail(400, 'Missing required payment details', 'PAYMENT_INIT_MISSING_FIELDS');
             return;
         }
 
         $booking = $this->bookingModel->getByReference($data['booking_reference']);
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
 
         if (!$this->canAccessBooking($booking)) {
-            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            Response::fail(401, 'Unauthorized booking access', 'BOOKING_ACCESS_DENIED');
             return;
         }
         $this->ensureActiveReservation($booking);
 
         if (($booking['payment_status'] ?? null) === 'paid') {
-            Response::conflict('Booking is already marked as paid');
+            Response::fail(409, 'Booking is already marked as paid', 'BOOKING_ALREADY_PAID');
         }
 
         $amount = (float)($booking['total_amount'] ?? 0);
         if ($amount <= 0) {
-            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
+            Response::fail(400, 'Booking has invalid total amount', 'BOOKING_AMOUNT_INVALID');
             return;
         }
 
@@ -315,10 +332,12 @@ class PaymentController {
                 'message' => 'Payment initialized successfully'
             ]);
         } else {
-            Response::json([
-                'status' => false,
-                'message' => $response['message'] ?? 'Failed to initialize payment'
-            ], 500);
+            Response::fail(
+                502,
+                $response['message'] ?? 'Failed to initialize payment',
+                'PAYMENT_PROVIDER_INIT_FAILED',
+                ['provider' => 'paystack']
+            );
         }
     }
 
@@ -326,7 +345,7 @@ class PaymentController {
         $reference = $_GET['reference'] ?? '';
 
         if (empty($reference)) {
-            Response::json(['status' => false, 'message' => 'Payment reference is required'], 400);
+            Response::fail(400, 'Payment reference is required', 'PAYMENT_REFERENCE_REQUIRED');
             return;
         }
 
@@ -355,23 +374,23 @@ class PaymentController {
                         'data' => $transactionData
                     ]);
                 } else {
-                    Response::json([
-                        'status' => false,
-                        'message' => 'Booking not found'
-                    ], 404);
+                    Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
                 }
             } else {
-                Response::json([
-                    'status' => false,
-                    'message' => 'Payment not successful',
-                    'data' => $transactionData
-                ]);
+                Response::fail(
+                    409,
+                    'Payment not successful',
+                    'PAYMENT_NOT_SUCCESSFUL',
+                    ['provider' => 'paystack', 'gateway_status' => $transactionData['status'] ?? null]
+                );
             }
         } else {
-            Response::json([
-                'status' => false,
-                'message' => $response['message'] ?? 'Failed to verify payment'
-            ], 500);
+            Response::fail(
+                502,
+                $response['message'] ?? 'Failed to verify payment',
+                'PAYMENT_VERIFY_FAILED',
+                ['provider' => 'paystack']
+            );
         }
     }
 
@@ -415,34 +434,34 @@ class PaymentController {
         
         // Validate required fields
         if (empty($data['phone_number'])) {
-            Response::json(['status' => false, 'message' => 'Phone number is required'], 400);
+            Response::fail(400, 'Phone number is required', 'PAYMENT_INIT_MISSING_FIELDS');
             return;
         }
         if (empty($data['booking_reference'])) {
-            Response::json(['status' => false, 'message' => 'Booking reference is required'], 400);
+            Response::fail(400, 'Booking reference is required', 'PAYMENT_INIT_MISSING_FIELDS');
             return;
         }
         
         // Ensure booking exists before initiating MPesa STK Push
         $booking = $this->bookingModel->getByReference($data['booking_reference']);
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found for reference: ' . ($data['booking_reference'] ?? '')], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
 
         if (!$this->canAccessBooking($booking)) {
-            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            Response::fail(401, 'Unauthorized booking access', 'BOOKING_ACCESS_DENIED');
             return;
         }
         $this->ensureActiveReservation($booking);
 
         if (($booking['payment_status'] ?? null) === 'paid') {
-            Response::conflict('Booking is already marked as paid');
+            Response::fail(409, 'Booking is already marked as paid', 'BOOKING_ALREADY_PAID');
         }
 
         $amount = (float)($booking['total_amount'] ?? 0);
         if ($amount <= 0) {
-            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
+            Response::fail(400, 'Booking has invalid total amount', 'BOOKING_AMOUNT_INVALID');
             return;
         }
 
@@ -472,11 +491,15 @@ class PaymentController {
                 'data' => $response['data']
             ]);
         } else {
-            Response::json([
-                'status' => false, 
-                'message' => $response['message'],
-                'error_code' => $response['error_code'] ?? 'MPESA_ERROR'
-            ], 500);
+            Response::fail(
+                502,
+                $response['message'] ?? 'Failed to initialize M-Pesa payment',
+                'PAYMENT_PROVIDER_INIT_FAILED',
+                [
+                    'provider' => 'mpesa',
+                    'gateway_error_code' => $response['error_code'] ?? 'MPESA_ERROR'
+                ]
+            );
         }
     }
 
@@ -550,7 +573,7 @@ class PaymentController {
         $checkoutRequestId = $_GET['checkout_request_id'] ?? '';
         
         if (empty($checkoutRequestId)) {
-            Response::json(['status' => false, 'message' => 'checkout_request_id is required'], 400);
+            Response::fail(400, 'checkout_request_id is required', 'PAYMENT_REFERENCE_REQUIRED');
             return;
         }
         
@@ -567,7 +590,7 @@ class PaymentController {
         $data = request_json();
 
         if (empty($data['booking_id']) || empty($data['amount']) || empty($data['payment_method'])) {
-            Response::json(['status' => false, 'message' => 'Missing payment details: booking_id, amount, payment_method required'], 400);
+            Response::fail(400, 'Missing payment details: booking_id, amount, payment_method required', 'PAYMENT_INIT_MISSING_FIELDS');
             return;
         }
 
@@ -575,12 +598,12 @@ class PaymentController {
         $booking = $this->bookingModel->getById($data['booking_id']);
         
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
         
         if ($booking['user_id'] != $user_id) {
-            Response::json(['status' => false, 'message' => 'Unauthorized: Booking does not belong to you'], 403);
+            Response::fail(403, 'Unauthorized: Booking does not belong to you', 'BOOKING_ACCESS_DENIED');
             return;
         }
         $this->ensureActiveReservation($booking);
@@ -593,12 +616,13 @@ class PaymentController {
 
         // Prevent re-payment of already paid bookings
         if ($paymentStatus === 'paid') {
-            Response::conflict('Booking is already marked as paid');
+            Response::fail(409, 'Booking is already marked as paid', 'BOOKING_ALREADY_PAID');
         }
 
         if ($expectedAmount <= 0) {
             error_log('Booking ' . $booking['id'] . ' has non-positive total_amount; blocking payment initiate');
-            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
+            Response::fail(400, 'Booking has invalid total amount', 'BOOKING_AMOUNT_INVALID');
+            return;
         }
 
         // Allow for minor rounding differences, but block obvious tampering.
@@ -609,15 +633,16 @@ class PaymentController {
         $delta = abs($requestedAmount - $normalizedExpected);
         if ($delta > ($normalizedExpected * 0.05)) { // Allow 5% variance for rate fluctuations/rounding
             error_log("Payment total mismatch: Requested $requestedAmount $requestedCurrency, expected $normalizedExpected $requestedCurrency (Original: $expectedAmount USD)");
-            Response::json([
-                'status' => false,
-                'message' => 'Amount does not match booking total',
-                'details' => [
+            Response::fail(
+                400,
+                'Amount does not match booking total',
+                'PAYMENT_AMOUNT_MISMATCH',
+                [
                     'requested' => $requestedAmount,
                     'expected' => round($normalizedExpected, 2),
                     'currency' => $requestedCurrency
                 ]
-            ], 400);
+            );
             return;
         }
 
@@ -627,7 +652,7 @@ class PaymentController {
         if ($paymentMethod === 'mpesa' || $paymentMethod === 'm-pesa') {
             // M-Pesa STK Push
             if (empty($data['phone_number'])) {
-                Response::json(['status' => false, 'message' => 'Phone number required for M-Pesa'], 400);
+                Response::fail(400, 'Phone number required for M-Pesa', 'PAYMENT_INIT_MISSING_FIELDS');
                 return;
             }
             
@@ -649,17 +674,21 @@ class PaymentController {
                     'data' => $response['data']
                 ]);
             } else {
-                Response::json([
-                    'status' => false,
-                    'message' => $response['message'],
-                    'error_code' => $response['error_code'] ?? 'MPESA_ERROR'
-                ], 500);
+                Response::fail(
+                    502,
+                    $response['message'] ?? 'Failed to initialize M-Pesa payment',
+                    'PAYMENT_PROVIDER_INIT_FAILED',
+                    [
+                        'provider' => 'mpesa',
+                        'gateway_error_code' => $response['error_code'] ?? 'MPESA_ERROR'
+                    ]
+                );
             }
             
         } elseif ($paymentMethod === 'stripe') {
             // Stripe Card Payment
             if (empty($data['email'])) {
-                Response::json(['status' => false, 'message' => 'Email required for Stripe payment'], 400);
+                Response::fail(400, 'Email required for Stripe payment', 'PAYMENT_INIT_MISSING_FIELDS');
                 return;
             }
             
@@ -681,14 +710,16 @@ class PaymentController {
                     'data' => $response['data']
                 ]);
             } else {
-                Response::json([
-                    'status' => false,
-                    'message' => $response['message'] ?? 'Failed to initialize Stripe payment'
-                ], 500);
+                Response::fail(
+                    502,
+                    $response['message'] ?? 'Failed to initialize Stripe payment',
+                    'PAYMENT_PROVIDER_INIT_FAILED',
+                    ['provider' => 'stripe']
+                );
             }
             
         } else {
-            Response::json(['status' => false, 'message' => 'Unsupported payment method: ' . $paymentMethod], 400);
+            Response::fail(400, 'Unsupported payment method: ' . $paymentMethod, 'PAYMENT_METHOD_UNSUPPORTED');
         }
     }
 
@@ -697,7 +728,7 @@ class PaymentController {
         $data = request_json();
         
         if (empty($data['transaction_id']) || empty($data['status'])) {
-            Response::json(['status' => false, 'message' => 'Missing transaction_id or status'], 400);
+            Response::fail(400, 'Missing transaction_id or status', 'PAYMENT_CALLBACK_INVALID');
             return;
         }
         
@@ -714,7 +745,7 @@ class PaymentController {
         $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$transaction) {
-            Response::json(['status' => false, 'message' => 'Transaction not found'], 404);
+            Response::fail(404, 'Transaction not found', 'PAYMENT_TRANSACTION_NOT_FOUND');
             return;
         }
         
@@ -756,29 +787,29 @@ class PaymentController {
         $data = request_json();
 
         if (empty($data['phone_number']) || empty($data['booking_reference'])) {
-            Response::json(['status' => false, 'message' => 'Missing required payment details'], 400);
+            Response::fail(400, 'Missing required payment details', 'PAYMENT_INIT_MISSING_FIELDS');
             return;
         }
 
         $booking = $this->bookingModel->getByReference($data['booking_reference']);
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
 
         if (!$this->canAccessBooking($booking)) {
-            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            Response::fail(401, 'Unauthorized booking access', 'BOOKING_ACCESS_DENIED');
             return;
         }
         $this->ensureActiveReservation($booking);
 
         if (($booking['payment_status'] ?? null) === 'paid') {
-            Response::conflict('Booking is already marked as paid');
+            Response::fail(409, 'Booking is already marked as paid', 'BOOKING_ALREADY_PAID');
         }
 
         $amount = (float)($booking['total_amount'] ?? 0);
         if ($amount <= 0) {
-            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
+            Response::fail(400, 'Booking has invalid total amount', 'BOOKING_AMOUNT_INVALID');
             return;
         }
 
@@ -802,10 +833,12 @@ class PaymentController {
                 'message' => $response['message']
             ]);
         } else {
-            Response::json([
-                'status' => false,
-                'message' => $response['message'] ?? 'Failed to initialize payment'
-            ], 500);
+            Response::fail(
+                502,
+                $response['message'] ?? 'Failed to initialize payment',
+                'PAYMENT_PROVIDER_INIT_FAILED',
+                ['provider' => 'onafriq']
+            );
         }
     }
 
@@ -840,7 +873,7 @@ class PaymentController {
         $transactionId = $_GET['transaction_id'] ?? '';
 
         if (empty($transactionId)) {
-            Response::json(['status' => false, 'message' => 'Transaction ID is required'], 400);
+            Response::fail(400, 'Transaction ID is required', 'PAYMENT_REFERENCE_REQUIRED');
             return;
         }
 
@@ -858,29 +891,29 @@ class PaymentController {
         $data = request_json();
 
         if (empty($data['booking_reference']) || empty($data['email'])) {
-            Response::json(['status' => false, 'message' => 'Missing required payment details'], 400);
+            Response::fail(400, 'Missing required payment details', 'PAYMENT_INIT_MISSING_FIELDS');
             return;
         }
 
         $booking = $this->bookingModel->getByReference($data['booking_reference']);
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
 
         if (!$this->canAccessBooking($booking)) {
-            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            Response::fail(401, 'Unauthorized booking access', 'BOOKING_ACCESS_DENIED');
             return;
         }
         $this->ensureActiveReservation($booking);
 
         if (($booking['payment_status'] ?? null) === 'paid') {
-            Response::conflict('Booking is already marked as paid');
+            Response::fail(409, 'Booking is already marked as paid', 'BOOKING_ALREADY_PAID');
         }
 
         $amount = (float)($booking['total_amount'] ?? 0);
         if ($amount <= 0) {
-            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
+            Response::fail(400, 'Booking has invalid total amount', 'BOOKING_AMOUNT_INVALID');
             return;
         }
 
@@ -904,10 +937,12 @@ class PaymentController {
                 'message' => $response['message']
             ]);
         } else {
-            Response::json([
-                'status' => false,
-                'message' => $response['message'] ?? 'Failed to initialize payment'
-            ], 500);
+            Response::fail(
+                502,
+                $response['message'] ?? 'Failed to initialize payment',
+                'PAYMENT_PROVIDER_INIT_FAILED',
+                ['provider' => 'dpo']
+            );
         }
     }
 
@@ -964,7 +999,7 @@ class PaymentController {
         $transToken = $_GET['trans_token'] ?? '';
 
         if (empty($transToken)) {
-            Response::json(['status' => false, 'message' => 'Transaction token is required'], 400);
+            Response::fail(400, 'Transaction token is required', 'PAYMENT_REFERENCE_REQUIRED');
             return;
         }
 
@@ -981,10 +1016,12 @@ class PaymentController {
                 'transaction_status' => $response['transaction_status']
             ]);
         } else {
-            Response::json([
-                'status' => false,
-                'message' => $response['message'] ?? 'Failed to verify payment'
-            ], 500);
+            Response::fail(
+                502,
+                $response['message'] ?? 'Failed to verify payment',
+                'PAYMENT_VERIFY_FAILED',
+                ['provider' => 'dpo']
+            );
         }
     }
 
@@ -994,30 +1031,30 @@ class PaymentController {
         $data = request_json();
         
         if (empty($data['booking_reference']) || empty($data['email'])) {
-            Response::json(['status' => false, 'message' => 'Missing required payment details'], 400);
+            Response::fail(400, 'Missing required payment details', 'PAYMENT_INIT_MISSING_FIELDS');
             return;
         }
 
         $booking = $this->bookingModel->getByReference($data['booking_reference']);
         if (!$booking) {
-            Response::json(['status' => false, 'message' => 'Booking not found'], 404);
+            Response::fail(404, 'Booking not found', 'BOOKING_NOT_FOUND');
             return;
         }
 
         if (!$this->canAccessBooking($booking)) {
-            Response::json(['status' => false, 'message' => 'Unauthorized booking access'], 401);
+            Response::fail(401, 'Unauthorized booking access', 'BOOKING_ACCESS_DENIED');
             return;
         }
         $this->ensureActiveReservation($booking);
 
         if (($booking['payment_status'] ?? null) === 'paid') {
-            Response::conflict('Booking is already marked as paid');
+            Response::fail(409, 'Booking is already marked as paid', 'BOOKING_ALREADY_PAID');
         }
 
         $currency = strtoupper((string)($data['currency'] ?? 'USD'));
         $amount = (float)($booking['total_amount'] ?? 0);
         if ($amount <= 0) {
-            Response::json(['status' => false, 'message' => 'Booking has invalid total amount'], 400);
+            Response::fail(400, 'Booking has invalid total amount', 'BOOKING_AMOUNT_INVALID');
             return;
         }
 
@@ -1034,8 +1071,16 @@ class PaymentController {
             $booking['booking_reference'],
             $data['email']
         );
-
-        Response::json($response);
+        if (($response['status'] ?? false) === true) {
+            Response::json($response);
+            return;
+        }
+        Response::fail(
+            502,
+            $response['message'] ?? 'Failed to initialize Stripe payment',
+            'PAYMENT_PROVIDER_INIT_FAILED',
+            ['provider' => 'stripe']
+        );
     }
 
     public function stripeWebhook() {

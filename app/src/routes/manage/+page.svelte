@@ -7,9 +7,9 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
 
-  import { BASE_URL, bookingService } from '$lib/services/bookingService';
+  import { BASE_URL, bookingService } from '$lib/services/booking/bookingService';
   import { authStore } from '$lib/stores/authStore.svelte';
-  import { authService } from '$lib/services/authService';
+  import { authService } from '$lib/services/auth/authService';
   import { appConfig } from '$lib/config/appConfig';
   
   let reference = $state('');

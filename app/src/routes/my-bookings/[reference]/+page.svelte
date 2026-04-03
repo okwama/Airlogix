@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { onMount } from 'svelte';
-  import { bookingService, ServiceError } from '$lib/services/bookingService';
+  import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import { appConfig } from '$lib/config/appConfig';
@@ -30,6 +30,8 @@
           error = 'This reservation hold has expired. Please search and create a new booking.';
         } else if (e.type === 'NOT_FOUND') {
           error = 'Booking not found. Confirm your reference and try again.';
+        } else if (e.type === 'VALIDATION' && e.code === 'BOOKING_ALREADY_PAID') {
+          error = 'This booking is already paid. Open Documents to view your e-ticket and receipt.';
         } else if (e.type === 'NETWORK') {
           error = 'Network connection issue. Reconnect and refresh this page.';
         } else {

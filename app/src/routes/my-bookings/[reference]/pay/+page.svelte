@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { onMount } from 'svelte';
-  import { bookingService, ServiceError } from '$lib/services/bookingService';
+  import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
   import PaymentPicker from '$lib/features/payment/PaymentPicker.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
@@ -32,6 +32,12 @@
           error = 'This payment window expired. Please search and create a new booking.';
         } else if (e.type === 'NOT_FOUND') {
           error = 'Booking not found for this reference.';
+        } else if (e.type === 'VALIDATION' && e.code === 'BOOKING_ALREADY_PAID') {
+          error = 'Payment is already completed for this booking. You can open the documents page.';
+        } else if (e.type === 'VALIDATION' && e.code === 'PAYMENT_METHOD_UNSUPPORTED') {
+          error = 'This payment option is not available for the selected booking. Please pick another method.';
+        } else if (e.type === 'SERVER' && e.code === 'PAYMENT_PROVIDER_INIT_FAILED') {
+          error = 'Payment gateway is temporarily unavailable. Please try again in a few minutes.';
         } else if (e.type === 'NETWORK') {
           error = 'Network connection issue. Please retry after reconnecting.';
         } else {

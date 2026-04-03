@@ -1,4 +1,4 @@
-import { authService } from '$lib/services/authService';
+import { authService } from '$lib/services/auth/authService';
 
 interface AuthState {
   user: any | null;

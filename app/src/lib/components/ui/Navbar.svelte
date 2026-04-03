@@ -45,7 +45,7 @@
         </a>
         <button
           type="button"
-          on:click={logout}
+          onclick={logout}
           class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium"
         >
           Logout

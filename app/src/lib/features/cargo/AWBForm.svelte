@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { bookingService } from '$lib/services/bookingService.js';
+  import { bookingService } from '$lib/services/booking/bookingService';
   import { appConfig } from '$lib/config/appConfig';
   import { AlertCircle, Loader2 } from 'lucide-svelte';
 

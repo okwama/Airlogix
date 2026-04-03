@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { bookingService, ServiceError } from '$lib/services/bookingService.js';
+import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
 
 export async function load({ params }) {
   const awb = params.awb;

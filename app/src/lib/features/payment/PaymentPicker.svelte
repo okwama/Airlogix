@@ -2,7 +2,7 @@
   import BankTransfer from './BankTransfer.svelte';
   import { Smartphone, Building2, Loader2, CheckCircle2, AlertCircle, CreditCard } from 'lucide-svelte';
   import { goto } from '$app/navigation';
-  import { bookingService, ServiceError } from '$lib/services/bookingService';
+  import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
 
