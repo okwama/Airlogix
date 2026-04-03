@@ -23,6 +23,22 @@ class StripeService {
      * @return array
      */
     public function createCheckoutSession($amount, $currency, $bookingReference, $customerEmail) {
+        if (empty($this->secretKey)) {
+            return [
+                'status' => false,
+                'message' => 'Stripe is not configured on the server.',
+                'error_code' => 'STRIPE_CONFIG_MISSING'
+            ];
+        }
+
+        if (empty($customerEmail) || !filter_var((string)$customerEmail, FILTER_VALIDATE_EMAIL)) {
+            return [
+                'status' => false,
+                'message' => 'A valid customer email is required for Stripe checkout.',
+                'error_code' => 'STRIPE_CUSTOMER_EMAIL_INVALID'
+            ];
+        }
+
         $url = $this->baseUrl . '/checkout/sessions';
         
         // Stripe expects amounts in the smallest currency unit (cents/kobo)
@@ -105,17 +121,24 @@ class StripeService {
             $error = curl_error($ch);
             curl_close($ch);
             error_log("Stripe cURL Error: " . $error);
-            return ['status' => false, 'message' => 'Stripe Connection Error: ' . $error];
+            return [
+                'status' => false,
+                'message' => 'Stripe Connection Error: ' . $error,
+                'error_code' => 'STRIPE_NETWORK_ERROR'
+            ];
         }
 
         curl_close($ch);
         $result = json_decode($responseBody, true);
 
         if ($httpCode >= 400) {
+            $stripeCode = (string)($result['error']['code'] ?? '');
+            $errorCode = $stripeCode !== '' ? 'STRIPE_' . strtoupper($stripeCode) : 'STRIPE_API_ERROR';
             error_log("Stripe API Error (Code $httpCode): " . ($result['error']['message'] ?? 'Unknown Error'));
             return [
                 'status' => false,
                 'message' => $result['error']['message'] ?? 'Stripe API Error',
+                'error_code' => $errorCode,
                 'http_code' => $httpCode,
                 'raw_response' => $result
             ];

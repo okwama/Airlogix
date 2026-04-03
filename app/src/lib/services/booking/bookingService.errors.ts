@@ -89,6 +89,7 @@ export function classifyError(
     normalizedCode === 'PAYMENT_AMOUNT_MISMATCH' ||
     normalizedCode === 'BOOKING_AMOUNT_INVALID' ||
     normalizedCode === 'PAYMENT_METHOD_UNSUPPORTED' ||
+    normalizedCode === 'PAYMENT_EMAIL_INVALID' ||
     normalizedCode === 'CURRENCY_INVALID' ||
     normalizedCode === 'BOOKING_CREATE_MISSING_FIELDS' ||
     normalizedCode === 'BOOKING_FIND_INPUT_INVALID' ||

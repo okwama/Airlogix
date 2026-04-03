@@ -74,7 +74,7 @@ This roadmap is now the live status tracker for the app hardening and product-im
 
 - `Partially Done` Add booking lifecycle observability.
   Current state:
-  Structured lifecycle events now emit to dedicated JSON log streams for hold creation/expiry, payment success/failure/replay handling, ticket issuance, and document delivery (API + email channel).
+  Structured lifecycle events now emit to dedicated JSON log streams for hold creation/expiry, payment success/failure/replay handling, ticket issuance, and document delivery (API + email channel). A CLI summarizer now exists at `api/scripts/lifecycle_report.php` for per-day and range-based operational rollups.
   Target:
   Add centralized aggregation/alerts and dashboards for these lifecycle events (latency, failure-rate, and replay anomaly tracking).
 
@@ -116,9 +116,9 @@ This roadmap is now the live status tracker for the app hardening and product-im
 
 ## Next Recommended Ticket
 
-1. Complete explicit controller-level error code migration.
-2. Add DB-level gateway reference uniqueness for callback replay hardening.
-3. Finish remaining frontend typed-error migration pass.
+1. Separate dev-mode behavior from production behavior (fail closed when required secrets/signature validation are missing).
+2. Complete remaining controller-level error-code migration and richer `details` coverage.
+3. Add centralized aggregation/alerts dashboards on top of lifecycle logs (beyond CLI summaries).
 
 ## Recommended Execution Order
 

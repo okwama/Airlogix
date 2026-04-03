@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { page } from '$app/state';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
-  import { bookingStore } from '$lib/stores/bookingStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
   import { CheckCircle, Download, Home, Mail } from 'lucide-svelte';
   import { confetti } from '@neoconfetti/svelte';
@@ -12,25 +10,19 @@
     data: {
       reference: string;
       bookingData: any;
+      bookingError?: string;
     }
   }
 
   let { data }: Props = $props();
 
   const reference = $derived(data.reference);
-  const booking = $derived(data.bookingData || {
-    flight_number: 'MC101',
-    origin_iata: 'NBO',
-    destination_iata: 'DAR',
-    payment_status: 'completed',
-    payment_method: 'card'
-  });
+  const booking = $derived(data.bookingData || null);
+  const bookingError = $derived(String(data.bookingError || ''));
 
-  const paymentState = $derived((booking.payment_state || '').toString() || (booking.payment_status || '').toString());
-  const ticketState = $derived((booking.ticket_state || '').toString());
-  const bookingState = $derived((booking.booking_state || '').toString());
+  const paymentState = $derived((booking?.payment_state || '').toString() || (booking?.payment_status || '').toString());
+  const ticketState = $derived((booking?.ticket_state || '').toString());
 
-  /** @type {HTMLDivElement | undefined} */
   let confettiEl = $state();
 
   onMount(() => {
@@ -58,7 +50,13 @@
     <div class="success-card-wrapper">
       <Card padding="lg">
         <div class="icon-header">
-          {#if paymentState.toLowerCase() === 'pending' && booking.payment_method === 'bank_transfer'}
+          {#if !booking}
+            <div class="icon-bg" style="background: rgba(255, 152, 0, 0.1);">
+              <CheckCircle size={64} color="var(--color-brand-orange)" strokeWidth={1.5} />
+            </div>
+            <h1>Booking Saved</h1>
+            <p class="subtitle">We could not load full booking details yet, but your reference is active.</p>
+          {:else if paymentState.toLowerCase() === 'pending' && booking.payment_method === 'bank_transfer'}
             <div class="icon-bg" style="background: rgba(255, 152, 0, 0.1);">
               <CheckCircle size={64} color="var(--color-brand-orange)" strokeWidth={1.5} />
             </div>
@@ -69,13 +67,13 @@
               <CheckCircle size={64} color="rgb(244, 67, 54)" strokeWidth={1.5} />
             </div>
             <h1>Payment Failed</h1>
-            <p class="subtitle">We could not confirm your payment. You can retry payment or contact support with your reference.</p>
+            <p class="subtitle">We could not confirm your payment. Retry payment or contact support with your reference.</p>
           {:else if paymentState.toLowerCase() === 'paid' && ticketState === 'PENDING'}
             <div class="icon-bg" style="background: rgba(255, 152, 0, 0.1);">
               <CheckCircle size={64} color="var(--color-brand-orange)" strokeWidth={1.5} />
             </div>
             <h1>Payment Received</h1>
-            <p class="subtitle">We’ve received your payment. Your ticket is being issued and will be emailed shortly.</p>
+            <p class="subtitle">We've received your payment. Your ticket is being issued and will be emailed shortly.</p>
           {:else}
             <div class="icon-bg" style="background: rgba(76, 175, 80, 0.1);">
               <CheckCircle size={64} color="var(--color-success)" strokeWidth={1.5} />
@@ -92,20 +90,22 @@
           </div>
           <div class="flight-summary">
             <div class="route">
-              <span class="city">{booking.origin_iata}</span>
-              <span class="arrow">→</span>
-              <span class="city">{booking.destination_iata}</span>
+              <span class="city">{booking?.origin_iata || '---'}</span>
+              <span class="arrow">-&gt;</span>
+              <span class="city">{booking?.destination_iata || '---'}</span>
             </div>
-            <div class="flight-no">Flight {booking.flight_number}</div>
+            <div class="flight-no">Flight {booking?.flight_number || 'TBA'}</div>
           </div>
         </div>
 
-        <div class="info-alert">
+        <div class="info-alert" aria-live="polite">
           <Mail size={18} />
-          {#if paymentState.toLowerCase() === 'pending' && booking.payment_method === 'bank_transfer'}
-            <span>We’ll email your e-ticket after we confirm your transfer. Use your reference in the payment description.</span>
+          {#if !booking}
+            <span>{bookingError || 'Use your reference on Manage Booking to continue payment or view live status.'}</span>
+          {:else if paymentState.toLowerCase() === 'pending' && booking.payment_method === 'bank_transfer'}
+            <span>We'll email your e-ticket after we confirm your transfer. Use your reference in the payment description.</span>
           {:else if paymentState.toLowerCase() === 'paid' && ticketState === 'PENDING'}
-            <span>Ticketing is in progress. If you don’t receive an email shortly, contact support with your reference.</span>
+            <span>Ticketing is in progress. If you do not receive an email shortly, contact support with your reference.</span>
           {:else if paymentState.toLowerCase() === 'failed'}
             <span>Your payment was not confirmed. You can retry payment from the booking page or contact support.</span>
           {:else}
@@ -114,7 +114,11 @@
         </div>
 
         <div class="actions">
-          {#if paymentState.toLowerCase() === 'paid' || ticketState === 'TICKETED'}
+          {#if !booking}
+            <Button variant="primary" href={`/manage?reference=${reference}`}>
+              <Download size={18} /> Open Manage Booking
+            </Button>
+          {:else if paymentState.toLowerCase() === 'paid' || ticketState === 'TICKETED'}
             <Button variant="primary" href={`/my-bookings/${reference}/documents`}>
               <Download size={18} /> View E-Ticket (PDF)
             </Button>

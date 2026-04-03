@@ -6,15 +6,18 @@ export const load = async ({ params, url }) => {
   
   // Fetch real booking from AirLogix API
   let bookingData = null;
+  let bookingError = '';
   try {
     bookingData = await bookingService.getBooking(reference);
-  } catch {
+  } catch (error) {
     bookingData = null;
+    bookingError = error instanceof Error ? error.message : 'Could not load booking details.';
   }
   
   return {
     reference,
     sessionId,
-    bookingData // Null if not found
+    bookingData,
+    bookingError
   };
 };

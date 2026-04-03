@@ -1084,6 +1084,11 @@ class PaymentController {
             Response::fail(400, 'Missing required payment details', 'PAYMENT_INIT_MISSING_FIELDS');
             return;
         }
+        $email = trim((string)$data['email']);
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Response::fail(400, 'A valid email is required for Stripe payment', 'PAYMENT_EMAIL_INVALID');
+            return;
+        }
 
         $booking = $this->bookingModel->getByReference($data['booking_reference']);
         if (!$booking) {
@@ -1119,17 +1124,24 @@ class PaymentController {
             $convertedAmount,
             $currency,
             $booking['booking_reference'],
-            $data['email']
+            $email
         );
         if (($response['status'] ?? false) === true) {
             Response::json($response);
             return;
         }
+        $gatewayErrorCode = (string)($response['error_code'] ?? 'STRIPE_INIT_ERROR');
+        $gatewayHttpCode = (int)($response['http_code'] ?? 0);
+        $httpStatus = $gatewayErrorCode === 'STRIPE_CONFIG_MISSING' ? 503 : 502;
         Response::fail(
-            502,
+            $httpStatus,
             $response['message'] ?? 'Failed to initialize Stripe payment',
             'PAYMENT_PROVIDER_INIT_FAILED',
-            ['provider' => 'stripe']
+            [
+                'provider' => 'stripe',
+                'gateway_error_code' => $gatewayErrorCode,
+                'gateway_http_code' => $gatewayHttpCode > 0 ? $gatewayHttpCode : null
+            ]
         );
     }
 

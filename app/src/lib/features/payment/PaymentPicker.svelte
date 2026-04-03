@@ -23,6 +23,7 @@
   let stripeError = $state('');
   let bankError = $state('');
   let checkoutRequestId = $state<string | null>(null);
+  const normalizedEmail = $derived(String(email || '').trim());
 
   async function handleMpesaPayment(e: SubmitEvent) {
     e.preventDefault();
@@ -110,9 +111,16 @@
     isProcessing = true;
     stripeError = '';
     try {
-      // Use provided email or fallback
-      const checkoutEmail = email || 'guest@example.com';
-      const session = await bookingService.initiateStripePayment(reference, amount, checkoutEmail);
+      if (!normalizedEmail) {
+        throw new ServiceError(
+          'No passenger email found for this booking. Update the booking contact in Manage Booking before card payment.',
+          'VALIDATION',
+          400,
+          undefined,
+          'PAYMENT_EMAIL_INVALID'
+        );
+      }
+      const session = await bookingService.initiateStripePayment(reference, amount, normalizedEmail);
       
       if (session && session.url) {
         window.location.href = session.url;
@@ -168,33 +176,42 @@
     <p class="text-[14px] text-text-body">Select a payment method to secure booking <strong>{reference}</strong> before the reservation window expires.</p>
   </div>
 
-  <div class="flex border-[0.5px] border-border rounded-[12px] overflow-hidden bg-surface shadow-sm sticky top-0 z-20">
+  <div class="flex border-[0.5px] border-border rounded-[12px] overflow-hidden bg-surface shadow-sm sticky top-0 z-20" role="tablist" aria-label="Payment methods">
     <button 
+      type="button"
       class="flex-1 h-[64px] flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-all {selectedMethod === 'bank' ? 'bg-brand-navy text-white' : 'bg-white text-text-body hover:bg-slate-50'}"
       onclick={() => selectedMethod = 'bank'}
       disabled={isProcessing}
+      role="tab"
+      aria-selected={selectedMethod === 'bank'}
     >
       <Building2 size={18} /> <span>Wire Transfer</span>
     </button>
     <div class="w-[0.5px] h-full bg-border shrink-0"></div>
     <button 
+      type="button"
       class="flex-1 h-[64px] flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-all {selectedMethod === 'mpesa' ? 'bg-brand-navy text-white' : 'bg-white text-text-body hover:bg-slate-50'}"
       onclick={() => selectedMethod = 'mpesa'}
       disabled={isProcessing}
+      role="tab"
+      aria-selected={selectedMethod === 'mpesa'}
     >
       <Smartphone size={18} /> <span>M-Pesa</span>
     </button>
     <div class="w-[0.5px] h-full bg-border shrink-0"></div>
     <button 
+      type="button"
       class="flex-1 h-[64px] flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-all {selectedMethod === 'card' ? 'bg-brand-navy text-white' : 'bg-white text-text-body hover:bg-slate-50'}"
       onclick={() => selectedMethod = 'card'}
       disabled={isProcessing}
+      role="tab"
+      aria-selected={selectedMethod === 'card'}
     >
       <CreditCard size={18} /> <span>Card (Stripe)</span>
     </button>
   </div>
 
-  <div class="bg-surface border-[0.5px] border-border rounded-[12px] p-6 lg:p-10 shadow-md relative overflow-hidden">
+  <div class="bg-surface border-[0.5px] border-border rounded-[12px] p-6 lg:p-10 shadow-md relative overflow-hidden" aria-live="polite" aria-busy={isProcessing}>
     {#if selectedMethod === 'bank'}
       <BankTransfer {amount} {reference} onComplete={handleBankTransferComplete} />
       {#if bankError}
@@ -239,21 +256,24 @@
               <p class="text-[14px] text-text-body">Ensure your phone is unlocked. You will receive an <strong>STK Push</strong> directly to your screen.</p>
               
               {#if mpesaError}
-                <div class="bg-red-50 text-red-600 p-4 rounded-md text-[13px] border border-red-200 mt-2 flex gap-3 items-start">
+                <div class="bg-red-50 text-red-600 p-4 rounded-md text-[13px] border border-red-200 mt-2 flex gap-3 items-start" role="alert">
                   <AlertCircle size={16} class="shrink-0 mt-0.5" />
                   <span>{mpesaError}</span>
                 </div>
               {/if}
 
               <div class="flex flex-col mt-4">
-                <span class="ui-label mb-1">M-Pesa Registered Number</span>
+                <label for="mpesa_phone_number" class="ui-label mb-1">M-Pesa Registered Number</label>
                 <input 
+                  id="mpesa_phone_number"
                   type="tel" 
                   bind:value={phoneNumber} 
                   placeholder="2547XXXXXXXX" 
                   class="input-field w-full font-mono text-[16px] tracking-wide" 
                   required
                   disabled={isProcessing}
+                  autocomplete="tel"
+                  inputmode="numeric"
                 />
               </div>
             </div>
@@ -278,7 +298,7 @@
         </div>
 
         {#if stripeError}
-          <div class="bg-red-50 text-red-600 p-4 rounded-md text-[13px] border border-red-200 flex gap-3 items-start w-full">
+          <div class="bg-red-50 text-red-600 p-4 rounded-md text-[13px] border border-red-200 flex gap-3 items-start w-full" role="alert">
             <AlertCircle size={16} class="shrink-0 mt-0.5" />
             <span>{stripeError}</span>
           </div>
@@ -288,6 +308,7 @@
           onclick={handleStripePayment}
           class="btn-primary w-full h-[56px]! text-[15px] font-medium shadow-md flex items-center justify-center gap-2"
           disabled={isProcessing}
+          aria-label="Continue to Stripe secure checkout"
         >
           {#if isProcessing}
             <Loader2 size={20} class="animate-spin" /> Preparing Checkout...
