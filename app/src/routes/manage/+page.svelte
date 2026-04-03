@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from '$app/state';
   import { Search, Hash, User, ArrowRight, HelpCircle, Package, CheckCircle2, Clock, History, CreditCard, ListFilter } from 'lucide-svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
@@ -158,6 +159,8 @@
   })());
 
   onMount(async () => {
+    reference = String(page.url.searchParams.get('reference') || reference || '').toUpperCase();
+    email = String(page.url.searchParams.get('email') || email || '');
     await authStore.init();
     await loadMyBookings();
   });

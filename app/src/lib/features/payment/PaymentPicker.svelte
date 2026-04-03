@@ -102,8 +102,8 @@
 
 <div class="flex flex-col gap-8 w-full max-w-[600px] mx-auto">
   <div class="flex flex-col gap-4 text-center lg:text-left">
-    <h3 class="text-[22px] font-medium text-brand-navy">Secure Checkout</h3>
-    <p class="text-[14px] text-text-body">Select a payment method to complete booking <strong>{reference}</strong>.</p>
+    <h3 class="text-[22px] font-medium text-brand-navy">Complete Payment For Your Reserved Seats</h3>
+    <p class="text-[14px] text-text-body">Select a payment method to secure booking <strong>{reference}</strong> before the reservation window expires.</p>
   </div>
 
   <div class="flex border-[0.5px] border-border rounded-[12px] overflow-hidden bg-surface shadow-sm sticky top-0 z-20">

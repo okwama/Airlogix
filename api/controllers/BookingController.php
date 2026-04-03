@@ -205,6 +205,11 @@ class BookingController {
             // Commit transaction
             $db->commit();
 
+            $bookingSnapshot = $this->bookingModel->getById((int)$bookingId);
+            if ($bookingSnapshot) {
+                $this->sendReservationHoldNotifications($bookingSnapshot);
+            }
+
             // Return success response with all passenger details
             Response::json([
                 'status' => true,
@@ -276,6 +281,58 @@ class BookingController {
     private function isBookingExpired(array $booking): bool
     {
         return $this->bookingModel->isReservationExpired($booking);
+    }
+
+    private function sendReservationHoldNotifications(array $booking): void
+    {
+        $reference = (string)($booking['booking_reference'] ?? '');
+        if ($reference === '') {
+            return;
+        }
+
+        $passengerName = (string)($booking['passenger_name'] ?? 'Traveler');
+        $email = trim((string)($booking['passenger_email'] ?? ''));
+        $phone = trim((string)($booking['passenger_phone'] ?? ''));
+        $expiresAt = (string)($booking['reservation_expires_at'] ?? '');
+        $frontendUrl = rtrim((string)env('FRONTEND_URL', env('APP_URL', '')), '/');
+        $manageUrl = $frontendUrl !== ''
+            ? $frontendUrl . '/manage?reference=' . rawurlencode($reference) . '&email=' . rawurlencode($email)
+            : '';
+        $brandName = (string)env('MAIL_FROM_NAME', env('APP_NAME', 'Mc Aviation'));
+
+        if ($email !== '') {
+            require_once __DIR__ . '/../services/EmailService.php';
+            $sentEmail = EmailService::getInstance()->sendReservationHold(
+                $email,
+                $passengerName,
+                $reference,
+                $expiresAt,
+                $manageUrl
+            );
+            if (!$sentEmail) {
+                error_log("Failed to send reservation hold email for booking {$reference}");
+            }
+        }
+
+        if ($phone !== '') {
+            require_once __DIR__ . '/../services/SmsService.php';
+            $sms = SmsService::getInstance();
+            if ($sms->isConfigured()) {
+                $message = "{$brandName}: seats held for booking {$reference}";
+                if ($expiresAt !== '') {
+                    $message .= " until {$expiresAt}. ";
+                } else {
+                    $message .= ". ";
+                }
+                $message .= $manageUrl !== ''
+                    ? "Resume payment: {$manageUrl}"
+                    : "Use Manage Booking with your booking email to continue payment.";
+
+                if (!$sms->send($phone, $message)) {
+                    error_log("Failed to send reservation hold SMS for booking {$reference}");
+                }
+            }
+        }
     }
 
     public function get($reference) {

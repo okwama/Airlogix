@@ -141,6 +141,56 @@ class EmailService {
             'category' => 'booking_access'
         ]);
     }
+
+    public function sendReservationHold($toEmail, $toName, $reference, $expiresAt, $manageUrl) {
+        $subject = "Complete payment for your reserved seats [" . $reference . "]";
+        $safeName = trim((string)$toName) !== '' ? $toName : 'Traveler';
+        $expiryLabel = trim((string)$expiresAt) !== '' ? $expiresAt : 'the hold expiry time shown in your booking';
+        $manageUrl = trim((string)$manageUrl);
+
+        $htmlContent = "
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;'>
+                <h2 style='color: #0f172a; margin-bottom: 12px;'>Your seats are reserved temporarily</h2>
+                <p>Hello {$safeName},</p>
+                <p>Your booking reference is <strong>{$reference}</strong>.</p>
+                <p>Please complete payment before <strong>{$expiryLabel}</strong> or the reservation will expire automatically and the seats will be released.</p>
+                <div style='margin: 24px 0; padding: 18px; border: 1px solid #dbeafe; background: #eff6ff; border-radius: 10px;'>
+                    <p style='margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #1d4ed8;'>Booking reference</p>
+                    <p style='margin: 0; font-family: monospace; font-size: 26px; font-weight: 700; color: #0f172a;'>{$reference}</p>
+                </div>
+                <p>You can return to your booking at any time during the hold window and continue payment securely.</p>"
+                . (!empty($manageUrl)
+                    ? "<p style='margin-top: 24px;'><a href='{$manageUrl}' style='display: inline-block; background: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 18px; border-radius: 8px; font-weight: 600;'>Manage booking</a></p>"
+                    : '')
+                . "<p style='color: #6b7280; font-size: 0.92em; margin-top: 24px;'>
+                    If you leave the payment page, use your booking reference and booking email on the Manage Booking page to continue.
+                </p>
+                <p>Thanks,<br>{$this->fromName} Team</p>
+            </div>
+        ";
+
+        $textContent = "Your seats are reserved temporarily\n\n"
+            . "Hello {$safeName},\n\n"
+            . "Your booking reference is {$reference}.\n"
+            . "Please complete payment before {$expiryLabel} or the reservation will expire automatically.\n\n"
+            . (!empty($manageUrl) ? "Manage booking: {$manageUrl}\n\n" : '')
+            . "If you leave the payment page, use your booking reference and booking email on the Manage Booking page to continue.\n\n"
+            . "Thanks,\n{$this->fromName} Team";
+
+        return $this->sendMailtrapRequest([
+            'from' => [
+                'email' => $this->fromEmail,
+                'name' => $this->fromName
+            ],
+            'to' => [
+                ['email' => $toEmail, 'name' => $safeName]
+            ],
+            'subject' => $subject,
+            'text' => $textContent,
+            'html' => $htmlContent,
+            'category' => 'reservation_hold'
+        ]);
+    }
     
     private function sendMailtrapRequest($data) {
         $ch = curl_init($this->apiUrl);

@@ -131,7 +131,7 @@
 
   <div class="flex justify-end mt-4">
     <button class="btn-primary w-full md:w-[280px] h-[48px]!" onclick={handleSubmit}>
-      Continue to Payment
+      Reserve Seats
     </button>
   </div>
 </div>
