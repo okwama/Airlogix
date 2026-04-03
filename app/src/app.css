@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-navy: #0A2463;
+  --color-brand-blue: #1E90FF;
+  --color-brand-mid: #3A6FD8;
+  --color-brand-sky: #1E90FF; /* Alias for blue per user preference */
+  --color-surface: #FFFFFF;
+  --color-border: #BDD4F8;
+  --color-text-body: #5A6A8A;
+  --color-text-heading: #0A2463;
+  --color-text-muted: #98A2B3;
+
+  /* Status Colors */
+  --color-status-green-bg: #E6F9F1;
+  --color-status-green-text: #0F6B3D;
+  --color-status-amber-bg: #FFF4E0;
+  --color-status-amber-text: #8A5A00;
+  --color-status-red-bg: #FFE9E9;
+  --color-status-red-text: #8A1A1A;
+  --color-status-blue-bg: #E6F1FF;
+  --color-status-blue-text: #1E4DB7;
+
+  --font-sans: system-ui, -apple-system, sans-serif;
+  
+  /* Radii per Spec */
+  --radius-card: 12px;
+  --radius-btn: 8px;
+
+  /* Typography Scale */
+  --font-display: 48px;
+  --font-h1: 32px;
+  --font-h2: 22px;
+  --font-body: 14px;
+  --font-ui-label: 11px;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-text-body font-normal leading-relaxed antialiased;
+    font-family: var(--font-sans);
+    font-size: var(--font-body);
+  }
+
+  h1 {
+    @apply text-brand-navy font-medium text-[32px] leading-tight;
+  }
+
+  h2 {
+    @apply text-brand-navy font-medium text-[22px] leading-tight;
+  }
+
+  /* Strict Weight Constraint: Purge 600/700 globally */
+  .font-bold, .font-semibold {
+    font-weight: 500 !important;
+  }
+
+  .font-extrabold, .font-black {
+    font-weight: 500 !important;
+  }
+
+  a {
+    @apply text-brand-blue transition-colors duration-200 hover:text-brand-mid;
+    text-decoration: none;
+  }
+
+  button {
+    @apply cursor-pointer transition-all duration-200 outline-none;
+  }
+
+  input, select, textarea {
+    @apply outline-none;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-navy text-white h-11 px-5 rounded-[8px] font-medium flex items-center justify-center hover:bg-brand-blue transition-colors;
+  }
+
+  .btn-secondary {
+    @apply border border-brand-blue text-brand-blue bg-transparent h-11 px-5 rounded-[8px] font-medium flex items-center justify-center hover:bg-brand-blue hover:text-white transition-all;
+  }
+
+  .btn-ghost {
+    @apply text-white/72 transition-opacity hover:opacity-100 font-medium;
+  }
+
+  .premium-card {
+    @apply bg-white border-[0.5px] border-border rounded-[12px] p-4 shadow-none;
+  }
+
+  .input-field {
+    @apply border-b-[1.5px] border-border h-11 text-[13px] text-brand-navy font-medium bg-transparent transition-colors hover:border-brand-blue focus:border-brand-blue;
+  }
+
+  .ui-label {
+    @apply text-text-muted text-[11px] font-medium uppercase tracking-[0.07em];
+  }
+
+  .status-badge {
+    @apply rounded-full text-[11px] font-medium px-3 py-1.5;
+  }
+}
+
+/* Specific Utilities */
+.hero-display {
+  @apply text-brand-navy font-medium text-[48px] leading-[1.18];
+}
