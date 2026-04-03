@@ -75,7 +75,7 @@
 
     <!-- DATE Field -->
     <div class="flex flex-col">
-      <span class="ui-label mb-1">Ready Date</span>
+      <span class="ui-label mb-1">Departure Date</span>
       <input type="date" bind:value={date} class="input-field w-full cursor-pointer" />
     </div>
 

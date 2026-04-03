@@ -95,9 +95,9 @@
 <div class="flex flex-col gap-8">
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
     
-    <!-- FROM Field (Searchable) -->
+    <!-- ORIGIN Field (Searchable) -->
     <div class="flex flex-col relative" use:clickOutside={() => showFromDropdown = false}>
-      <span class="ui-label mb-1">From</span>
+      <span class="ui-label mb-1">Origin</span>
       <button 
         class="input-field w-full flex items-center justify-between text-left group transition-all {showFromDropdown ? 'border-brand-blue' : ''}"
         onclick={() => { showFromDropdown = !showFromDropdown; if (showFromDropdown) fromSearch = ''; }}
@@ -106,7 +106,7 @@
           <span class="text-[13px] font-medium text-brand-navy truncate">
             {showFromDropdown ? (fromSearch || 'Type to search...') : fromLabel}
           </span>
-          <span class="text-[11px] text-text-muted mt-0.5">{from} (Origin)</span>
+          <span class="text-[11px] text-text-muted mt-0.5">{from}</span>
         </div>
         <Search size={14} class="text-text-muted group-hover:text-brand-blue" />
       </button>
@@ -139,9 +139,9 @@
       {/if}
     </div>
 
-    <!-- TO Field (Searchable) -->
+    <!-- DESTINATION Field (Searchable) -->
     <div class="flex flex-col relative" use:clickOutside={() => showToDropdown = false}>
-      <span class="ui-label mb-1">To</span>
+      <span class="ui-label mb-1">Destination</span>
       <button 
         class="input-field w-full flex items-center justify-between text-left group transition-all {showToDropdown ? 'border-brand-blue' : ''}"
         onclick={() => { showToDropdown = !showToDropdown; if (showToDropdown) toSearch = ''; }}
@@ -150,7 +150,7 @@
           <span class="text-[13px] font-medium text-brand-navy truncate">
             {showToDropdown ? (toSearch || 'Type to search...') : toLabel}
           </span>
-          <span class="text-[11px] text-text-muted mt-0.5">{to} (Destination)</span>
+          <span class="text-[11px] text-text-muted mt-0.5">{to}</span>
         </div>
         <Search size={14} class="text-text-muted group-hover:text-brand-blue" />
       </button>
@@ -185,7 +185,7 @@
 
     <!-- DATE Field -->
     <div class="flex flex-col">
-      <span class="ui-label mb-1">Departure / Return</span>
+      <span class="ui-label mb-1">Departure Date</span>
       <input type="date" bind:value={date} class="input-field w-full cursor-pointer" />
     </div>
 
