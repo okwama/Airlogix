@@ -26,6 +26,8 @@
   let searchQuery = $state('');
   let checkedInMap = $state<Record<string, boolean>>({});
   let checkedInLoading = $state(false);
+  let pageSize = $state(10);
+  let currentPage = $state(1);
 
   async function loadMyBookings() {
     if (!authStore.isAuthenticated) return;
@@ -121,6 +123,28 @@
         return searched;
     }
   })() as BookingRow[]);
+
+  $effect(() => {
+    // reset pagination when filter/search changes
+    activeTab;
+    searchQuery;
+    currentPage = 1;
+  });
+
+  const totalRecords = $derived(filteredBookings.length);
+  const totalPages = $derived(Math.max(1, Math.ceil(totalRecords / pageSize)));
+  const pagedBookings = $derived((() => {
+    const safePage = Math.min(Math.max(1, currentPage), totalPages);
+    const start = (safePage - 1) * pageSize;
+    return filteredBookings.slice(start, start + pageSize);
+  })() as BookingRow[]);
+
+  $effect(() => {
+    // keep currentPage in range after async loads
+    totalPages;
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+  });
 
   const tabCounts = $derived((() => {
     const list = Array.isArray(myBookings) ? myBookings : [];
@@ -307,7 +331,7 @@
                 <div class="px-4 py-3">Payment</div>
                 <div class="px-4 py-3">Status</div>
               </div>
-              {#each filteredBookings as b (b.id)}
+              {#each pagedBookings as b (b.id)}
                 <button
                   class="grid grid-cols-[140px_1fr_140px_140px_120px] w-full text-left bg-white hover:bg-slate-50 transition-colors border-t border-border"
                   onclick={() => goto(`/my-bookings/${String(b.booking_reference || '').toUpperCase()}`)}
@@ -339,7 +363,7 @@
 
             <!-- Mobile cards -->
             <div class="md:hidden space-y-3">
-              {#each filteredBookings as b (b.id)}
+              {#each pagedBookings as b (b.id)}
                 <button
                   class="w-full text-left border border-border rounded-lg p-4 hover:border-brand-blue transition-colors bg-white"
                   onclick={() => goto(`/my-bookings/${String(b.booking_reference || '').toUpperCase()}`)}
@@ -361,6 +385,35 @@
                   </div>
                 </button>
               {/each}
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex items-center justify-between gap-4 mt-5 flex-wrap">
+              <p class="text-[12px] text-text-muted">
+                Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalRecords)} of {totalRecords}
+              </p>
+
+              <div class="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  onclick={() => (currentPage = Math.max(1, currentPage - 1))}
+                  disabled={currentPage <= 1}
+                >
+                  Prev
+                </Button>
+
+                <span class="text-[12px] text-text-muted font-medium px-2">
+                  Page {currentPage} / {totalPages}
+                </span>
+
+                <Button
+                  variant="secondary"
+                  onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage >= totalPages}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           {/if}
         </div>
