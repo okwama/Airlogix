@@ -51,7 +51,7 @@
 
     <div class="relative container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1200px] pt-6 sm:pt-8 pb-6 sm:pb-8">
       <div class="bg-white/98 backdrop-blur-sm border border-white/30 rounded-[14px] shadow-xl overflow-visible relative z-40">
-        <div class="flex items-center w-full max-w-fit bg-surface border-b border-border/80 overflow-hidden">
+        <div class="flex items-center w-full bg-surface border-b border-border/80 rounded-t-[14px] overflow-hidden">
         <button
           class="h-[44px] px-5 sm:px-7 flex items-center gap-2 text-[12px] sm:text-[13px] font-medium transition-all {searchMode === 'flight' ? 'bg-brand-navy text-white' : 'text-text-body hover:bg-slate-50'}"
           onclick={() => (searchMode = 'flight')}
