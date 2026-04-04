@@ -11,6 +11,22 @@
   
   /** @type {Props} */
   let { flight } = $props();
+
+  const bookingUrl = $derived.by(() => {
+    const params = new URLSearchParams({
+      flight_id: String(flight.id ?? ''),
+      flight_no: String(flight.flight_no ?? ''),
+      from: String(flight.origin ?? ''),
+      to: String(flight.destination ?? ''),
+      date: String(flight.departure_date ?? ''),
+      weight: String(flight.requested_weight_kg ?? ''),
+      commodity: String(flight.commodity ?? 'general'),
+      rate: String(flight.price_per_kg ?? ''),
+      pieces: String(flight.requested_pieces ?? 1)
+    });
+
+    return `/cargo-booking/${flight.flight_no}?${params.toString()}`;
+  });
 </script>
 
 <Card hover padding="none" class="bg-white overflow-hidden shadow-sm hover:shadow-md transition-all">
@@ -66,7 +82,7 @@
         <Button 
           variant="primary" 
           class="h-10 px-6 text-[13px]"
-          href={`/cargo-booking/${flight.flight_no}?date=${flight.departure_date}`}
+          href={bookingUrl}
         >
           Book Space
         </Button>

@@ -17,7 +17,7 @@
     { label: 'Ethiopia', options: [{ code: 'ADD', name: 'Addis Ababa' }] },
     { label: 'Zambia', options: [{ code: 'LUN', name: 'Lusaka' }] },
     { label: 'Zimbabwe', options: [{ code: 'HRE', name: 'Harare' }] },
-    { label: 'Seychelles', options: [{ code: 'SEZ', name: 'Mahé' }] },
+    { label: 'Seychelles', options: [{ code: 'SEZ', name: 'Mahe' }] },
     { label: 'DRC', options: [{ code: 'FIH', name: 'Kinshasa' }] },
     { label: 'Burundi', options: [{ code: 'BJM', name: 'Bujumbura' }] }
   ];
@@ -110,3 +110,4 @@
     </button>
   </div>
 </div>
+

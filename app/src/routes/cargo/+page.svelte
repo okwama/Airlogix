@@ -22,7 +22,7 @@
           Book Cargo Now
           <ArrowRight size={16} class="ml-2" />
         </Button>
-        <Button variant="secondary" class="border-white/20 text-white hover:bg-white/10 min-w-[200px]">
+        <Button variant="secondary" class="border-white/20 text-white hover:bg-white/10 min-w-[200px]" href="/cargo-tracking">
           Track Shipment
         </Button>
       </div>

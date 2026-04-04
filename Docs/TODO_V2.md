@@ -46,3 +46,27 @@ Scope: `post-draft legal content`
   - contact details are consistent across all pages,
   - SEO titles/meta are set for all legal routes.
 - Publish and store approved legal text/version in docs repository for audit trail.
+
+---
+
+### Cargo Availability Hardening (Minimal Tables)
+
+Status: `in_progress`
+Priority: `high`
+Scope: `v2`
+
+#### Implemented Foundation
+- Added migration: `api/migrations/20260404_minimal_cargo_capacity_foundation.sql`
+- Extended `cargo_bookings` with:
+  - `chargeable_weight_kg`
+  - `booking_phase` (`hold` | `confirmed` | `cancelled`)
+  - `hold_expires_at`
+  - `capacity_snapshot_kg`
+- Added new table: `cargo_capacity_overrides` (per-flight/per-date effective capacity).
+- Added new table: `cargo_tariffs` (route/commodity/weight-band pricing).
+- Seeded fallback setting key: `cargo_price_per_kg_default`.
+
+#### Next Tasks
+- Update cargo availability query to prefer `cargo_capacity_overrides.effective_capacity_kg` over aircraft default.
+- Add tariff match logic in API (route + commodity + weight band), fallback to settings default.
+- Add hold expiry worker/cron to clear stale holds (`booking_phase='hold'` past `hold_expires_at`).

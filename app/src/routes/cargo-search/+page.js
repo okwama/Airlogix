@@ -6,7 +6,8 @@ export const load = async ({ url, fetch }) => {
   const from = url.searchParams.get('from') || 'NBO';
   const to = url.searchParams.get('to') || 'DAR';
   const date = url.searchParams.get('date') || new Date().toISOString().slice(0, 10);
-  const weight = parseInt(url.searchParams.get('weight') || '100', 10);
+  const rawWeight = parseFloat(url.searchParams.get('weight') || '100');
+  const weight = Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 100;
   const commodity = url.searchParams.get('commodity') || 'general';
 
   async function fetchCargoAvailability() {
@@ -19,7 +20,9 @@ export const load = async ({ url, fetch }) => {
 
     const res = await fetch(apiUrl.toString());
     const result = await res.json();
-    if (!res.ok || !result.status) return [];
+    if (!res.ok || !result.status) {
+      throw new Error(result?.message || 'Could not load cargo availability');
+    }
     return result.data || [];
   }
 
@@ -57,17 +60,31 @@ export const load = async ({ url, fetch }) => {
   }
 
   let flights = [];
+  let loadError = '';
   try {
     flights = await fetchCargoAvailability();
     if (flights.length === 0 && ENABLE_MOCKS) {
       flights = await fetchMockCargoFlights();
     }
   } catch (e) {
-    flights = ENABLE_MOCKS ? await fetchMockCargoFlights() : [];
+    if (ENABLE_MOCKS) {
+      flights = await fetchMockCargoFlights();
+    } else {
+      flights = [];
+      loadError = e instanceof Error ? e.message : 'Could not load cargo availability.';
+    }
   }
 
   return {
     searchQuery: { from, to, date, weight, commodity },
-    flights,
+    flights: flights.map(
+      /** @param {any} flight */ (flight) => ({
+        ...flight,
+        commodity,
+        requested_weight_kg: weight,
+        requested_pieces: 1
+      })
+    ),
+    loadError
   };
 };

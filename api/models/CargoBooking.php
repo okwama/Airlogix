@@ -116,20 +116,13 @@ class CargoBooking {
             return [];
         }
 
-        // Price heuristics (until a real cargo pricing table exists).
-        $pricePerKg = 120.0;
-        try {
-            $s = $this->conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'cargo_price_per_kg_default' LIMIT 1");
-            $s->execute();
-            $val = $s->fetch(PDO::FETCH_ASSOC);
-            if (!empty($val['setting_value']) && is_numeric($val['setting_value'])) {
-                $pricePerKg = (float)$val['setting_value'];
-            }
-        } catch (Exception $e) {
-            // ignore: keep default
-        }
+        $defaultPricePerKg = $this->resolveDefaultCargoPricePerKg();
+        $pricePerKg = $this->resolveTariffPricePerKg($fromId, $toId, $date, $weight, $commodity, $defaultPricePerKg);
 
-        // Available capacity derived from aircraft max cargo weight minus booked cargo weights for the date.
+        // Available capacity:
+        // 1) Use per-flight/day operational override if present.
+        // 2) Otherwise use aircraft max cargo weight.
+        // 3) Subtract already-booked cargo on that date.
         $query = "
             SELECT
                 fs.id AS id,
@@ -148,7 +141,7 @@ class CargoBooking {
                 ) AS duration,
                 GREATEST(
                     0,
-                    COALESCE(ac.max_cargo_weight, 0) - COALESCE(booked.total_weight, 0)
+                    COALESCE(cco.effective_capacity_kg, ac.max_cargo_weight, 0) - COALESCE(booked.total_weight, 0)
                 ) AS available_capacity_kg,
                 99 AS max_pieces,
                 ? AS price_per_kg
@@ -156,6 +149,10 @@ class CargoBooking {
             JOIN destinations d1 ON fs.from_destination_id = d1.id
             JOIN destinations d2 ON fs.to_destination_id = d2.id
             LEFT JOIN aircrafts ac ON fs.aircraft_id = ac.id
+            LEFT JOIN cargo_capacity_overrides cco
+                ON cco.flight_series_id = fs.id
+               AND cco.override_date = ?
+               AND cco.is_active = 1
             LEFT JOIN (
                 SELECT flight_series_id, SUM(weight_kg) AS total_weight
                 FROM cargo_bookings
@@ -176,6 +173,7 @@ class CargoBooking {
             $date, $date,
             $pricePerKg,
             $date,
+            $date,
             $fromId,
             $toId,
             $date
@@ -192,6 +190,74 @@ class CargoBooking {
             }
         }
         return $filtered;
+    }
+
+    private function resolveDefaultCargoPricePerKg(): float
+    {
+        $pricePerKg = 120.0;
+        try {
+            $s = $this->conn->prepare("SELECT setting_value FROM settings WHERE setting_key = 'cargo_price_per_kg_default' LIMIT 1");
+            $s->execute();
+            $val = $s->fetch(PDO::FETCH_ASSOC);
+            if (!empty($val['setting_value']) && is_numeric($val['setting_value'])) {
+                $pricePerKg = (float)$val['setting_value'];
+            }
+        } catch (Exception $e) {
+            // Keep fallback default.
+        }
+        return $pricePerKg;
+    }
+
+    private function resolveTariffPricePerKg(
+        int $fromId,
+        int $toId,
+        string $date,
+        float $weight,
+        string $commodity,
+        float $fallbackPrice
+    ): float {
+        $commodity = strtolower(trim($commodity));
+        if ($commodity === '') {
+            $commodity = 'general';
+        }
+
+        try {
+            $q = "
+                SELECT ct.price_per_kg
+                FROM cargo_tariffs ct
+                WHERE ct.is_active = 1
+                  AND (ct.from_destination_id = ? OR ct.from_destination_id IS NULL)
+                  AND (ct.to_destination_id = ? OR ct.to_destination_id IS NULL)
+                  AND (LOWER(ct.commodity_type) = ? OR LOWER(ct.commodity_type) = 'general')
+                  AND ct.min_weight_kg <= ?
+                  AND (ct.max_weight_kg IS NULL OR ct.max_weight_kg >= ?)
+                  AND (ct.effective_from IS NULL OR ct.effective_from <= ?)
+                  AND (ct.effective_to IS NULL OR ct.effective_to >= ?)
+                ORDER BY
+                  CASE WHEN ct.from_destination_id = ? AND ct.to_destination_id = ? THEN 1 ELSE 0 END DESC,
+                  CASE WHEN LOWER(ct.commodity_type) = ? THEN 1 ELSE 0 END DESC,
+                  ct.min_weight_kg DESC,
+                  ct.id DESC
+                LIMIT 1
+            ";
+            $stmt = $this->conn->prepare($q);
+            $stmt->execute([
+                $fromId, $toId,
+                $commodity,
+                $weight, $weight,
+                $date, $date,
+                $fromId, $toId,
+                $commodity
+            ]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!empty($row['price_per_kg']) && is_numeric($row['price_per_kg'])) {
+                return (float)$row['price_per_kg'];
+            }
+        } catch (Exception $e) {
+            // Fallback to settings/default price if tariff table is not yet present.
+        }
+
+        return $fallbackPrice;
     }
 }
 ?>

@@ -10,6 +10,7 @@
 
   const searchQuery = $derived(data.searchQuery);
   const flights = $derived(data.flights);
+  const loadError = $derived(data.loadError ?? '');
   const isNavigating = $derived(Boolean($navigating));
 </script>
 
@@ -72,6 +73,17 @@
             </div>
           {/each}
         </div>
+      {:else if loadError}
+        <Card padding="none" class="no-results bg-white text-center">
+          <div class="max-w-[80%] mx-auto py-20">
+            <div class="icon mb-8 opacity-20"><PackageSearch size={80} /></div>
+            <h3 class="text-brand-navy text-2xl font-medium mb-4">Could Not Load Availability</h3>
+            <p class="text-text-body mb-10 leading-relaxed">{loadError}</p>
+            <Button variant="secondary" onclick={() => window.location.reload()} class="min-w-[180px]">
+              Try Again
+            </Button>
+          </div>
+        </Card>
       {:else if flights.length > 0}
         <div class="sort-bar">
           <span class="text-[13px]">{flights.length} flights with available capacity</span>
