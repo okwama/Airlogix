@@ -253,15 +253,13 @@
   <title>Manage Booking | {appConfig.name}</title>
 </svelte:head>
 
-<main class="page-shell pb-20 pt-8 sm:pt-10">
+<main class="page-shell pb-20 pt-6 sm:pt-8">
   <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
-      <div class="max-w-[860px] space-y-3">
+    <header class="rounded-[24px] bg-[linear-gradient(135deg,rgba(255,255,255,0.56),rgba(244,244,240,0.9))] px-5 py-5 shadow-[0_20px_54px_rgba(26,28,26,0.05)] sm:px-7 sm:py-6 md:px-8">
+      <div class="max-w-[760px] space-y-2">
         <p class="ui-label">Manage Booking</p>
-        <h1 class="hero-display">Retrieve itineraries, continue payments, and move between passenger and cargo operations without friction.</h1>
-        <p class="max-w-[760px] text-[15px] text-[color:var(--color-text-body)] sm:text-[17px]">
-          Keep the existing booking and OTP flows, but present them with the same editorial calm as the rest of the platform.
-        </p>
+        <h1 class="text-[clamp(2rem,3.4vw,2.8rem)] font-extrabold leading-[1] tracking-[-0.035em] text-[color:var(--color-text-heading)]">Manage Booking</h1>
+        <p class="max-w-[640px] text-[14px] text-[color:var(--color-text-body)] sm:text-[15px]">Retrieve a trip, continue payment, access documents, or track cargo.</p>
       </div>
     </header>
 
