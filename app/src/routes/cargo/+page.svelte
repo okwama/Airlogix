@@ -2,6 +2,7 @@
   import { Shield, ArrowRight, Package2, Clock3, Leaf, Headphones, PlaneTakeoff } from 'lucide-svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
+  import CargoSearchForm from '$lib/features/cargo/CargoSearchForm.svelte';
   import { appConfig } from '$lib/config/appConfig';
 </script>
 
@@ -34,82 +35,13 @@
               <Button variant="secondary" href="/cargo-tracking">Track shipment</Button>
             </div>
 
-            <div class="grid gap-8 md:grid-cols-2">
-              <div class="space-y-3">
-                <p class="ui-label">Origin Airport</p>
-                <div class="field-shell flex min-h-[68px] items-center justify-between px-5">
-                  <div>
-                    <p class="text-[16px] font-semibold text-[color:var(--color-brand-navy)]">Select origin</p>
-                    <p class="text-[13px] text-[color:var(--color-text-body)]">City or IATA code</p>
-                  </div>
-                  <PlaneTakeoff size={18} class="text-[color:var(--color-text-muted)]" />
-                </div>
-              </div>
-
-              <div class="space-y-3">
-                <p class="ui-label">Destination Airport</p>
-                <div class="field-shell flex min-h-[68px] items-center justify-between px-5">
-                  <div>
-                    <p class="text-[16px] font-semibold text-[color:var(--color-brand-navy)]">Select destination</p>
-                    <p class="text-[13px] text-[color:var(--color-text-body)]">City or IATA code</p>
-                  </div>
-                  <ArrowRight size={18} class="text-[color:var(--color-text-muted)]" />
-                </div>
-              </div>
-            </div>
-
-            <div class="grid gap-8 md:grid-cols-2">
-              <div class="space-y-3">
-                <p class="ui-label">Cargo Type</p>
-                <div class="field-shell flex min-h-[68px] items-center px-5">
-                  <div>
-                    <p class="text-[16px] font-semibold text-[color:var(--color-brand-navy)]">General cargo</p>
-                    <p class="text-[13px] text-[color:var(--color-text-body)]">Perishable, pharma, HAZMAT, electronics</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="space-y-3">
-                <p class="ui-label">Preferred Handling Date</p>
-                <div class="field-shell flex min-h-[68px] items-center px-5">
-                  <div>
-                    <p class="text-[16px] font-semibold text-[color:var(--color-brand-navy)]">Choose flight date</p>
-                    <p class="text-[13px] text-[color:var(--color-text-body)]">Match your warehouse timing</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid gap-6 md:grid-cols-3">
-              <div class="space-y-3">
-                <p class="ui-label">Weight</p>
-                <div class="field-shell flex min-h-[68px] items-center px-5">
-                  <div>
-                    <p class="text-[16px] font-semibold text-[color:var(--color-brand-navy)]">Kilograms</p>
-                    <p class="text-[13px] text-[color:var(--color-text-body)]">Total shipment weight</p>
-                  </div>
-                </div>
-              </div>
-              <div class="space-y-3 md:col-span-2">
-                <p class="ui-label">Dimensions</p>
-                <div class="grid gap-4 sm:grid-cols-3">
-                  <div class="field-shell flex min-h-[68px] items-center px-5"><span class="text-[14px] text-[color:var(--color-brand-navy)]">Length</span></div>
-                  <div class="field-shell flex min-h-[68px] items-center px-5"><span class="text-[14px] text-[color:var(--color-brand-navy)]">Width</span></div>
-                  <div class="field-shell flex min-h-[68px] items-center px-5"><span class="text-[14px] text-[color:var(--color-brand-navy)]">Height</span></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-4 pt-2 sm:flex-row">
-              <Button variant="primary" href="/cargo-search" class="min-h-[56px] flex-1 text-[15px]">Book now</Button>
-              <Button variant="secondary" href="/cargo-search" class="min-h-[56px] flex-1 text-[15px]">Get instant quote</Button>
-            </div>
+            <CargoSearchForm primaryLabel="Get instant quote" secondaryLabel="Book now" showSecondaryAction={true} />
           </div>
         </Card>
       </div>
 
       <aside class="space-y-8 lg:col-span-4">
-        <div class="relative overflow-hidden rounded-[26px] bg-[linear-gradient(160deg,#000b60,#1a2b85)] px-7 py-8 text-white shadow-[0_28px_70px_rgba(0,11,96,0.18)] sm:px-8 sm:py-9">
+        <div class="relative overflow-hidden rounded-[26px] bg-[color:var(--color-brand-navy)] px-7 py-8 text-white shadow-[0_28px_70px_rgba(0,11,96,0.12)] sm:px-8 sm:py-9">
           <div class="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-white/8 blur-3xl"></div>
           <div class="relative space-y-6">
             <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Fleet Highlight</p>

@@ -9,6 +9,7 @@ export const load = async ({ url, fetch }) => {
   const rawWeight = parseFloat(url.searchParams.get('weight') || '100');
   const weight = Number.isFinite(rawWeight) && rawWeight > 0 ? rawWeight : 100;
   const commodity = url.searchParams.get('commodity') || 'general';
+  const intent = url.searchParams.get('intent') || 'quote';
 
   async function fetchCargoAvailability() {
     const apiUrl = new URL(`${BASE_URL}/cargo/availability`);
@@ -76,7 +77,7 @@ export const load = async ({ url, fetch }) => {
   }
 
   return {
-    searchQuery: { from, to, date, weight, commodity },
+    searchQuery: { from, to, date, weight, commodity, intent },
     flights: flights.map(
       /** @param {any} flight */ (flight) => ({
         ...flight,

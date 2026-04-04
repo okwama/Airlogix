@@ -32,6 +32,11 @@
             <span class="h-1.5 w-1.5 rounded-full bg-[color:var(--color-brand-blue)]"></span>
             <span class="capitalize">{searchQuery.commodity}</span>
           </div>
+          <p class="max-w-[640px] text-[13px] leading-7 text-[color:var(--color-text-body)]">
+            {searchQuery.intent === 'book'
+              ? 'Select a flight with available capacity to continue straight into the cargo booking step.'
+              : 'Review available capacity and pricing, then continue into booking when you are ready.'}
+          </p>
         </div>
         <div class="flex items-center gap-3">
           <button class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]"><SlidersHorizontal size={14} class="inline" /> Capacity filters</button>

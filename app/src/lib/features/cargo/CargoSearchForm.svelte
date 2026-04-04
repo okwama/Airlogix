@@ -2,6 +2,12 @@
   import { goto } from '$app/navigation';
   import { ChevronDown, Loader2 } from 'lucide-svelte';
 
+  let {
+    primaryLabel = 'Search Capacity',
+    secondaryLabel = '',
+    showSecondaryAction = false
+  } = $props();
+
   let from = $state('NBO');
   let to = $state('DAR');
   let weight = $state(100);
@@ -22,14 +28,15 @@
     { label: 'Burundi', options: [{ code: 'BJM', name: 'Bujumbura' }] }
   ];
 
-  async function handleSearch() {
+  async function handleSearch(intent = 'quote') {
     isSearching = true;
     const params = new URLSearchParams({ 
       from, 
       to, 
       weight: weight.toString(), 
       commodity,
-      date
+      date,
+      intent
     });
     await goto(`/cargo-search?${params.toString()}`);
     isSearching = false;
@@ -100,12 +107,22 @@
     </div>
   </div>
 
-  <div class="flex justify-end">
-    <button class="btn-primary w-full md:w-[240px] !min-h-[52px]" onclick={handleSearch} disabled={isSearching}>
+  <div class={`flex ${showSecondaryAction ? 'flex-col gap-3 sm:flex-row sm:justify-end' : 'justify-end'}`}>
+    {#if showSecondaryAction}
+      <button class="w-full rounded-[10px] bg-[color:var(--color-surface-high)] px-5 py-3 text-[13px] font-semibold text-[color:var(--color-brand-navy)] transition-all hover:-translate-y-0.5 hover:bg-[color:var(--color-surface-highest)] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto" onclick={() => handleSearch('book')} disabled={isSearching}>
+        {#if isSearching}
+          <Loader2 size={16} class="animate-spin mr-2 inline" /> Opening...
+        {:else}
+          <span class="text-[14px] font-extrabold tracking-[0.015em]">{secondaryLabel || 'Book now'}</span>
+        {/if}
+      </button>
+    {/if}
+
+    <button class="btn-primary w-full md:w-[240px] !min-h-[52px]" onclick={() => handleSearch('quote')} disabled={isSearching}>
       {#if isSearching}
         <Loader2 size={16} class="animate-spin mr-2" /> Calculating...
       {:else}
-        <span class="text-[14px] font-extrabold tracking-[0.015em]">Search Capacity</span>
+        <span class="text-[14px] font-extrabold tracking-[0.015em]">{primaryLabel}</span>
       {/if}
     </button>
   </div>
