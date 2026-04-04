@@ -768,6 +768,17 @@ class BookingController {
         }
         Cache::set($rateKey, ['count' => $count + 1], 600);
 
+        $cooldownSeconds = (int)env('BOOKING_ACCESS_RESEND_COOLDOWN_SECONDS', 60);
+        if ($cooldownSeconds <= 0) {
+            $cooldownSeconds = 60;
+        }
+        $cooldownKey = "booking_access_cd:" . $reference . ":" . $email;
+        if (Cache::get($cooldownKey)) {
+            // Non-leaky response, consistent with existence-hiding behavior.
+            Response::json(['status' => true, 'message' => 'If the booking exists, a code has been sent.']);
+            return;
+        }
+
         $booking = $this->bookingModel->getByReference($reference);
         if (!$booking) {
             // Avoid leaking whether a reference exists
@@ -785,7 +796,8 @@ class BookingController {
         // Generate 6-digit code
         $code = (string)random_int(100000, 999999);
         $otpKey = "booking_access_otp:" . $reference . ":" . $email;
-        Cache::set($otpKey, ['code' => $code], 600);
+        Cache::set($otpKey, ['code_hash' => hash('sha256', $code), 'attempts' => 0], 600);
+        Cache::set($cooldownKey, ['sent' => 1], $cooldownSeconds);
 
         require_once __DIR__ . '/../services/EmailService.php';
         $sentEmail = EmailService::getInstance()->sendBookingAccessCode(
@@ -830,11 +842,43 @@ class BookingController {
             return;
         }
 
+        $ip = client_ip();
+        $verifyRateKey = "booking_access_verify_rl:" . $ip . ":" . $reference . ":" . $email;
+        $verifyRate = Cache::get($verifyRateKey);
+        $verifyCount = is_array($verifyRate) ? (int)($verifyRate['count'] ?? 0) : 0;
+        if ($verifyCount >= 10) {
+            Response::fail(429, 'Too many verification attempts. Try again later.', 'BOOKING_ACCESS_VERIFY_RATE_LIMITED');
+            return;
+        }
+
         $otpKey = "booking_access_otp:" . $reference . ":" . $email;
         $stored = Cache::get($otpKey);
-        $storedCode = is_array($stored) ? (string)($stored['code'] ?? '') : '';
+        $storedHash = '';
+        $attempts = 0;
+        if (is_array($stored)) {
+            $storedHash = (string)($stored['code_hash'] ?? '');
+            $attempts = (int)($stored['attempts'] ?? 0);
 
-        if (empty($storedCode) || !hash_equals($storedCode, $code)) {
+            // Backward compatibility for older cache payload format.
+            if ($storedHash === '' && !empty($stored['code'])) {
+                $storedHash = hash('sha256', (string)$stored['code']);
+            }
+        }
+
+        if ($storedHash === '' || !hash_equals($storedHash, hash('sha256', $code))) {
+            $attempts++;
+            Cache::set($verifyRateKey, ['count' => $verifyCount + 1], 600);
+            if (is_array($stored)) {
+                if ($attempts >= 5) {
+                    Cache::delete($otpKey);
+                } else {
+                    Cache::set($otpKey, ['code_hash' => $storedHash, 'attempts' => $attempts], 600);
+                }
+            }
+            if ($attempts >= 5) {
+                Response::fail(403, 'Too many invalid attempts. Request a new code.', 'BOOKING_ACCESS_CODE_LOCKED');
+                return;
+            }
             Response::fail(403, 'Invalid or expired code', 'BOOKING_ACCESS_CODE_INVALID');
             return;
         }

@@ -15,12 +15,13 @@
   const awb = $derived(booking?.awb_number ?? '');
   let detailedBooking = $state<any | null>(null);
 
-  // Unlock full cargo label view for this AWB in this browser session.
-  // This is a placeholder until the real auth flow is wired in.
+  // If the booking flow already issued a cargo token for this AWB in session,
+  // mark this AWB as trusted in-browser so tracking can open full details directly.
   onMount(() => {
     if (typeof sessionStorage === 'undefined') return;
     const key = `cargo_tracking_full:${awb}`;
-    if (awb) sessionStorage.setItem(key, '1');
+    const token = awb ? sessionStorage.getItem(`cargo_token:${awb}`) : null;
+    if (awb && token) sessionStorage.setItem(key, '1');
     if (awb) {
       bookingService.getCargoBookingDetails(awb)
         .then((full) => {

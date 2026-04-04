@@ -128,6 +128,34 @@ class CargoBooking {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function updatePaymentByAWB(string $awb, string $paymentStatus, ?string $paymentMethod = null): bool
+    {
+        $fields = ['payment_status = :payment_status'];
+        $params = [
+            ':payment_status' => $paymentStatus,
+            ':awb' => strtoupper(trim($awb))
+        ];
+
+        if ($paymentMethod !== null && $paymentMethod !== '') {
+            $fields[] = 'payment_method = :payment_method';
+            $params[':payment_method'] = $paymentMethod;
+        }
+
+        $query = "UPDATE " . $this->table_name . " SET " . implode(', ', $fields) . " WHERE awb_number = :awb";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute($params);
+    }
+
+    public function updateStatusByAWB(string $awb, string $status): bool
+    {
+        $query = "UPDATE " . $this->table_name . " SET status = :status WHERE awb_number = :awb";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute([
+            ':status' => $status,
+            ':awb' => strtoupper(trim($awb))
+        ]);
+    }
+
     public function quoteForFlightSeries(
         int $flightSeriesId,
         string $date,
@@ -321,14 +349,8 @@ class CargoBooking {
     private function activeBookedWeightFilterSql(): string
     {
         if ($this->hasColumn($this->table_name, 'booking_phase')) {
-            $holdExpiryCondition = $this->hasColumn($this->table_name, 'hold_expires_at')
-                ? "(hold_expires_at IS NULL OR hold_expires_at >= NOW())"
-                : "1=1";
-
-            return "(
-                booking_phase = 'confirmed'
-                OR (booking_phase = 'hold' AND {$holdExpiryCondition})
-            )";
+            // No-hold mode: only confirmed bookings consume capacity.
+            return "(booking_phase = 'confirmed')";
         }
 
         return "payment_status != 'cancelled'";

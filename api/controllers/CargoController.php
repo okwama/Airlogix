@@ -227,11 +227,6 @@ class CargoController {
             return;
         }
 
-        $holdTtlMinutes = (int)env('CARGO_HOLD_TTL_MINUTES', 120);
-        if ($holdTtlMinutes <= 0) {
-            $holdTtlMinutes = 120;
-        }
-
         $data['awb_number'] = $awb;
         $data['booking_date'] = $bookingDate;
         $data['commodity_type'] = $commodity !== '' ? $commodity : 'general';
@@ -240,8 +235,9 @@ class CargoController {
         $data['volumetric_weight'] = $volumetricWeight > 0 ? $volumetricWeight : null;
         $data['chargeable_weight_kg'] = $chargeableWeight;
         $data['capacity_snapshot_kg'] = $availableCapacity;
-        $data['booking_phase'] = 'hold';
-        $data['hold_expires_at'] = date('Y-m-d H:i:s', time() + ($holdTtlMinutes * 60));
+        // No-hold mode: treat newly created cargo bookings as confirmed immediately.
+        $data['booking_phase'] = 'confirmed';
+        $data['hold_expires_at'] = null;
         $data['total_amount'] = $serverTotal;
         $data['currency'] = strtoupper(trim((string)($data['currency'] ?? 'USD')));
 
@@ -258,8 +254,7 @@ class CargoController {
                     'total_amount' => $serverTotal,
                     'currency' => $data['currency'],
                     'price_per_kg' => $pricePerKg,
-                    'chargeable_weight_kg' => $chargeableWeight,
-                    'hold_expires_at' => $data['hold_expires_at']
+                    'chargeable_weight_kg' => $chargeableWeight
                 ]
             ]);
         } else {
@@ -292,6 +287,157 @@ class CargoController {
         }
 
         Response::json(['status' => true, 'data' => $booking]);
+    }
+
+    /**
+     * Public: request a one-time access code for cargo AWB + email.
+     */
+    public function requestAccessCode() {
+        $data = request_json();
+        $awb = strtoupper(trim((string)($data['awb'] ?? $data['reference'] ?? '')));
+        $email = strtolower(trim((string)($data['email'] ?? '')));
+
+        if ($awb === '' || $email === '') {
+            Response::fail(400, 'Missing AWB or email', 'CARGO_ACCESS_INPUT_INVALID');
+            return;
+        }
+
+        $ip = client_ip();
+        $rateKey = "cargo_access_rl:" . $ip . ":" . $awb;
+        $rate = Cache::get($rateKey);
+        $count = is_array($rate) ? (int)($rate['count'] ?? 0) : 0;
+        if ($count >= 5) {
+            Response::fail(429, 'Too many requests. Try again later.', 'CARGO_ACCESS_RATE_LIMITED');
+            return;
+        }
+        Cache::set($rateKey, ['count' => $count + 1], 600);
+
+        $cooldownSeconds = (int)env('CARGO_ACCESS_RESEND_COOLDOWN_SECONDS', 60);
+        if ($cooldownSeconds <= 0) {
+            $cooldownSeconds = 60;
+        }
+        $cooldownKey = "cargo_access_cd:" . $awb . ":" . $email;
+        if (Cache::get($cooldownKey)) {
+            Response::json(['status' => true, 'message' => 'If the shipment exists, a code has been sent.']);
+            return;
+        }
+
+        $booking = $this->cargoModel->getByAWB($awb);
+        if (!$booking) {
+            Response::json(['status' => true, 'message' => 'If the shipment exists, a code has been sent.']);
+            return;
+        }
+
+        $shipperEmail = strtolower(trim((string)($booking['shipper_email'] ?? '')));
+        $consigneeEmail = strtolower(trim((string)($booking['consignee_email'] ?? '')));
+        $emailMatch = ($shipperEmail !== '' && $shipperEmail === $email) || ($consigneeEmail !== '' && $consigneeEmail === $email);
+        if (!$emailMatch) {
+            Response::json(['status' => true, 'message' => 'If the shipment exists, a code has been sent.']);
+            return;
+        }
+
+        $code = (string)random_int(100000, 999999);
+        $otpKey = "cargo_access_otp:" . $awb . ":" . $email;
+        Cache::set($otpKey, ['code_hash' => hash('sha256', $code), 'attempts' => 0], 600);
+        Cache::set($cooldownKey, ['sent' => 1], $cooldownSeconds);
+
+        require_once __DIR__ . '/../services/EmailService.php';
+        $recipientName = (string)(
+            ($shipperEmail === $email ? ($booking['shipper_name'] ?? '') : ($booking['consignee_name'] ?? ''))
+            ?: 'Customer'
+        );
+        $sentEmail = EmailService::getInstance()->sendCargoAccessCode($email, $recipientName, $awb, $code);
+
+        $sentSms = false;
+        $phone = trim((string)(
+            $shipperEmail === $email
+                ? ($booking['shipper_phone'] ?? '')
+                : ($booking['consignee_phone'] ?? '')
+        ));
+        if ($phone !== '') {
+            require_once __DIR__ . '/../services/SmsService.php';
+            $sms = SmsService::getInstance();
+            if ($sms->isConfigured()) {
+                $msg = "Mc Aviation cargo access code for {$awb}: {$code}. Expires in 10 minutes.";
+                $sentSms = $sms->send($phone, $msg);
+            }
+        }
+
+        if (!$sentEmail && !$sentSms) {
+            Response::fail(500, 'Failed to send access code. Try again later.', 'CARGO_ACCESS_DELIVERY_FAILED');
+            return;
+        }
+
+        Response::json(['status' => true, 'message' => 'Access code sent.']);
+    }
+
+    /**
+     * Public: verify one-time cargo access code and issue access token.
+     */
+    public function verifyAccessCode() {
+        $data = request_json();
+        $awb = strtoupper(trim((string)($data['awb'] ?? $data['reference'] ?? '')));
+        $email = strtolower(trim((string)($data['email'] ?? '')));
+        $code = trim((string)($data['code'] ?? ''));
+
+        if ($awb === '' || $email === '' || $code === '') {
+            Response::fail(400, 'Missing AWB, email, or code', 'CARGO_ACCESS_INPUT_INVALID');
+            return;
+        }
+
+        $ip = client_ip();
+        $verifyRateKey = "cargo_access_verify_rl:" . $ip . ":" . $awb . ":" . $email;
+        $verifyRate = Cache::get($verifyRateKey);
+        $verifyCount = is_array($verifyRate) ? (int)($verifyRate['count'] ?? 0) : 0;
+        if ($verifyCount >= 10) {
+            Response::fail(429, 'Too many verification attempts. Try again later.', 'CARGO_ACCESS_VERIFY_RATE_LIMITED');
+            return;
+        }
+
+        $otpKey = "cargo_access_otp:" . $awb . ":" . $email;
+        $stored = Cache::get($otpKey);
+        $storedHash = '';
+        $attempts = 0;
+        if (is_array($stored)) {
+            $storedHash = (string)($stored['code_hash'] ?? '');
+            $attempts = (int)($stored['attempts'] ?? 0);
+            if ($storedHash === '' && !empty($stored['code'])) {
+                $storedHash = hash('sha256', (string)$stored['code']);
+            }
+        }
+
+        if ($storedHash === '' || !hash_equals($storedHash, hash('sha256', $code))) {
+            $attempts++;
+            Cache::set($verifyRateKey, ['count' => $verifyCount + 1], 600);
+            if (is_array($stored)) {
+                if ($attempts >= 5) {
+                    Cache::delete($otpKey);
+                } else {
+                    Cache::set($otpKey, ['code_hash' => $storedHash, 'attempts' => $attempts], 600);
+                }
+            }
+            if ($attempts >= 5) {
+                Response::fail(403, 'Too many invalid attempts. Request a new code.', 'CARGO_ACCESS_CODE_LOCKED');
+                return;
+            }
+            Response::fail(403, 'Invalid or expired code', 'CARGO_ACCESS_CODE_INVALID');
+            return;
+        }
+
+        Cache::delete($otpKey);
+
+        $booking = $this->cargoModel->getByAWB($awb);
+        if (!$booking) {
+            Response::fail(404, 'Cargo booking not found', 'CARGO_BOOKING_NOT_FOUND');
+            return;
+        }
+
+        $accessToken = $this->issueCargoAccessToken((string)$booking['awb_number']);
+        Response::json([
+            'status' => true,
+            'message' => 'Verified',
+            'access_token' => $accessToken
+        ]);
     }
 
     /**

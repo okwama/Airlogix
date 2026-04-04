@@ -142,6 +142,52 @@ class EmailService {
         ]);
     }
 
+    public function sendCargoAccessCode($toEmail, $toName, $awb, $code) {
+        $subject = "Your cargo access code [" . $awb . "]";
+
+        $htmlContent = "
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                <h2 style='color: #333;'>Cargo Access Code</h2>
+                <p>Hello {$toName},</p>
+                <p>Use the code below to access shipment <strong>{$awb}</strong>:</p>
+                <div style='margin: 25px 0; text-align: center;'>
+                    <span style='
+                        background-color: #f5f5f5;
+                        color: #333;
+                        font-family: monospace;
+                        font-size: 24px;
+                        padding: 12px 24px;
+                        letter-spacing: 5px;
+                        border: 1px solid #ddd;
+                        border-radius: 5px;
+                        display: inline-block;
+                        font-weight: bold;
+                    '>{$code}</span>
+                </div>
+                <p style='color: #666; font-size: 0.9em; margin-top: 20px;'>
+                    <em>This code will expire in 10 minutes.</em>
+                </p>
+                <p style='color: #666; font-size: 0.9em;'>
+                    If you didn't request this, you can ignore this email.
+                </p>
+                <p>Thanks,<br>{$this->fromName} Team</p>
+            </div>
+        ";
+
+        return $this->sendMailtrapRequest([
+            'from' => [
+                'email' => $this->fromEmail,
+                'name' => $this->fromName
+            ],
+            'to' => [
+                ['email' => $toEmail, 'name' => $toName]
+            ],
+            'subject' => $subject,
+            'html' => $htmlContent,
+            'category' => 'cargo_access'
+        ]);
+    }
+
     public function sendReservationHold($toEmail, $toName, $reference, $expiresAt, $manageUrl) {
         $subject = "Complete payment for your reserved seats [" . $reference . "]";
         $safeName = trim((string)$toName) !== '' ? $toName : 'Traveler';

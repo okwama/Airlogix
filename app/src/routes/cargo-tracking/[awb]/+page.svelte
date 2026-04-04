@@ -21,6 +21,12 @@
 
   let isAuthenticated = $state(false);
   let detailedBooking = $state<any | null>(null);
+  let accessEmail = $state('');
+  let accessCode = $state('');
+  let accessMessage = $state('');
+  let accessError = $state('');
+  let sendingCode = $state(false);
+  let verifyingCode = $state(false);
 
   const statusOrder = ['booked', 'manifested', 'in-transit', 'arrived', 'delivered'] as const;
   const currentIndex = $derived(statusOrder.indexOf((booking?.status ?? '') as any));
@@ -49,6 +55,38 @@
     goto(`/cargo-tracking/${code}`);
   }
 
+  async function requestAccessCode() {
+    accessError = '';
+    accessMessage = '';
+    if (!accessEmail.trim()) return;
+    sendingCode = true;
+    try {
+      await bookingService.requestCargoAccessCode(awb, accessEmail);
+      accessMessage = 'If the shipment exists, a verification code has been sent.';
+    } catch (err) {
+      accessError = err instanceof Error ? err.message : 'Failed to send access code.';
+    } finally {
+      sendingCode = false;
+    }
+  }
+
+  async function verifyAccessCode() {
+    accessError = '';
+    accessMessage = '';
+    if (!accessEmail.trim() || !accessCode.trim()) return;
+    verifyingCode = true;
+    try {
+      await bookingService.verifyCargoAccessCode(awb, accessEmail, accessCode);
+      isAuthenticated = true;
+      detailedBooking = await bookingService.getCargoBookingDetails(awb);
+      accessMessage = 'Access verified. Full shipment details unlocked.';
+    } catch (err) {
+      accessError = err instanceof Error ? err.message : 'Verification failed.';
+    } finally {
+      verifyingCode = false;
+    }
+  }
+
   const summary = $derived.by(() => {
     if (!booking) return null;
     return {
@@ -65,6 +103,14 @@
       status: booking.status ?? ''
     };
   });
+
+  const normalizedPaymentStatus = $derived(((summary?.paymentStatus ?? '') as string).toLowerCase());
+  const isPaymentCleared = $derived(normalizedPaymentStatus === 'paid' || normalizedPaymentStatus === 'completed');
+  const paymentStatusLabel = $derived(
+    normalizedPaymentStatus
+      ? normalizedPaymentStatus.charAt(0).toUpperCase() + normalizedPaymentStatus.slice(1)
+      : 'Unknown'
+  );
 
   const milestones = $derived(
     statusOrder.map((key) => ({
@@ -203,10 +249,22 @@
 
             <div class="flex flex-col gap-1 sm:col-span-2">
               <p class="text-text-muted text-[12px] uppercase tracking-widest font-medium">Payment Status</p>
-              <p class="text-brand-navy font-semibold">{summary.paymentStatus}</p>
+              <p class="text-brand-navy font-semibold">{paymentStatusLabel}</p>
             </div>
           </div>
         {/if}
+
+        <div class={`mt-5 rounded-lg border px-4 py-3 text-[13px] ${
+          isPaymentCleared
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+            : 'bg-amber-50 border-amber-200 text-amber-800'
+        }`}>
+          {#if isPaymentCleared}
+            Payment cleared. Shipment can proceed through airline handling milestones.
+          {:else}
+            Payment is not yet cleared. Shipment progress may pause until payment is confirmed.
+          {/if}
+        </div>
       </div>
 
       <aside class="flex flex-col gap-6">
@@ -252,6 +310,36 @@
                 pieces={detailedBooking.pieces}
                 bookingDate={detailedBooking.booking_date}
               />
+          </div>
+        {:else}
+          <div class="bg-surface border border-border rounded-lg p-6">
+            <h2 class="text-brand-navy font-medium text-[16px] mb-4">Unlock Full Details</h2>
+            <div class="space-y-3">
+              <Input
+                label="Email used for shipment"
+                placeholder="name@example.com"
+                bind:value={accessEmail}
+              />
+              <div class="flex gap-2">
+                <Button variant="secondary" class="flex-1" onclick={requestAccessCode} disabled={sendingCode || !accessEmail.trim()}>
+                  {sendingCode ? 'Sending...' : 'Send Code'}
+                </Button>
+                <Input
+                  label="Code"
+                  placeholder="123456"
+                  bind:value={accessCode}
+                />
+              </div>
+              <Button variant="primary" class="w-full" onclick={verifyAccessCode} disabled={verifyingCode || !accessEmail.trim() || !accessCode.trim()}>
+                {verifyingCode ? 'Verifying...' : 'Verify & Unlock'}
+              </Button>
+              {#if accessMessage}
+                <p class="text-[12px] text-emerald-700">{accessMessage}</p>
+              {/if}
+              {#if accessError}
+                <p class="text-[12px] text-red-600">{accessError}</p>
+              {/if}
+            </div>
           </div>
         {/if}
       </aside>

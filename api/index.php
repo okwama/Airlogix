@@ -261,6 +261,8 @@ if (preg_match('#^/checkin/(\d+)$#', $path, $matches) && $method==='GET') { $che
 $cargoCtrl = new CargoController();
 if ($path === '/cargo' && $method==='POST') { $cargoCtrl->create(); exit; }
 if ($path === '/cargo/availability' && $method==='GET') { $cargoCtrl->availability(); exit; }
+if ($path === '/cargo/access/request' && $method==='POST') { $cargoCtrl->requestAccessCode(); exit; }
+if ($path === '/cargo/access/verify' && $method==='POST') { $cargoCtrl->verifyAccessCode(); exit; }
 if (preg_match('#^/cargo/([A-Z0-9-]+)/details$#', $path, $matches) && $method==='GET') { $cargoCtrl->getDetails($matches[1]); exit; }
 if (preg_match('#^/cargo/([A-Z0-9-]+)$#', $path, $matches) && $method==='GET') { $cargoCtrl->get($matches[1]); exit; }
 // Allow alternative path for tracking

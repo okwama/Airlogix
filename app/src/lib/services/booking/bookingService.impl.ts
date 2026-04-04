@@ -240,6 +240,11 @@ async function createCargoBooking(payload: any) {
       const meta = extractErrorMeta(result);
       throw classifyError(response.status, meta.message || 'Failed to create cargo booking', meta.details, meta.code);
     }
+    const awb = (result.reference || result.awb || '').toString().trim().toUpperCase();
+    const token = (result.access_token || '').toString().trim();
+    if (awb && token) {
+      setCargoAccessToken(awb, token);
+    }
     return result;
   } catch (error) {
     console.error('Cargo booking error:', error);
@@ -301,6 +306,46 @@ async function getCargoBookingDetails(awb: string) {
   } catch (error) {
     console.error('Cargo details lookup error:', error);
     throw asServiceError(error, 'Failed to load cargo booking details');
+  }
+}
+
+async function requestCargoAccessCode(awb: string, email: string) {
+  try {
+    const response = await fetch(`${BASE_URL}/cargo/access/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ awb: awb.trim().toUpperCase(), email: email.trim().toLowerCase() })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.status) {
+      const meta = extractErrorMeta(result);
+      throw classifyError(response.status, meta.message || 'Failed to send cargo access code', meta.details, meta.code);
+    }
+    return result;
+  } catch (error) {
+    throw asServiceError(error, 'Failed to send cargo access code');
+  }
+}
+
+async function verifyCargoAccessCode(awb: string, email: string, code: string) {
+  try {
+    const cleanAwb = awb.trim().toUpperCase();
+    const response = await fetch(`${BASE_URL}/cargo/access/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ awb: cleanAwb, email: email.trim().toLowerCase(), code: code.trim() })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.status) {
+      const meta = extractErrorMeta(result);
+      throw classifyError(response.status, meta.message || 'Invalid or expired cargo access code', meta.details, meta.code);
+    }
+    if (result.access_token) {
+      setCargoAccessToken(cleanAwb, result.access_token);
+    }
+    return result;
+  } catch (error) {
+    throw asServiceError(error, 'Cargo access verification failed');
   }
 }
 
@@ -433,6 +478,8 @@ export const bookingService = {
   createCargoBooking,
   getCargoBooking,
   getCargoBookingDetails,
+  requestCargoAccessCode,
+  verifyCargoAccessCode,
   setCargoAccessToken,
   getBankInfo,
   listMyBookings,
