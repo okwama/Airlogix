@@ -128,25 +128,25 @@
   <title>Complete Your Booking | {appConfig.name}</title>
 </svelte:head>
 
-<main class="page-shell pb-20 pt-8 sm:pt-10">
+<main class="page-shell pb-20 pt-6 sm:pt-8">
   <div class="page-width space-y-8">
-    <header class="rounded-[30px] bg-[linear-gradient(135deg,#000b60,#20338d)] px-6 py-7 text-white shadow-[0_26px_70px_rgba(0,11,96,0.16)] sm:px-8 sm:py-8 md:px-10">
-      <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-        <div class="space-y-4">
+    <header class="rounded-[28px] bg-[linear-gradient(135deg,#000b60,#20338d)] px-6 py-6 text-white shadow-[0_24px_64px_rgba(0,11,96,0.15)] sm:px-8 sm:py-7 md:px-9">
+      <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+        <div class="space-y-3">
           <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Flight Booking Wizard</p>
-          <h1 class="text-[clamp(2.2rem,4.2vw,3.7rem)] font-extrabold leading-[0.98] tracking-[-0.04em] text-white">Complete your journey with calm, step-by-step clarity.</h1>
-          <p class="max-w-[620px] text-[14px] leading-7 text-white/74 sm:text-[15px]">
+          <h1 class="max-w-[760px] text-[clamp(1.95rem,3.5vw,3rem)] font-extrabold leading-[0.99] tracking-[-0.04em] text-white">Complete your journey with calm, step-by-step clarity.</h1>
+          <p class="max-w-[560px] text-[13px] leading-6 text-white/72 sm:text-[14px]">
             Enter traveler details, note luggage preferences, then review and pay to secure your seats before the hold expires.
           </p>
-          <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[12px] text-white/78">
+          <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-[11px] text-white/76">
             <Lock size={14} /> Secure reservation workflow
           </div>
         </div>
 
-        <div class="rounded-[24px] bg-white/10 px-5 py-5 backdrop-blur-sm">
+        <div class="rounded-[22px] bg-white/10 px-5 py-4.5 backdrop-blur-sm">
           <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Booking Ref</p>
-          <p class="mt-2 font-mono text-[22px] font-semibold tracking-[0.08em] text-white">{reference || 'PENDING'}</p>
-          <div class="mt-5 flex flex-wrap items-center gap-3 text-[12px] text-white/74">
+          <p class="mt-2 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference || 'PENDING'}</p>
+          <div class="mt-4 flex flex-wrap items-center gap-3 text-[12px] text-white/74">
             <span>{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</span>
             <span class="h-1.5 w-1.5 rounded-full bg-white/40"></span>
             <span>{booking?.flight_number || 'Selected flight'}</span>
