@@ -39,19 +39,25 @@
   <title>Log in | {appConfig.name}</title>
 </svelte:head>
 
-<main class="min-h-[calc(100vh-58px-300px)] py-16 px-6 bg-slate-50/50 flex items-center justify-center">
-  <div class="w-full max-w-[420px]">
-    <Card padding="none" class="shadow-lg bg-white">
-      <div class="px-8 py-10 space-y-8">
-        <header class="space-y-1">
-          <h1 class="text-brand-navy text-[24px] font-semibold">Welcome back</h1>
-          <p class="text-text-muted text-[13px]">
-            Log in to manage bookings, view loyalty, and track notifications.
-          </p>
+<main class="page-shell flex min-h-[calc(100vh-160px)] items-center py-12">
+  <div class="page-width grid gap-8 lg:grid-cols-[0.9fr_0.8fr] lg:items-center">
+    <div class="max-w-[560px] space-y-4">
+      <p class="ui-label">Welcome back</p>
+      <h1 class="hero-display">Return to your account with the same calm precision as the flight itself.</h1>
+      <p class="max-w-[520px] text-[16px] leading-8 text-[color:var(--color-text-body)]">
+        Sign in to manage bookings, monitor loyalty, review notifications, and keep your travel profile current.
+      </p>
+    </div>
+
+    <Card tone="highest" class="px-6 py-7 sm:px-8 sm:py-9">
+      <div class="space-y-7">
+        <header class="space-y-2">
+          <p class="ui-label">Log in</p>
+          <h2 class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">Access your account</h2>
         </header>
 
         {#if error}
-          <div class="bg-red-50 text-red-600 text-[13px] p-3 rounded-md border border-red-100">
+          <div class="rounded-[16px] bg-[color:var(--color-status-red-bg)] px-4 py-4 text-[13px] text-[color:var(--color-status-red-text)]">
             {error}
           </div>
         {/if}
@@ -78,12 +84,7 @@
             required
           />
 
-          <Button
-            type="submit"
-            variant="primary"
-            class="w-full h-11 text-[14px] font-medium"
-            disabled={submitting}
-          >
+          <Button type="submit" variant="primary" class="w-full" disabled={submitting}>
             {#if submitting}
               Signing in...
             {:else}
@@ -92,9 +93,9 @@
           </Button>
         </form>
 
-        <p class="text-[13px] text-center text-text-muted">
+        <p class="text-[13px] text-[color:var(--color-text-body)]">
           Don't have an account?
-          <a href="/signup" class="text-brand-blue hover:underline font-medium">Sign up</a>
+          <a href="/signup" class="font-semibold">Sign up</a>
         </p>
       </div>
     </Card>

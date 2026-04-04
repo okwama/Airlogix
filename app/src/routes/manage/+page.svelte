@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
   import { page } from '$app/state';
   import { Search, Hash, User, ArrowRight, HelpCircle, Package, CheckCircle2, Clock, History, CreditCard, ListFilter } from 'lucide-svelte';
   import Button from '$lib/components/ui/Button.svelte';
@@ -11,7 +11,7 @@
   import { authStore } from '$lib/stores/authStore.svelte';
   import { authService } from '$lib/services/auth/authService';
   import { appConfig } from '$lib/config/appConfig';
-  
+
   let reference = $state('');
   let email = $state('');
   let accessCode = $state('');
@@ -59,7 +59,6 @@
   function toDateOnly(value: any): Date | null {
     const raw = String(value || '').trim();
     if (!raw) return null;
-    // booking_date is typically YYYY-MM-DD
     const d = new Date(raw.length <= 10 ? `${raw}T00:00:00` : raw);
     return isNaN(d.getTime()) ? null : d;
   }
@@ -138,7 +137,6 @@
   })() as BookingRow[]);
 
   $effect(() => {
-    // reset pagination when filter/search changes
     activeTab;
     searchQuery;
     currentPage = 1;
@@ -153,7 +151,6 @@
   })() as BookingRow[]);
 
   $effect(() => {
-    // keep currentPage in range after async loads
     totalPages;
     if (currentPage > totalPages) currentPage = totalPages;
     if (currentPage < 1) currentPage = 1;
@@ -181,10 +178,10 @@
       error = 'Please enter both a Booking Reference and Email.';
       return;
     }
-    
+
     error = '';
     loading = true;
-    
+
     try {
       await bookingService.requestBookingAccessCode(reference, email);
       stage = 'verify';
@@ -218,12 +215,9 @@
     try {
       const cleanRef = reference.trim().toUpperCase();
       const result = await bookingService.verifyBookingAccessCode(cleanRef, email, accessCode);
-      
-      // Store the session token for guest access
       if (result.access_token) {
         bookingService.setAccessToken(cleanRef, result.access_token);
       }
-      
       goto(`/my-bookings/${cleanRef}`);
     } catch (err) {
       if (err instanceof ServiceError) {
@@ -259,32 +253,30 @@
   <title>Manage Booking | {appConfig.name}</title>
 </svelte:head>
 
-<main class="min-h-[calc(100vh-58px-300px)] py-10 md:py-14 px-4 sm:px-6 bg-slate-50/50">
-  <div class="max-w-[1440px] mx-auto space-y-8 md:space-y-10">
-    
-    <header class="text-center max-w-[900px] mx-auto">
-        <h1 class="text-brand-navy mb-4">Manage Your Booking</h1>
-        <p class="text-text-body/80 text-[15px] md:text-lg leading-relaxed">
-          View your itinerary, select seats, add luggage, or update your contact information quickly and securely.
+<main class="page-shell pb-20 pt-8 sm:pt-10">
+  <div class="page-width space-y-8">
+    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
+      <div class="max-w-[860px] space-y-3">
+        <p class="ui-label">Manage Booking</p>
+        <h1 class="hero-display">Retrieve itineraries, continue payments, and move between passenger and cargo operations without friction.</h1>
+        <p class="max-w-[760px] text-[15px] text-[color:var(--color-text-body)] sm:text-[17px]">
+          Keep the existing booking and OTP flows, but present them with the same editorial calm as the rest of the platform.
         </p>
+      </div>
     </header>
 
     {#if authStore.isAuthenticated}
-      <Card padding="none" class="bg-white">
-        <div class="p-4 sm:p-6 lg:p-7">
-          <div class="flex items-start justify-between gap-6 flex-wrap mb-6">
-            <div class="space-y-1">
-              <div class="ui-label text-brand-blue flex items-center gap-2">
-                <ListFilter size={14} /> Dashboard
-              </div>
-              <h2 class="text-brand-navy text-[18px] font-medium">My bookings</h2>
-              <p class="text-[13px] text-text-muted">
-                Filter by trip status and quickly open itineraries.
-              </p>
+      <Card tone="default" class="px-5 py-6 sm:px-6 sm:py-7 lg:px-8">
+        <div class="space-y-6">
+          <div class="flex flex-wrap items-start justify-between gap-5">
+            <div class="space-y-2">
+              <p class="ui-label flex items-center gap-2"><ListFilter size={14} /> Dashboard</p>
+              <h2 class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">My bookings</h2>
+              <p class="text-[14px] text-[color:var(--color-text-body)]">Filter by trip status and open itineraries quickly.</p>
             </div>
 
-            <div class="flex items-center gap-3 flex-wrap">
-              <div class="w-full sm:w-[260px] max-w-full">
+            <div class="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+              <div class="w-full sm:w-[280px]">
                 <Input
                   label="Search"
                   icon={Search}
@@ -292,163 +284,110 @@
                   bind:value={searchQuery}
                 />
               </div>
-              <Button variant="secondary" onclick={loadMyBookings} disabled={myBookingsLoading}>
-                Refresh
-              </Button>
+              <Button variant="secondary" onclick={loadMyBookings} disabled={myBookingsLoading}>Refresh</Button>
             </div>
           </div>
 
-          <!-- Tabs -->
-          <div class="flex flex-wrap gap-2 mb-6">
-            <button
-              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
-              class:!text-brand-navy={activeTab === 'upcoming'}
-              class:!border-brand-blue={activeTab === 'upcoming'}
-              onclick={() => (activeTab = 'upcoming')}
-            >
-              <Clock size={14} class="mr-1 inline" /> Upcoming ({tabCounts.upcoming})
+          <div class="flex flex-wrap gap-2">
+            <button class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]" class:!bg-[color:var(--color-brand-navy)]={activeTab === 'upcoming'} class:!text-white={activeTab === 'upcoming'} onclick={() => (activeTab = 'upcoming')}>
+              <Clock size={14} class="inline" /> Upcoming ({tabCounts.upcoming})
+            </button>
+            <button class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]" class:!bg-[color:var(--color-brand-navy)]={activeTab === 'past'} class:!text-white={activeTab === 'past'} onclick={() => (activeTab = 'past')}>
+              <History size={14} class="inline" /> Past ({tabCounts.past})
+            </button>
+            <button class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]" class:!bg-[color:var(--color-brand-navy)]={activeTab === 'pending_payment'} class:!text-white={activeTab === 'pending_payment'} onclick={() => (activeTab = 'pending_payment')}>
+              <CreditCard size={14} class="inline" /> Pending payment ({tabCounts.pending_payment})
             </button>
             <button
-              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
-              class:!text-brand-navy={activeTab === 'past'}
-              class:!border-brand-blue={activeTab === 'past'}
-              onclick={() => (activeTab = 'past')}
-            >
-              <History size={14} class="mr-1 inline" /> Past ({tabCounts.past})
-            </button>
-            <button
-              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
-              class:!text-brand-navy={activeTab === 'pending_payment'}
-              class:!border-brand-blue={activeTab === 'pending_payment'}
-              onclick={() => (activeTab = 'pending_payment')}
-            >
-              <CreditCard size={14} class="mr-1 inline" /> Pending payment ({tabCounts.pending_payment})
-            </button>
-            <button
-              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
-              class:!text-brand-navy={activeTab === 'checked_in'}
-              class:!border-brand-blue={activeTab === 'checked_in'}
+              class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]"
+              class:!bg-[color:var(--color-brand-navy)]={activeTab === 'checked_in'}
+              class:!text-white={activeTab === 'checked_in'}
               onclick={async () => {
                 activeTab = 'checked_in';
                 await ensureCheckedInComputed();
               }}
             >
-              <CheckCircle2 size={14} class="mr-1 inline" /> Checked in ({tabCounts.checked_in})
+              <CheckCircle2 size={14} class="inline" /> Checked in ({tabCounts.checked_in})
             </button>
-            <button
-              class="status-badge border border-border bg-white text-text-muted hover:border-brand-blue transition-colors"
-              class:!text-brand-navy={activeTab === 'all'}
-              class:!border-brand-blue={activeTab === 'all'}
-              onclick={() => (activeTab = 'all')}
-            >
+            <button class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]" class:!bg-[color:var(--color-brand-navy)]={activeTab === 'all'} class:!text-white={activeTab === 'all'} onclick={() => (activeTab = 'all')}>
               All ({tabCounts.all})
             </button>
           </div>
 
           {#if myBookingsError}
-            <div class="bg-red-50 text-red-600 text-[13px] p-3 rounded-md border border-red-100 mb-4">
+            <div class="rounded-[16px] bg-[color:var(--color-status-red-bg)] px-4 py-4 text-[13px] text-[color:var(--color-status-red-text)]">
               {myBookingsError}
             </div>
           {/if}
 
           {#if myBookingsLoading}
-            <p class="text-[13px] text-text-muted">Loading your bookings...</p>
+            <p class="text-[14px] text-[color:var(--color-text-body)]">Loading your bookings...</p>
           {:else if activeTab === 'checked_in' && checkedInLoading}
-            <p class="text-[13px] text-text-muted">Checking which trips are checked in...</p>
+            <p class="text-[14px] text-[color:var(--color-text-body)]">Checking which trips are checked in...</p>
           {:else if filteredBookings.length === 0}
-            <p class="text-[13px] text-text-muted">No bookings match this filter.</p>
+            <p class="text-[14px] text-[color:var(--color-text-body)]">No bookings match this filter.</p>
           {:else}
-            <!-- Desktop table -->
-            <div class="hidden md:block border border-border rounded-lg overflow-hidden">
-              <div class="grid grid-cols-[140px_1fr_140px_140px_120px] bg-slate-50 text-[11px] uppercase tracking-widest font-medium text-text-muted">
-                <div class="px-4 py-3">PNR</div>
-                <div class="px-4 py-3">Route / Flight</div>
-                <div class="px-4 py-3">Date</div>
-                <div class="px-4 py-3">Payment</div>
-                <div class="px-4 py-3">Status</div>
+            <div class="hidden md:block overflow-hidden rounded-[20px] bg-[color:var(--color-surface-lowest)] shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+              <div class="grid grid-cols-[140px_1fr_140px_140px_120px] px-4 py-4 text-[11px] uppercase tracking-[0.18em] text-[color:var(--color-text-muted)]">
+                <div>PNR</div>
+                <div>Route / Flight</div>
+                <div>Date</div>
+                <div>Payment</div>
+                <div>Status</div>
               </div>
-              {#each pagedBookings as b (b.id)}
-                <button
-                  class="grid grid-cols-[140px_1fr_140px_140px_120px] w-full text-left bg-white hover:bg-slate-50 transition-colors border-t border-border"
-                  onclick={() => goto(`/my-bookings/${String(b.booking_reference || '').toUpperCase()}`)}
-                >
-                  <div class="px-4 py-4 font-mono text-[12px] text-brand-navy">{b.booking_reference}</div>
-                  <div class="px-4 py-4">
-                    <div class="text-brand-navy font-medium">
-                      {b.from_code} -> {b.to_code}
-                      <span class="text-text-muted text-[12px] font-medium ml-2">{b.flight_number}</span>
+              <div class="space-y-2 px-2 pb-2">
+                {#each pagedBookings as b (b.id)}
+                  <button
+                    class="grid w-full grid-cols-[140px_1fr_140px_140px_120px] rounded-[16px] px-2 py-2 text-left transition-all hover:bg-[color:var(--color-surface-low)]"
+                    onclick={() => goto(`/my-bookings/${String(b.booking_reference || '').toUpperCase()}`)}
+                  >
+                    <div class="px-3 py-3 font-mono text-[12px] text-[color:var(--color-brand-navy)]">{b.booking_reference}</div>
+                    <div class="px-3 py-3">
+                      <div class="font-semibold text-[color:var(--color-brand-navy)]">{b.from_code} -> {b.to_code}<span class="ml-2 text-[12px] font-medium text-[color:var(--color-text-muted)]">{b.flight_number}</span></div>
+                      <div class="text-[12px] text-[color:var(--color-text-body)]">{b.from_city || ''}{b.from_city && b.to_city ? ' -> ' : ''}{b.to_city || ''}</div>
                     </div>
-                    <div class="text-[12px] text-text-muted">
-                      {b.from_city || ''}{b.from_city && b.to_city ? ' -> ' : ''}{b.to_city || ''}
+                    <div class="px-3 py-3 text-[12px] text-[color:var(--color-text-body)]">{b.booking_date}</div>
+                    <div class="px-3 py-3 text-[12px] font-medium text-[color:var(--color-text-body)]">{String(b.payment_status || 'pending').toUpperCase()}</div>
+                    <div class="px-3 py-3">
+                      {#if activeTab === 'checked_in' || checkedInMap[String(b.booking_reference || '').toUpperCase()] === true}
+                        <span class="status-badge bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]">Checked in</span>
+                      {:else if isPast(b)}
+                        <span class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]">Past</span>
+                      {:else}
+                        <span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">Upcoming</span>
+                      {/if}
                     </div>
-                  </div>
-                  <div class="px-4 py-4 text-[12px] text-text-muted">{b.booking_date}</div>
-                  <div class="px-4 py-4 text-[12px] font-medium text-text-muted">{String(b.payment_status || 'pending').toUpperCase()}</div>
-                  <div class="px-4 py-4">
-                    {#if activeTab === 'checked_in' || checkedInMap[String(b.booking_reference || '').toUpperCase()] === true}
-                      <span class="status-badge bg-status-green-bg text-status-green-text">CHECKED IN</span>
-                    {:else if isPast(b)}
-                      <span class="status-badge bg-slate-100 text-text-muted">PAST</span>
-                    {:else}
-                      <span class="status-badge bg-status-blue-bg text-status-blue-text">UPCOMING</span>
-                    {/if}
-                  </div>
-                </button>
-              {/each}
+                  </button>
+                {/each}
+              </div>
             </div>
 
-            <!-- Mobile cards -->
-            <div class="md:hidden space-y-3">
+            <div class="space-y-3 md:hidden">
               {#each pagedBookings as b (b.id)}
                 <button
-                  class="w-full text-left border border-border rounded-lg p-4 hover:border-brand-blue transition-colors bg-white"
+                  class="w-full rounded-[18px] bg-[color:var(--color-surface-lowest)] px-5 py-5 text-left shadow-[0_18px_40px_rgba(26,28,26,0.04)] transition-all hover:-translate-y-0.5"
                   onclick={() => goto(`/my-bookings/${String(b.booking_reference || '').toUpperCase()}`)}
                 >
                   <div class="flex items-center justify-between gap-4">
                     <div class="space-y-1">
-                      <p class="text-brand-navy font-medium">
-                        {b.from_code} -> {b.to_code}
-                        <span class="text-text-muted text-[12px] font-medium ml-2">{b.flight_number}</span>
-                      </p>
-                      <p class="text-[12px] text-text-muted">
-                        PNR: <span class="font-mono text-brand-navy">{b.booking_reference}</span>
-                        · {b.booking_date}
-                      </p>
+                      <p class="font-semibold text-[color:var(--color-brand-navy)]">{b.from_code} -> {b.to_code}<span class="ml-2 text-[12px] font-medium text-[color:var(--color-text-muted)]">{b.flight_number}</span></p>
+                      <p class="text-[12px] text-[color:var(--color-text-body)]">PNR: <span class="font-mono text-[color:var(--color-brand-navy)]">{b.booking_reference}</span> � {b.booking_date}</p>
                     </div>
-                    <span class="text-[12px] font-medium text-text-muted whitespace-nowrap">
-                      {String(b.payment_status || 'pending').toUpperCase()}
-                    </span>
+                    <span class="text-[12px] font-medium text-[color:var(--color-text-muted)] whitespace-nowrap">{String(b.payment_status || 'pending').toUpperCase()}</span>
                   </div>
                 </button>
               {/each}
             </div>
 
-            <!-- Pagination -->
-            <div class="flex items-center justify-between gap-4 mt-5 flex-wrap">
-              <p class="text-[12px] text-text-muted">
+            <div class="flex flex-wrap items-center justify-between gap-4 pt-2">
+              <p class="text-[12px] text-[color:var(--color-text-muted)]">
                 Showing {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalRecords)} of {totalRecords}
               </p>
 
               <div class="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  onclick={() => (currentPage = Math.max(1, currentPage - 1))}
-                  disabled={currentPage <= 1}
-                >
-                  Prev
-                </Button>
-
-                <span class="text-[12px] text-text-muted font-medium px-2">
-                  Page {currentPage} / {totalPages}
-                </span>
-
-                <Button
-                  variant="secondary"
-                  onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage >= totalPages}
-                >
-                  Next
-                </Button>
+                <Button variant="secondary" onclick={() => (currentPage = Math.max(1, currentPage - 1))} disabled={currentPage <= 1}>Prev</Button>
+                <span class="px-2 text-[12px] font-medium text-[color:var(--color-text-body)]">Page {currentPage} / {totalPages}</span>
+                <Button variant="secondary" onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))} disabled={currentPage >= totalPages}>Next</Button>
               </div>
             </div>
           {/if}
@@ -456,143 +395,130 @@
       </Card>
     {/if}
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-10 items-start">
+    <section class="grid gap-8 xl:grid-cols-[0.7fr_1.3fr] xl:items-start">
       <div class="space-y-6">
-        <div class="flex gap-4 items-start">
-          <div class="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0">
-            <Hash size={18} />
+        <Card tone="ghost" class="px-6 py-6">
+          <div class="space-y-5">
+            <div class="flex gap-4">
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Hash size={18} /></div>
+              <div>
+                <h3 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">Modify your trip</h3>
+                <p class="mt-1 text-[13px] leading-7 text-[color:var(--color-text-body)]">Change flights, update passenger details, or cancel according to your fare rules.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Package size={18} /></div>
+              <div>
+                <h3 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">Add extras</h3>
+                <p class="mt-1 text-[13px] leading-7 text-[color:var(--color-text-body)]">Pre-book extra baggage, select premium seating, or request special meals.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><HelpCircle size={18} /></div>
+              <div>
+                <h3 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">Get support</h3>
+                <p class="mt-1 text-[13px] leading-7 text-[color:var(--color-text-body)]">View fare conditions, baggage allowances, and download your e-ticket or receipt.</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h4 class="text-brand-navy font-medium mb-1">Modify Your Trip</h4>
-            <p class="text-[13px] text-text-muted leading-relaxed">Change flights, update passenger details, or cancel your booking according to your fare rules.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4 items-start">
-          <div class="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0">
-            <Package size={18} />
-          </div>
-          <div>
-            <h4 class="text-brand-navy font-medium mb-1">Add Extras</h4>
-            <p class="text-[13px] text-text-muted leading-relaxed">Pre-book extra baggage, select premium seating, or request special meals for your journey.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4 items-start">
-          <div class="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0">
-            <HelpCircle size={18} />
-          </div>
-          <div>
-            <h4 class="text-brand-navy font-medium mb-1">Get Support</h4>
-            <p class="text-[13px] text-text-muted leading-relaxed">View full fare conditions, baggage allowances, and download your e-ticket or receipt.</p>
-          </div>
-        </div>
+        </Card>
       </div>
 
-      <div class="space-y-6">
-      <Card padding="none" class="shadow-lg transform transition-all hover:scale-[1.01] bg-white overflow-hidden">
-        <div class="max-w-[560px] mx-auto py-8 sm:py-10 md:py-12 px-4 sm:px-6">
-          <div class="mb-10 text-center">
-            <h3 class="text-brand-navy text-xl font-medium mb-2">Find Your Booking</h3>
-            <p class="text-[13px] text-text-muted">Enter your booking details to access your itinerary, continue payment, or download documents.</p>
-          </div>
-
-        {#if error}
-          <div class="bg-red-50 text-red-600 text-[13px] p-3 rounded-md mb-8 border border-red-100 flex items-center gap-2 font-medium">
-            <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-            {error}
-          </div>
-        {/if}
-
-        <div class="space-y-8">
-          <div class="space-y-1.5">
-            <Input 
-              id="reference"
-              label="Booking Reference (PNR)"
-              icon={Hash}
-              placeholder="e.g. MC-8C4F5J" 
-              bind:value={reference}
-              disabled={loading}
-            />
-          </div>
-
-          {#if stage === 'request'}
-            <div class="space-y-1.5">
-              <Input 
-                id="email"
-                label="Email used for booking"
-                icon={User}
-                placeholder="e.g. you@example.com" 
-                bind:value={email}
-                disabled={loading}
-              />
+      <div class="grid gap-8 lg:grid-cols-2">
+        <Card tone="highest" class="px-6 py-7 sm:px-7">
+          <div class="space-y-7">
+            <div class="space-y-2 text-center lg:text-left">
+              <p class="ui-label">Passenger Booking</p>
+              <h2 class="text-[28px] font-bold text-[color:var(--color-brand-navy)]">Find your booking</h2>
+              <p class="text-[13px] text-[color:var(--color-text-body)]">Access your itinerary, continue payment, or download documents.</p>
             </div>
-          {:else}
-            <div class="space-y-1.5">
-              <Input 
-                id="accessCode"
-                label="Access code"
+
+            {#if error}
+              <div class="rounded-[16px] bg-[color:var(--color-status-red-bg)] px-4 py-4 text-[13px] text-[color:var(--color-status-red-text)]">
+                {error}
+              </div>
+            {/if}
+
+            <div class="space-y-6">
+              <Input
+                id="reference"
+                label="Booking Reference (PNR)"
                 icon={Hash}
-                placeholder="6-digit code" 
-                bind:value={accessCode}
+                placeholder="e.g. MC-8C4F5J"
+                bind:value={reference}
                 disabled={loading}
               />
-            </div>
-          {/if}
 
-          <div class="pt-6">
-            <Button 
-              class="w-full h-12 text-base font-medium group" 
-              variant="primary"
-              onclick={stage === 'request' ? handleRequestCode : handleVerifyCode}
-              disabled={loading}
-            >
-              {#if loading}
-                <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2"></div>
-                Processing...
+              {#if stage === 'request'}
+                <Input
+                  id="email"
+                  label="Email used for booking"
+                  icon={User}
+                  placeholder="e.g. you@example.com"
+                  bind:value={email}
+                  disabled={loading}
+                />
               {:else}
-                {stage === 'request' ? 'Send Access Code' : 'Verify & Continue'}
-                <ArrowRight size={18} class="ml-2 group-hover:translate-x-1 transition-transform" />
+                <Input
+                  id="accessCode"
+                  label="Access code"
+                  icon={Hash}
+                  placeholder="6-digit code"
+                  bind:value={accessCode}
+                  disabled={loading}
+                />
               {/if}
-            </Button>
+
+              <Button
+                class="w-full text-[15px]"
+                variant="primary"
+                onclick={stage === 'request' ? handleRequestCode : handleVerifyCode}
+                disabled={loading}
+              >
+                {#if loading}
+                  Processing...
+                {:else}
+                  {stage === 'request' ? 'Send access code' : 'Verify and continue'}
+                  <ArrowRight size={18} />
+                {/if}
+              </Button>
+
+              <p class="text-center text-[12px] text-[color:var(--color-text-muted)] lg:text-left">
+                Reserved seats but left the payment page? Use your PNR and booking email here to continue payment before the hold expires.
+              </p>
+            </div>
           </div>
+        </Card>
 
-          <p class="text-center text-[12px] text-text-muted mt-6">
-            Reserved seats but left the payment page? Use your PNR and booking email here to continue payment before the hold expires.
-          </p>
-        </div>
-        </div>
-      </Card>
+        <Card tone="default" class="px-6 py-7 sm:px-7">
+          <div class="space-y-7">
+            <div class="space-y-2 text-center lg:text-left">
+              <p class="ui-label">Cargo Tracking</p>
+              <h2 class="text-[28px] font-bold text-[color:var(--color-brand-navy)]">Track cargo shipment</h2>
+              <p class="text-[13px] text-[color:var(--color-text-body)]">Enter your AWB to view cargo status and milestones.</p>
+            </div>
 
-      <Card padding="none" class="bg-white overflow-hidden">
-        <div class="max-w-[560px] mx-auto py-8 px-4 sm:px-6">
-          <div class="mb-6 text-center">
-            <h3 class="text-brand-navy text-xl font-medium mb-2">Track Cargo Shipment</h3>
-            <p class="text-[13px] text-text-muted">Enter your AWB to view cargo status and milestones.</p>
+            <div class="space-y-6">
+              <Input
+                id="cargoAwb"
+                label="AWB Number"
+                icon={Package}
+                placeholder="e.g. 450-0000-0011"
+                bind:value={cargoAwb}
+              />
+
+              <Button class="w-full text-[15px]" variant="primary" onclick={handleCargoLookup}>
+                Open cargo tracking
+                <ArrowRight size={18} />
+              </Button>
+
+              <p class="text-center text-[12px] text-[color:var(--color-text-muted)] lg:text-left">
+                Need full shipment details? Open tracking and verify with the OTP sent to shipper or consignee email.
+              </p>
+            </div>
           </div>
-
-          <div class="space-y-6">
-            <Input
-              id="cargoAwb"
-              label="AWB Number"
-              icon={Package}
-              placeholder="e.g. 450-0000-0011"
-              bind:value={cargoAwb}
-            />
-
-            <Button class="w-full h-12 text-base font-medium group" variant="primary" onclick={handleCargoLookup}>
-              Open Cargo Tracking
-              <ArrowRight size={18} class="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-
-            <p class="text-center text-[12px] text-text-muted">
-              Need full shipment details? Open tracking and verify with the OTP sent to shipper/consignee email.
-            </p>
-          </div>
-        </div>
-      </Card>
+        </Card>
       </div>
-    </div>
+    </section>
   </div>
 </main>
-

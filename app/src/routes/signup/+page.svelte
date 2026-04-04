@@ -53,19 +53,25 @@
   <title>Sign up | {appConfig.name}</title>
 </svelte:head>
 
-<main class="min-h-[calc(100vh-58px-300px)] py-16 px-6 bg-slate-50/50 flex items-center justify-center">
-  <div class="w-full max-w-[480px]">
-    <Card padding="none" class="shadow-lg bg-white">
-      <div class="px-8 py-10 space-y-8">
-        <header class="space-y-1">
-          <h1 class="text-brand-navy text-[24px] font-semibold">Create your account</h1>
-          <p class="text-text-muted text-[13px]">
-            Register once to manage bookings, track cargo, and access loyalty.
-          </p>
+<main class="page-shell flex min-h-[calc(100vh-160px)] items-center py-12">
+  <div class="page-width grid gap-8 lg:grid-cols-[0.9fr_0.9fr] lg:items-center">
+    <div class="max-w-[560px] space-y-4">
+      <p class="ui-label">Create account</p>
+      <h1 class="hero-display">Join once and keep your trips, cargo, loyalty, and profile in one premium control center.</h1>
+      <p class="max-w-[520px] text-[16px] leading-8 text-[color:var(--color-text-body)]">
+        Registration gives you a cleaner account experience without changing the guest flows that already work.
+      </p>
+    </div>
+
+    <Card tone="highest" class="px-6 py-7 sm:px-8 sm:py-9">
+      <div class="space-y-7">
+        <header class="space-y-2">
+          <p class="ui-label">Sign up</p>
+          <h2 class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">Create your account</h2>
         </header>
 
         {#if error}
-          <div class="bg-red-50 text-red-600 text-[13px] p-3 rounded-md border border-red-100">
+          <div class="rounded-[16px] bg-[color:var(--color-status-red-bg)] px-4 py-4 text-[13px] text-[color:var(--color-status-red-text)]">
             {error}
           </div>
         {/if}
@@ -77,47 +83,17 @@
             handleSubmit();
           }}
         >
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input label="First name" bind:value={firstName} required />
             <Input label="Last name" bind:value={lastName} required />
           </div>
 
-          <Input
-            label="Mobile phone (login identifier)"
-            placeholder="e.g. +2547..."
-            bind:value={phone}
-            required
-          />
+          <Input label="Mobile phone (login identifier)" placeholder="e.g. +2547..." bind:value={phone} required />
+          <Input label="Email (optional)" type="email" placeholder="you@example.com" bind:value={email} />
+          <Input label="Password" type="password" placeholder="At least 8 characters" bind:value={password} required />
+          <Input label="Confirm password" type="password" placeholder="Re-enter your password" bind:value={confirmPassword} required />
 
-          <Input
-            label="Email (optional)"
-            type="email"
-            placeholder="you@example.com"
-            bind:value={email}
-          />
-
-          <Input
-            label="Password"
-            type="password"
-            placeholder="At least 8 characters"
-            bind:value={password}
-            required
-          />
-
-          <Input
-            label="Confirm password"
-            type="password"
-            placeholder="Re-enter your password"
-            bind:value={confirmPassword}
-            required
-          />
-
-          <Button
-            type="submit"
-            variant="primary"
-            class="w-full h-11 text-[14px] font-medium"
-            disabled={submitting}
-          >
+          <Button type="submit" variant="primary" class="w-full" disabled={submitting}>
             {#if submitting}
               Creating account...
             {:else}
@@ -126,9 +102,9 @@
           </Button>
         </form>
 
-        <p class="text-[13px] text-center text-text-muted">
+        <p class="text-[13px] text-[color:var(--color-text-body)]">
           Already have an account?
-          <a href="/login" class="text-brand-blue hover:underline font-medium">Log in</a>
+          <a href="/login" class="font-semibold">Log in</a>
         </p>
       </div>
     </Card>

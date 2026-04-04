@@ -5,134 +5,71 @@
   import { appConfig } from '$lib/config/appConfig';
 </script>
 
-<footer class="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="/" class="logo block mb-4">
-          <img src={logo} alt={appConfig.name} class="h-12 w-auto object-contain" />
+<footer class="page-shell mt-20 pb-8 pt-4">
+  <div class="page-width editorial-panel overflow-hidden px-6 py-10 sm:px-8 lg:px-10">
+    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+      <div class="space-y-4">
+        <a href="/" class="inline-flex items-center gap-3">
+          <img src={logo} alt={appConfig.name} class="h-11 w-auto object-contain" />
+          <span class="text-[18px] font-bold tracking-[-0.03em] text-[color:var(--color-brand-navy)]">{appConfig.name}</span>
         </a>
-        <p>{appConfig.description}</p>
+        <p class="max-w-[360px] text-[14px] text-[color:var(--color-text-body)]">
+          {appConfig.description}
+        </p>
+        <p class="ui-label">Modern concierge travel, cargo, and account services.</p>
       </div>
-      <div class="footer-section">
-        <h4>About Us</h4>
-        <ul>
-          <li><a href="/our-story">Our Story</a></li>
-          <li><a href="/destinations">Destinations</a></li>
-          <li><a href="/fleet">Our Fleet</a></li>
-        </ul>
+
+      <div class="space-y-4">
+        <p class="ui-label">Explore</p>
+        <div class="flex flex-col gap-3 text-[14px] text-[color:var(--color-text-body)]">
+          <a href="/our-story">Our Story</a>
+          <a href="/destinations">Destinations</a>
+          <a href="/fleet">Our Fleet</a>
+          <a href="/cargo">Cargo</a>
+        </div>
       </div>
-      <div class="footer-section">
-        <h4>Support</h4>
-        <ul>
-          <li><a href="/help">Help Center</a></li>
-          <li><a href="/contact">Contact Us</a></li>
-          <li><a href="/terms">Terms of Service</a></li>
-          <li><a href="/privacy">Privacy Policy</a></li>
-          <li><a href="/cookies">Cookie Policy</a></li>
-        </ul>
+
+      <div class="space-y-4">
+        <p class="ui-label">Support</p>
+        <div class="flex flex-col gap-3 text-[14px] text-[color:var(--color-text-body)]">
+          <a href="/help">Help Center</a>
+          <a href="/contact">Contact Us</a>
+          <a href="/terms">Terms of Service</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/cookies">Cookie Policy</a>
+        </div>
       </div>
-      <div class="footer-apps">
-        <h4>Get the App</h4>
-        <div class="flex flex-wrap gap-4">
+
+      <div class="space-y-4">
+        <p class="ui-label">Get The App</p>
+        <div class="flex flex-col gap-3">
           <a
             href="https://mcaviation.com/apple"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-secondary gap-3 h-[48px]! px-8!"
+            class="field-shell flex min-h-[56px] items-center gap-3 px-4 text-[color:var(--color-brand-navy)] transition-transform hover:-translate-y-0.5"
           >
             <img src={appStoreImg} alt="App Store" class="h-5" />
-            <span>App Store</span>
+            <span class="text-[14px] font-semibold">App Store</span>
           </a>
           <a
             href="https://mcaviation.com/google"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn-secondary gap-3 h-[48px]! px-8!"
+            class="field-shell flex min-h-[56px] items-center gap-3 px-4 text-[color:var(--color-brand-navy)] transition-transform hover:-translate-y-0.5"
           >
             <img src={playStoreImg} alt="Google Play" class="h-5" />
-            <span>Google Play</span>
+            <span class="text-[14px] font-semibold">Google Play</span>
           </a>
         </div>
       </div>
     </div>
-    <div class="footer-bottom">
+
+    <div class="soft-divider my-8"></div>
+
+    <div class="flex flex-col gap-3 text-[13px] text-[color:var(--color-text-muted)] sm:flex-row sm:items-center sm:justify-between">
       <p>&copy; 2026 {appConfig.name}. All rights reserved.</p>
+      <p>Quiet luxury in motion across passenger, account, and cargo experiences.</p>
     </div>
   </div>
 </footer>
-
-<style>
-  .footer {
-    background: white;
-    color: var(--color-text-primary);
-    padding: var(--spacing-2xl) 0 var(--spacing-md);
-    margin-top: var(--spacing-2xl);
-    border-top: 1px solid var(--color-border);
-  }
-
-  .footer-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: var(--spacing-2xl);
-    margin-bottom: var(--spacing-2xl);
-  }
-
-  .logo {
-    font-size: var(--font-size-2xl);
-    font-weight: 800;
-    margin-bottom: var(--spacing-md);
-    color: var(--color-primary-navy);
-  }
-
-  .footer-brand p {
-    color: var(--color-text-secondary);
-    max-width: 300px;
-    line-height: 1.6;
-  }
-
-  .footer-section h4, .footer-apps h4 {
-    color: var(--color-primary-navy);
-    margin-bottom: var(--spacing-lg);
-    font-size: var(--font-size-lg);
-  }
-
-  .footer-section ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  .footer-section ul li {
-    margin-bottom: var(--spacing-sm);
-  }
-
-  .footer-section ul li a {
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    transition: color var(--transition-fast);
-  }
-
-  .footer-section ul li a:hover {
-    color: var(--color-brand-orange);
-  }
-
-  .footer-bottom {
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--spacing-md);
-    text-align: center;
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-  }
-
-  @media (max-width: 768px) {
-    .footer-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .footer-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

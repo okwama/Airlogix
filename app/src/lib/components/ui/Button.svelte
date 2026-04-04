@@ -12,34 +12,35 @@
    */
 
   /** @type {Props} */
-  let { 
-    children, 
-    variant = "primary", 
-    disabled = false, 
-    loading = false, 
-    type = "button",
-    class: className = "",
+  let {
+    children,
+    variant = 'primary',
+    disabled = false,
+    loading = false,
+    type = 'button',
+    class: className = '',
     href,
     onclick
   } = $props();
 
-  const baseClass = "h-[44px] px-[20px] rounded-[8px] font-medium inline-flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed";
-  
+  const baseClass = 'inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[10px] px-5 py-3 text-[13px] font-semibold tracking-[0.01em] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50';
+
   const variants = {
-    primary: "bg-brand-navy text-white hover:bg-brand-blue",
-    secondary: "border-[1px] border-brand-blue text-brand-blue bg-transparent hover:bg-brand-blue hover:text-white",
-    ghost: "text-text-muted hover:text-brand-navy bg-transparent"
+    primary: 'bg-[linear-gradient(135deg,#000b60,#142283)] text-white shadow-[0_18px_40px_rgba(0,11,96,0.16)] hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(0,11,96,0.22)]',
+    secondary: 'bg-[color:var(--color-surface-high)] text-[color:var(--color-brand-navy)] hover:bg-[color:var(--color-surface-highest)] hover:-translate-y-0.5',
+    ghost: 'bg-transparent text-[color:var(--color-brand-blue)] hover:bg-white/55 hover:text-[color:var(--color-brand-mid)]'
   };
+
 </script>
 
 {#if href}
   <a
     {href}
-    class="{baseClass} {variants[variant]} {className}"
+    class={`${baseClass} ${variants[variant]} ${className}`}
     onclick={onclick}
   >
     {#if loading}
-      <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+      <span class={`h-4 w-4 animate-spin rounded-full border-2 ${variant === 'primary' ? 'border-white/25 border-t-white' : 'border-[color:var(--color-brand-blue)]/20 border-t-[color:var(--color-brand-blue)]'}`}></span>
     {:else if children}
       {@render children()}
     {/if}
@@ -47,12 +48,12 @@
 {:else}
   <button
     {type}
-    class="{baseClass} {variants[variant]} {className}"
+    class={`${baseClass} ${variants[variant]} ${className}`}
     {disabled}
     onclick={onclick}
   >
     {#if loading}
-      <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+      <span class={`h-4 w-4 animate-spin rounded-full border-2 ${variant === 'primary' ? 'border-white/25 border-t-white' : 'border-[color:var(--color-brand-blue)]/20 border-t-[color:var(--color-brand-blue)]'}`}></span>
     {:else if children}
       {@render children()}
     {/if}

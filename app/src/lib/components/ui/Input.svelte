@@ -14,13 +14,13 @@
    */
 
   /** @type {Props} */
-  let { 
-    label, 
-    value = $bindable(), 
-    type = "text", 
-    placeholder = "", 
+  let {
+    label,
+    value = $bindable(),
+    type = 'text',
+    placeholder = '',
     id = Math.random().toString(36).substring(7),
-    error = "",
+    error = '',
     required = false,
     disabled = false,
     icon,
@@ -31,13 +31,16 @@
   let focused = $state(false);
 </script>
 
-<div class="input-group" class:has-error={!!error} class:focused class:disabled>
-  <label for={id}>
-    {label} {#if required}* {/if}
+<div class="flex w-full flex-col gap-2" class:opacity-60={disabled}>
+  <label for={id} class={`ui-label ${focused ? 'text-[color:var(--color-brand-navy)]' : ''}`}>
+    {label}{#if required} *{/if}
   </label>
-  <div class="input-wrapper">
+
+  <div
+    class={`field-shell flex items-center gap-3 px-4 transition-all duration-200 ${focused ? 'bg-[rgba(223,224,255,0.72)] shadow-[inset_0_0_0_2px_rgba(0,11,96,0.1)]' : ''} ${error ? 'shadow-[inset_0_0_0_1px_rgba(186,26,26,0.35)]' : ''}`}
+  >
     {#if icon}
-      <span class="icon">
+      <span class="text-[color:var(--color-text-muted)]">
         {#if typeof IconSource === 'string'}
           {IconSource}
         {:else if IconSource}
@@ -45,90 +48,21 @@
         {/if}
       </span>
     {/if}
+
     <input
       {id}
       {type}
       {placeholder}
       bind:value
       {disabled}
-      onfocus={() => focused = true}
-      onblur={() => focused = false}
+      class="min-h-[52px] w-full bg-transparent text-[14px] text-[color:var(--color-text-heading)] placeholder:text-[color:var(--color-text-muted)]/80"
+      onfocus={() => (focused = true)}
+      onblur={() => (focused = false)}
       oninput={oninput}
     />
   </div>
+
   {#if error}
-    <span class="error-msg">{error}</span>
+    <span class="text-[12px] text-[color:var(--color-status-red-text)]">{error}</span>
   {/if}
 </div>
-
-<style>
-  .input-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    width: 100%;
-  }
-
-  .disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .disabled input {
-    cursor: not-allowed;
-  }
-
-  label {
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    transition: color var(--transition-fast);
-  }
-
-  .focused label {
-    color: var(--color-primary-navy);
-  }
-
-  .input-wrapper {
-    display: flex;
-    align-items: center;
-    background: white;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 0 var(--spacing-md);
-    transition: all var(--transition-fast);
-  }
-
-  .focused .input-wrapper {
-    border-color: var(--color-primary-navy);
-    box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.1);
-  }
-
-  .has-error .input-wrapper {
-    border-color: var(--color-error);
-  }
-
-  input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    padding: var(--spacing-md) 0;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-primary);
-    outline: none;
-  }
-
-  input::placeholder {
-    color: #ccc;
-  }
-
-  .icon {
-    margin-right: var(--spacing-sm);
-    opacity: 0.5;
-  }
-
-  .error-msg {
-    font-size: var(--font-size-xs);
-    color: var(--color-error);
-  }
-</style>

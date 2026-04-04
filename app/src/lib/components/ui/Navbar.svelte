@@ -1,6 +1,7 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
+  import { page } from '$app/state';
   import CurrencySelector from '$lib/features/payment/CurrencySelector.svelte';
   import logo from '$lib/assets/logo.png';
   import { authStore } from '$lib/stores/authStore.svelte';
@@ -9,6 +10,22 @@
   import { accountService } from '$lib/services/account/accountService';
 
   let unreadCount = $state(0);
+
+  const links = [
+    { href: '/', label: 'Book', key: 'book' },
+    { href: '/check-in', label: 'Check-in', key: 'checkin' },
+    { href: '/status', label: 'Flight status', key: 'status' },
+    { href: '/cargo', label: 'Cargo', key: 'cargo' },
+    { href: '/manage', label: 'Manage', key: 'manage' }
+  ];
+
+  function isActive(href: string) {
+    const path = page.url.pathname;
+    if (href === '/') return path === '/';
+    if (href === '/manage') return path.startsWith('/manage') || path.startsWith('/my-bookings');
+    if (href === '/cargo') return path.startsWith('/cargo');
+    return path.startsWith(href);
+  }
 
   async function loadUnreadCount() {
     try {
@@ -34,39 +51,43 @@
   });
 </script>
 
-<nav class="h-[58px] bg-brand-navy flex items-center px-[28px] sticky top-0 z-100 w-full">
-  <div class="flex items-center justify-between w-full max-w-[1440px] mx-auto">
-    <!-- Logo Section -->
-    <a href="/" class="flex items-center group outline-none">
+<nav class="sticky top-0 z-[100] px-3 pt-3 sm:px-5 sm:pt-4">
+  <div class="glass-nav mx-auto flex h-[74px] w-full max-w-[1380px] items-center justify-between rounded-[22px] px-5 sm:px-7">
+    <a href="/" class="flex items-center gap-3 text-[color:var(--color-brand-navy)]">
       <img src={logo} alt={appConfig.name} class="h-10 w-auto object-contain" />
+      <span class="hidden text-[18px] font-bold tracking-[-0.03em] md:inline">{appConfig.name}</span>
     </a>
 
-    <!-- Navigation Links -->
-    <div class="hidden md:flex items-center gap-[28px]">
-      <a href="/" class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium">Book</a>
-      <a href="/check-in" class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium">Check-in</a>
-      <a href="/status" class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium">Flight status</a>
-      <a href="/cargo" class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium">Cargo</a>
-      <a href="/manage" class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium">Manage</a>
+    <div class="hidden items-center gap-7 md:flex">
+      {#each links as link}
+        <a
+          href={link.href}
+          class={`relative pb-1 text-[14px] tracking-[-0.01em] ${isActive(link.href) ? 'text-[color:var(--color-brand-navy)] font-semibold' : 'text-[color:var(--color-text-body)]/80 hover:text-[color:var(--color-brand-navy)]'}`}
+        >
+          {link.label}
+          {#if isActive(link.href)}
+            <span class="absolute inset-x-0 -bottom-1 h-[2px] rounded-full bg-[color:var(--color-brand-navy)]"></span>
+          {/if}
+        </a>
+      {/each}
     </div>
 
-    <!-- Auth & Currency -->
-    <div class="flex items-center gap-[28px]">
-      <div class="hidden sm:block opacity-72 hover:opacity-100 transition-opacity">
-        <CurrencySelector invert />
+    <div class="flex items-center gap-3 sm:gap-4">
+      <div class="hidden sm:block opacity-80 transition-opacity hover:opacity-100">
+        <CurrencySelector />
       </div>
 
       {#if authStore.isAuthenticated}
-        <span class="text-white/80 text-[13px] font-medium hidden sm:block">
+        <span class="hidden text-[13px] text-[color:var(--color-text-body)] sm:block">
           Hi, {authStore.user?.first_name || 'traveler'}
         </span>
         <a
           href="/account"
-          class="relative bg-brand-blue text-white h-[36px] px-5 rounded-btn text-[13px] font-medium hover:bg-brand-mid transition-all active:scale-[0.98] hidden sm:inline-flex items-center justify-center"
+          class="relative inline-flex min-h-[42px] items-center justify-center rounded-[999px] bg-[color:var(--color-brand-navy)] px-4 text-[13px] font-semibold text-white shadow-[0_18px_38px_rgba(0,11,96,0.16)] hover:-translate-y-0.5"
         >
           My account
           {#if unreadCount > 0}
-            <span class="absolute -top-2 -right-2 min-w-[20px] h-[20px] px-1 rounded-full bg-white text-brand-navy text-[11px] font-semibold inline-flex items-center justify-center border border-brand-blue">
+            <span class="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[color:var(--color-surface-lowest)] px-1 text-[10px] font-semibold text-[color:var(--color-brand-navy)] shadow-sm">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           {/if}
@@ -74,20 +95,20 @@
         <button
           type="button"
           onclick={logout}
-          class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium"
+          class="hidden text-[13px] font-medium text-[color:var(--color-text-body)] transition-colors hover:text-[color:var(--color-brand-navy)] sm:inline-flex"
         >
           Logout
         </button>
       {:else}
         <a
           href="/login"
-          class="text-white/72 hover:text-white transition-opacity text-[13px] font-medium hidden sm:block"
+          class="hidden text-[13px] font-medium text-[color:var(--color-text-body)] transition-colors hover:text-[color:var(--color-brand-navy)] sm:inline-flex"
         >
           Log in
         </a>
         <a
           href="/signup"
-          class="bg-brand-blue text-white h-[36px] px-5 rounded-btn text-[13px] font-medium hover:bg-brand-mid transition-all active:scale-[0.98]"
+          class="inline-flex min-h-[42px] items-center justify-center rounded-[999px] bg-[color:var(--color-brand-navy)] px-4 text-[13px] font-semibold text-white shadow-[0_18px_38px_rgba(0,11,96,0.16)] hover:-translate-y-0.5"
         >
           Sign up
         </a>
@@ -95,10 +116,3 @@
     </div>
   </div>
 </nav>
-
-<style>
-  /* Local overrides if needed, but Tailwind handles most per spec */
-  :global(body) {
-    padding-top: 0; /* Resetting any legacy spacing */
-  }
-</style>
