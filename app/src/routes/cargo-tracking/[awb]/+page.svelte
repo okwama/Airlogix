@@ -2,6 +2,7 @@
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import CargoLabel from '$lib/features/cargo/CargoLabel.svelte';
+  import { bookingService } from '$lib/services/booking/bookingService';
   import { appConfig } from '$lib/config/appConfig';
   import { ArrowRight, CheckCircle2, Package, Search } from 'lucide-svelte';
 
@@ -19,6 +20,7 @@
   const currentStatus = $derived((booking?.status ?? '').toString());
 
   let isAuthenticated = $state(false);
+  let detailedBooking = $state<any | null>(null);
 
   const statusOrder = ['booked', 'manifested', 'in-transit', 'arrived', 'delivered'] as const;
   const currentIndex = $derived(statusOrder.indexOf((booking?.status ?? '') as any));
@@ -75,6 +77,16 @@
     if (typeof sessionStorage === 'undefined') return;
     const key = `cargo_tracking_full:${awb}`;
     isAuthenticated = sessionStorage.getItem(key) === '1';
+    if (isAuthenticated && awb) {
+      bookingService.getCargoBookingDetails(awb)
+        .then((full) => {
+          detailedBooking = full;
+        })
+        .catch(() => {
+          detailedBooking = null;
+          isAuthenticated = false;
+        });
+    }
   });
 </script>
 
@@ -224,24 +236,22 @@
           </div>
         </div>
 
-        {#if isAuthenticated}
+        {#if isAuthenticated && detailedBooking}
           <div class="bg-surface border border-border rounded-lg p-6">
             <h2 class="text-brand-navy font-medium text-[16px] mb-4">Printable Label</h2>
-            {#if booking}
               <CargoLabel
-                awb={booking.awb_number}
-                flightNumber={booking.flight_number}
-                origin={booking.origin_code}
-                destination={booking.destination_code}
-                shipperName={booking.shipper_name}
-                consigneeName={booking.consignee_name}
-                consigneePhone={booking.consignee_phone}
-                commodity={booking.commodity_type}
-                weightKg={booking.weight_kg}
-                pieces={booking.pieces}
-                bookingDate={booking.booking_date}
+                awb={detailedBooking.awb_number}
+                flightNumber={detailedBooking.flight_number}
+                origin={detailedBooking.origin_code}
+                destination={detailedBooking.destination_code}
+                shipperName={detailedBooking.shipper_name}
+                consigneeName={detailedBooking.consignee_name}
+                consigneePhone={detailedBooking.consignee_phone}
+                commodity={detailedBooking.commodity_type}
+                weightKg={detailedBooking.weight_kg}
+                pieces={detailedBooking.pieces}
+                bookingDate={detailedBooking.booking_date}
               />
-            {/if}
           </div>
         {/if}
       </aside>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import CargoLabel from '$lib/features/cargo/CargoLabel.svelte';
+  import { bookingService } from '$lib/services/booking/bookingService';
   import { CheckCircle2, Package, ArrowRight } from 'lucide-svelte';
   import { onMount } from 'svelte';
   import { appConfig } from '$lib/config/appConfig';
@@ -12,6 +13,7 @@
   
   const booking = $derived(data.booking);
   const awb = $derived(booking?.awb_number ?? '');
+  let detailedBooking = $state<any | null>(null);
 
   // Unlock full cargo label view for this AWB in this browser session.
   // This is a placeholder until the real auth flow is wired in.
@@ -19,6 +21,15 @@
     if (typeof sessionStorage === 'undefined') return;
     const key = `cargo_tracking_full:${awb}`;
     if (awb) sessionStorage.setItem(key, '1');
+    if (awb) {
+      bookingService.getCargoBookingDetails(awb)
+        .then((full) => {
+          detailedBooking = full;
+        })
+        .catch(() => {
+          detailedBooking = null;
+        });
+    }
   });
 </script>
 
@@ -54,19 +65,19 @@
 
       <!-- Label Column -->
       <div class="flex flex-col gap-2">
-        {#if booking}
+        {#if detailedBooking}
           <CargoLabel
-            awb={booking.awb_number}
-            flightNumber={booking.flight_number}
-            origin={booking.origin_code}
-            destination={booking.destination_code}
-            shipperName={booking.shipper_name}
-            consigneeName={booking.consignee_name}
-            consigneePhone={booking.consignee_phone}
-            commodity={booking.commodity_type}
-            weightKg={booking.weight_kg}
-            pieces={booking.pieces}
-            bookingDate={booking.booking_date}
+            awb={detailedBooking.awb_number}
+            flightNumber={detailedBooking.flight_number}
+            origin={detailedBooking.origin_code}
+            destination={detailedBooking.destination_code}
+            shipperName={detailedBooking.shipper_name}
+            consigneeName={detailedBooking.consignee_name}
+            consigneePhone={detailedBooking.consignee_phone}
+            commodity={detailedBooking.commodity_type}
+            weightKg={detailedBooking.weight_kg}
+            pieces={detailedBooking.pieces}
+            bookingDate={detailedBooking.booking_date}
           />
         {:else}
           <div class="bg-surface border border-border rounded-lg p-10 text-center text-text-muted">

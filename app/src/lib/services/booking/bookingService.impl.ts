@@ -247,6 +247,31 @@ async function createCargoBooking(payload: any) {
   }
 }
 
+function getCargoAccessHeaders(awb: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      const token = sessionStorage.getItem(`cargo_token:${awb}`);
+      if (token) headers['X-Cargo-Access-Token'] = token;
+    }
+  } catch {
+    // ignore
+  }
+  return headers;
+}
+
+function setCargoAccessToken(awb: string, token: string) {
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(`cargo_token:${awb}`, token);
+    }
+  } catch {
+    // ignore
+  }
+}
+
 async function getCargoBooking(awb: string) {
   try {
     const response = await fetch(`${BASE_URL}/cargo/${awb}`);
@@ -259,6 +284,23 @@ async function getCargoBooking(awb: string) {
   } catch (error) {
     console.error('Cargo lookup error:', error);
     throw asServiceError(error, 'Failed to load cargo booking');
+  }
+}
+
+async function getCargoBookingDetails(awb: string) {
+  try {
+    const response = await fetch(`${BASE_URL}/cargo/${awb}/details`, {
+      headers: getCargoAccessHeaders(awb)
+    });
+    const result = await response.json();
+    if (!response.ok || !result.status) {
+      const meta = extractErrorMeta(result);
+      throw classifyError(response.status, meta.message || 'Failed to load cargo booking details', meta.details, meta.code);
+    }
+    return result.data;
+  } catch (error) {
+    console.error('Cargo details lookup error:', error);
+    throw asServiceError(error, 'Failed to load cargo booking details');
   }
 }
 
@@ -390,6 +432,8 @@ export const bookingService = {
   pollMpesaStatus,
   createCargoBooking,
   getCargoBooking,
+  getCargoBookingDetails,
+  setCargoAccessToken,
   getBankInfo,
   listMyBookings,
   getCheckins,

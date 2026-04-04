@@ -78,6 +78,9 @@
 
       const result = await bookingService.createCargoBooking(payload);
       const awb = result.reference;
+      if (result.access_token) {
+        bookingService.setCargoAccessToken(awb, result.access_token);
+      }
 
       await goto(`/cargo-booking/${awb}/success`);
     } catch (err: unknown) {

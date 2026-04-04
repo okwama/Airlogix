@@ -91,7 +91,7 @@ if ($requestOrigin !== '' && in_array($requestOrigin, $allowedOrigins, true)) {
     header('Vary: Origin');
 }
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Booking-Access-Token');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Booking-Access-Token, X-Cargo-Access-Token');
 header('Access-Control-Max-Age: 600');
 
 // Handle Preflight OPTIONS Request
@@ -261,8 +261,10 @@ if (preg_match('#^/checkin/(\d+)$#', $path, $matches) && $method==='GET') { $che
 $cargoCtrl = new CargoController();
 if ($path === '/cargo' && $method==='POST') { $cargoCtrl->create(); exit; }
 if ($path === '/cargo/availability' && $method==='GET') { $cargoCtrl->availability(); exit; }
+if (preg_match('#^/cargo/([A-Z0-9-]+)/details$#', $path, $matches) && $method==='GET') { $cargoCtrl->getDetails($matches[1]); exit; }
 if (preg_match('#^/cargo/([A-Z0-9-]+)$#', $path, $matches) && $method==='GET') { $cargoCtrl->get($matches[1]); exit; }
 // Allow alternative path for tracking
+if (preg_match('#^/cargo/tracking/([A-Z0-9-]+)/details$#', $path, $matches) && $method==='GET') { $cargoCtrl->getDetails($matches[1]); exit; }
 if (preg_match('#^/cargo/tracking/([A-Z0-9-]+)$#', $path, $matches) && $method==='GET') { $cargoCtrl->get($matches[1]); exit; }
 
 // Destination Routes
