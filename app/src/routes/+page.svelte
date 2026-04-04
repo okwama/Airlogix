@@ -52,12 +52,12 @@
 
     <div class="page-shell relative z-10">
       <div class="page-width space-y-6">
-        <div class="mx-auto max-w-[980px] pt-10 sm:pt-14">
+        <div class="mx-auto max-w-[980px] pt-8 sm:pt-14">
           <Card tone="ghost" class="overflow-visible p-0">
             <div class="rounded-[22px] bg-[color:var(--color-surface-lowest)] text-[color:var(--color-text-heading)] shadow-[0_24px_70px_rgba(26,28,26,0.12)]">
               <div class="grid grid-cols-2 border-b border-[color:var(--color-border)]/80">
                 <button
-                  class="flex min-h-[46px] items-center justify-center gap-2 px-4 text-[12px] font-semibold transition-all sm:text-[13px]"
+                  class="flex min-h-[48px] items-center justify-center gap-2 px-3 text-[11px] font-semibold transition-all sm:min-h-[46px] sm:px-4 sm:text-[13px]"
                   class:text-[color:var(--color-brand-navy)]={searchMode === 'flight'}
                   class:border-b-2={searchMode === 'flight'}
                   class:border-[color:var(--color-brand-navy)]={searchMode === 'flight'}
@@ -67,7 +67,7 @@
                   <Plane size={15} /> Passenger Flights
                 </button>
                 <button
-                  class="flex min-h-[46px] items-center justify-center gap-2 px-4 text-[12px] font-semibold transition-all sm:text-[13px]"
+                  class="flex min-h-[48px] items-center justify-center gap-2 px-3 text-[11px] font-semibold transition-all sm:min-h-[46px] sm:px-4 sm:text-[13px]"
                   class:text-[color:var(--color-brand-navy)]={searchMode === 'cargo'}
                   class:border-b-2={searchMode === 'cargo'}
                   class:border-[color:var(--color-brand-navy)]={searchMode === 'cargo'}
@@ -78,7 +78,7 @@
                 </button>
               </div>
 
-              <div class="min-h-[210px] px-4 py-5 sm:min-h-[196px] sm:px-6 sm:py-6 overflow-visible">
+              <div class="min-h-[224px] overflow-visible px-3.5 py-4 sm:min-h-[196px] sm:px-6 sm:py-6">
                 {#if searchMode === 'flight'}
                   <FlightSearchForm />
                 {:else}

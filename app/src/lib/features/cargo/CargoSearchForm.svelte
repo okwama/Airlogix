@@ -36,8 +36,8 @@
   }
 </script>
 
-<div class="flex flex-col gap-8">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+<div class="flex flex-col gap-5 sm:gap-8">
+  <div class="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-5 lg:gap-6">
     
     <!-- ORIGIN Field -->
     <div class="flex flex-col">
@@ -101,11 +101,11 @@
   </div>
 
   <div class="flex justify-end">
-    <button class="btn-primary w-full md:w-[240px] !min-h-[52px] text-[14px]" onclick={handleSearch} disabled={isSearching}>
+    <button class="btn-primary w-full md:w-[240px] !min-h-[52px]" onclick={handleSearch} disabled={isSearching}>
       {#if isSearching}
         <Loader2 size={16} class="animate-spin mr-2" /> Calculating...
       {:else}
-        Search Capacity
+        <span class="text-[14px] font-extrabold tracking-[0.015em]">Search Capacity</span>
       {/if}
     </button>
   </div>

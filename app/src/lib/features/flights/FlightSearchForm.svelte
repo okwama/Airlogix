@@ -30,7 +30,7 @@
     { label: 'Ethiopia', options: [{ code: 'ADD', name: 'Addis Ababa' }] },
     { label: 'Zambia', options: [{ code: 'LUN', name: 'Lusaka' }] },
     { label: 'Zimbabwe', options: [{ code: 'HRE', name: 'Harare' }] },
-    { label: 'Seychelles', options: [{ code: 'SEZ', name: 'Mahé' }] },
+    { label: 'Seychelles', options: [{ code: 'SEZ', name: 'Mahe' }] },
     { label: 'DRC', options: [{ code: 'FIH', name: 'Kinshasa' }] },
     { label: 'Burundi', options: [{ code: 'BJM', name: 'Bujumbura' }] }
   ];
@@ -92,8 +92,8 @@
   });
 </script>
 
-<div class="flex flex-col gap-8">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="flex flex-col gap-5 sm:gap-8">
+  <div class="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
     
     <!-- ORIGIN Field (Searchable) -->
     <div class="flex flex-col relative" use:clickOutside={() => showFromDropdown = false}>
@@ -121,7 +121,7 @@
               class="w-full bg-transparent text-[13px] font-medium text-brand-navy outline-none"
             />
           </div>
-          <div class="max-h-[240px] overflow-y-auto">
+          <div class="max-h-[220px] overflow-y-auto sm:max-h-[240px]">
             {#each filteredFrom as d}
               <button 
                 class="w-full text-left px-4 py-3 hover:bg-brand-navy hover:text-white transition-colors border-b-[0.5px] border-border last:border-0"
@@ -165,7 +165,7 @@
               class="w-full bg-transparent text-[13px] font-medium text-brand-navy outline-none"
             />
           </div>
-          <div class="max-h-[240px] overflow-y-auto">
+          <div class="max-h-[220px] overflow-y-auto sm:max-h-[240px]">
             {#each filteredTo as d}
               <button 
                 class="w-full text-left px-4 py-3 hover:bg-brand-navy hover:text-white transition-colors border-b-[0.5px] border-border last:border-0"
@@ -203,7 +203,7 @@
       </button>
 
       {#if showPassengerDropdown}
-        <div class="absolute top-[calc(100%+6px)] right-0 w-[240px] bg-white border-[0.5px] border-border rounded-[12px] z-[80] shadow-xl p-4" transition:slide={{ duration: 150 }}>
+        <div class="absolute top-[calc(100%+6px)] left-0 right-0 w-auto bg-white border-[0.5px] border-border rounded-[12px] z-[80] shadow-xl p-4 sm:left-auto sm:right-0 sm:w-[240px]" transition:slide={{ duration: 150 }}>
           <div class="flex flex-col gap-6">
             <!-- Adults -->
             <div class="flex items-center justify-between">
@@ -253,15 +253,15 @@
     </div>
   </div>
 
-  <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-4">
+  <div class="flex flex-col items-stretch justify-between gap-4 pt-1 sm:gap-6 md:flex-row md:items-center">
     <!-- Luggage Hint -->
-    <div class="flex items-center gap-3">
-      <div class="text-status-green-text bg-status-green-bg px-3 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-2">
+    <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+      <div class="flex items-center gap-2 rounded-full bg-status-green-bg px-3 py-2 text-[11px] font-medium text-status-green-text">
         <span>7 kg cabin bag free. Extra luggage finalized at check-in.</span>
       </div>
       
       <button 
-        class="flex items-center gap-2 text-[13px] font-medium transition-colors {isRoundTrip ? 'text-brand-navy' : 'text-text-muted'}" 
+        class="flex min-h-[40px] items-center gap-2 rounded-full px-3 text-[13px] font-semibold transition-colors sm:px-0 {isRoundTrip ? 'bg-[color:var(--color-surface-low)] text-brand-navy sm:bg-transparent' : 'text-text-muted'}" 
         onclick={() => isRoundTrip = !isRoundTrip}
       >
         <div class="w-4 h-4 border border-brand-blue flex items-center justify-center rounded-sm transition-all {isRoundTrip ? 'bg-brand-blue' : 'bg-transparent'}">
@@ -273,11 +273,11 @@
       </button>
     </div>
 
-    <button class="btn-primary w-full md:w-[240px] !min-h-[52px] text-[14px]" onclick={handleSearch} disabled={isSearching}>
+    <button class="btn-primary w-full md:w-[240px] !min-h-[52px]" onclick={handleSearch} disabled={isSearching}>
       {#if isSearching}
         <Loader2 size={16} class="animate-spin mr-2" /> Searching...
       {:else}
-        Search Flights
+        <span class="text-[14px] font-extrabold tracking-[0.015em]">Search Flights</span>
       {/if}
     </button>
   </div>

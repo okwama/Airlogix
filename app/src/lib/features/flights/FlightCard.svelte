@@ -104,7 +104,7 @@
       {#if isSelecting}
         <Loader2 size={14} class="animate-spin mr-2" /> Opening checkout...
       {:else}
-        Select Flight
+        <span class="text-[14px] font-extrabold tracking-[0.015em]">Select Flight</span>
       {/if}
     </button>
   </div>
