@@ -1,4 +1,7 @@
-import { BASE_URL } from '$lib/services/booking/bookingService';
+﻿import { BASE_URL } from '$lib/services/booking/bookingService';
+
+let unreadCountCache: { token: string; value: number; expiresAt: number } | null = null;
+let unreadCountPromise: Promise<number> | null = null;
 
 function getAuthHeaders(token?: string | null): Record<string, string> {
   if (!token) {
@@ -122,14 +125,41 @@ export const accountService = {
   },
 
   async fetchUnreadCount(token?: string | null) {
-    const response = await fetch(`${BASE_URL}/notifications/unread-count`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeaders(token)
-      }
-    });
-    const result = await readJson(response);
-    return Number(result.data?.unread_count || 0);
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const now = Date.now();
+    if (unreadCountCache && unreadCountCache.token === token && unreadCountCache.expiresAt > now) {
+      return unreadCountCache.value;
+    }
+
+    if (unreadCountPromise) {
+      return unreadCountPromise;
+    }
+
+    unreadCountPromise = (async () => {
+      const response = await fetch(`${BASE_URL}/notifications/unread-count`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(token)
+        }
+      });
+      const result = await readJson(response);
+      const value = Number(result.data?.unread_count || 0);
+      unreadCountCache = {
+        token,
+        value,
+        expiresAt: Date.now() + 30000
+      };
+      return value;
+    })();
+
+    try {
+      return await unreadCountPromise;
+    } finally {
+      unreadCountPromise = null;
+    }
   },
 
   async markNotificationRead(id: number, token?: string | null) {
@@ -140,6 +170,13 @@ export const accountService = {
         ...getAuthHeaders(token)
       }
     });
+    if (unreadCountCache && token && unreadCountCache.token === token) {
+      unreadCountCache = {
+        ...unreadCountCache,
+        value: Math.max(0, unreadCountCache.value - 1),
+        expiresAt: Date.now() + 10000
+      };
+    }
     return readJson(response);
   },
 
@@ -151,6 +188,13 @@ export const accountService = {
         ...getAuthHeaders(token)
       }
     });
+    if (unreadCountCache && token && unreadCountCache.token === token) {
+      unreadCountCache = {
+        ...unreadCountCache,
+        value: 0,
+        expiresAt: Date.now() + 10000
+      };
+    }
     return readJson(response);
   },
 

@@ -1,4 +1,4 @@
-import { authService } from '$lib/services/auth/authService';
+﻿import { authService } from '$lib/services/auth/authService';
 
 interface AuthState {
   user: any | null;
@@ -8,6 +8,7 @@ interface AuthState {
 
 function createAuthStore() {
   const initialToken = authService.getToken();
+  let initPromise: Promise<void> | null = null;
 
   let state = $state<AuthState>({
     user: null,
@@ -16,25 +17,37 @@ function createAuthStore() {
   });
 
   async function init() {
-    const token = authService.getToken();
-    state = { ...state, token, loading: !!token };
-
-    if (!token) {
-      state = { ...state, loading: false };
-      return;
+    if (initPromise) {
+      return initPromise;
     }
 
-    try {
-      const profile = await authService.fetchProfile();
-      const refreshedToken = authService.getToken();
-      if (!profile || !refreshedToken) {
-        state = { user: null, token: null, loading: false };
+    initPromise = (async () => {
+      const token = authService.getToken();
+      state = { ...state, token, loading: !!token };
+
+      if (!token) {
+        state = { ...state, loading: false };
         return;
       }
-      state = { ...state, token: refreshedToken, user: profile, loading: false };
-    } catch {
-      authService.logout();
-      state = { user: null, token: null, loading: false };
+
+      try {
+        const profile = await authService.fetchProfile();
+        const refreshedToken = authService.getToken();
+        if (!profile || !refreshedToken) {
+          state = { user: null, token: null, loading: false };
+          return;
+        }
+        state = { ...state, token: refreshedToken, user: profile, loading: false };
+      } catch {
+        authService.logout();
+        state = { user: null, token: null, loading: false };
+      }
+    })();
+
+    try {
+      await initPromise;
+    } finally {
+      initPromise = null;
     }
   }
 
@@ -55,7 +68,6 @@ function createAuthStore() {
   }) {
     state = { ...state, loading: true };
     await authService.register(payload);
-    // After registration, immediately log in
     await login(payload.phone_number, payload.password);
   }
 
@@ -123,4 +135,3 @@ function createAuthStore() {
 }
 
 export const authStore = createAuthStore();
-
