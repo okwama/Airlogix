@@ -34,8 +34,8 @@
   <meta name="description" content={appConfig.description} />
 </svelte:head>
 
-<section class="bg-white pt-16 pb-24 border-b-[0.5px] border-border overflow-hidden">
-  <div class="container mx-auto px-7 max-w-[1200px] grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
+<section class="bg-white pt-10 sm:pt-12 pb-10 sm:pb-12 border-b-[0.5px] border-border overflow-hidden">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1200px] grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-7 lg:gap-9 items-start">
     <div>
       <h1 class="hero-display mb-6">
         The World is Your <br class="hidden sm:block" /> <span class="text-brand-blue">Search Destination</span>
@@ -43,7 +43,7 @@
       <p class="text-text-body text-[15px] leading-relaxed max-w-[500px]">
         Discover a world of possibilities - every search leads to new adventures and insights.
       </p>
-      <div class="mt-8 grid grid-cols-3 gap-3 max-w-[520px]">
+      <div class="mt-6 grid grid-cols-3 gap-2.5 sm:gap-3 max-w-[520px]">
         <div class="rounded-xl border-[0.5px] border-border bg-surface px-4 py-3">
           <div class="text-brand-blue text-[19px] font-semibold">20+</div>
           <div class="text-text-muted text-[11px] uppercase tracking-wider">Destinations</div>
@@ -59,51 +59,59 @@
       </div>
     </div>
 
-    <div class="relative">
-      <div class="rounded-[24px] border-[0.5px] border-border bg-linear-to-br from-brand-navy/5 via-surface to-brand-blue/10 p-4 sm:p-6">
-        <div class="rounded-[18px] border-[0.5px] border-brand-blue/25 bg-white/90 p-4 sm:p-5">
-          <img
-            src="https://images.pexels.com/photos/35635297/pexels-photo-35635297.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
-            alt="Airport departure gate at night"
-            class="w-full h-[165px] sm:h-[185px] object-cover rounded-lg border border-border mb-4"
-            loading="lazy"
-          />
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-brand-navy text-[12px] font-medium uppercase tracking-wider">Route Snapshot</span>
-            <img src={logo} alt={appConfig.name} class="h-6 w-auto object-contain opacity-80" />
+    <div class="relative space-y-3">
+      <div class="rounded-[20px] border-[0.5px] border-border overflow-hidden bg-slate-100">
+        <img
+          src="https://images.pexels.com/photos/35635297/pexels-photo-35635297.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+          alt="Airport departure gate at night"
+          class="w-full h-[170px] sm:h-[205px] object-cover"
+          loading="lazy"
+        />
+      </div>
+      <p class="text-[10px] text-text-muted">
+        Photo:
+        <a
+          href="https://www.pexels.com/photo/departure-gate-at-night-35635297/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline"
+        >
+          Pexels
+        </a>
+      </p>
+
+      <div class="rounded-[20px] border-[0.5px] border-border bg-linear-to-br from-brand-navy/5 via-surface to-brand-blue/10 p-4 sm:p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-brand-navy text-[12px] font-medium uppercase tracking-wider">Route Snapshot</span>
+          <img src={logo} alt={appConfig.name} class="h-5 w-auto object-contain opacity-80" />
+        </div>
+        <div class="rounded-[14px] border border-brand-blue/20 bg-white/90 p-3 mb-3">
+          <svg viewBox="0 0 320 120" class="w-full h-[92px]" aria-label="Route map illustration">
+            <path d="M28 86 C90 36, 150 88, 214 48 S300 26, 304 26" fill="none" stroke="#0066CC" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="28" cy="86" r="6" fill="#1e293b" />
+            <circle cx="214" cy="48" r="5" fill="#1e293b" />
+            <circle cx="304" cy="26" r="6" fill="#1e293b" />
+            <text x="16" y="106" font-size="11" fill="#64748b">FIH</text>
+            <text x="202" y="68" font-size="11" fill="#64748b">FBM</text>
+            <text x="290" y="46" font-size="11" fill="#64748b">BZV</text>
+          </svg>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
+            <span class="text-[12px] text-text-body">Kinshasa to Lubumbashi</span>
+            <span class="text-[11px] text-brand-blue font-medium">Daily</span>
           </div>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
-              <span class="text-[12px] text-text-body">Kinshasa to Lubumbashi</span>
-              <span class="text-[11px] text-brand-blue font-medium">Daily</span>
-            </div>
-            <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
-              <span class="text-[12px] text-text-body">Kinshasa to Goma</span>
-              <span class="text-[11px] text-brand-blue font-medium">Daily</span>
-            </div>
-            <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
-              <span class="text-[12px] text-text-body">Kinshasa to Brazzaville</span>
-              <span class="text-[11px] text-brand-blue font-medium">Frequent</span>
-            </div>
+          <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
+            <span class="text-[12px] text-text-body">Kinshasa to Brazzaville</span>
+            <span class="text-[11px] text-brand-blue font-medium">Frequent</span>
           </div>
-          <p class="text-[10px] text-text-muted mt-4">
-            Photo:
-            <a
-              href="https://www.pexels.com/photo/departure-gate-at-night-35635297/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="underline"
-            >
-              Pexels
-            </a>
-          </p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="container mx-auto px-7 -mt-10 relative z-30 max-w-[1200px]">
+<div class="container mx-auto px-4 sm:px-6 lg:px-7 -mt-4 sm:-mt-6 relative z-30 max-w-[1200px]">
   <div class="flex flex-col w-full">
     <div class="flex items-center w-full max-w-fit bg-surface border-[0.5px] border-border rounded-t-[12px] border-b-0 overflow-hidden">
       <button
