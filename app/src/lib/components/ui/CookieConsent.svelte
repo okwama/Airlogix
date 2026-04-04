@@ -77,13 +77,13 @@
 {/if}
 
 {#if showModal}
-  <div class="cookie-modal-overlay" role="presentation" onclick={() => (showModal = false)}>
+  <div class="cookie-modal-overlay" role="presentation">
     <div
       class="cookie-modal"
       role="dialog"
       aria-modal="true"
       aria-label="Cookie preferences"
-      onclick={(event) => event.stopPropagation()}
+      tabindex="-1"
     >
       <h3 class="text-brand-navy text-[19px] font-medium mb-2">Cookie Preferences</h3>
       <p class="text-[13px] text-text-body mb-5">
