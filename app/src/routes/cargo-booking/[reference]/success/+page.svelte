@@ -1,7 +1,7 @@
 <script lang="ts">
   import CargoLabel from '$lib/features/cargo/CargoLabel.svelte';
   import { bookingService } from '$lib/services/booking/bookingService';
-  import { CheckCircle2, Package, ArrowRight } from 'lucide-svelte';
+  import { CheckCircle2, Package, ArrowRight, Printer } from 'lucide-svelte';
   import { onMount } from 'svelte';
   import { appConfig } from '$lib/config/appConfig';
 
@@ -14,6 +14,12 @@
   const booking = $derived(data.booking);
   const awb = $derived(booking?.awb_number ?? '');
   let detailedBooking = $state<any | null>(null);
+
+  function printLabel() {
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
+  }
 
   // If the booking flow already issued a cargo token for this AWB in session,
   // mark this AWB as trusted in-browser so tracking can open full details directly.
@@ -83,7 +89,7 @@
         {:else}
           <div class="bg-surface border border-border rounded-lg p-10 text-center text-text-muted">
             <Package size={32} class="mx-auto mb-4 opacity-40" />
-            <p>Booking details unavailable. Please contact support with AWB: <strong>{awb}</strong></p>
+            <p>Booking details are protected. Open tracking and verify access to unlock full label data for AWB: <strong>{awb}</strong></p>
           </div>
         {/if}
       </div>
@@ -95,6 +101,12 @@
           <p class="text-[11px] font-medium uppercase tracking-widest text-text-muted mb-2">Your AWB Number</p>
           <p class="text-brand-navy text-[24px] font-bold font-mono tracking-wide">{awb}</p>
           <p class="text-text-muted text-[12px] mt-2">Keep this number for tracking updates.</p>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <p class="text-[12px] text-amber-800 leading-relaxed">
+            AWB issuance confirms your booking reference. Final carriage is confirmed after cargo acceptance at terminal and payment/credit clearance.
+          </p>
         </div>
 
         <!-- Steps -->
@@ -115,12 +127,18 @@
           </div>
         </div>
 
-        <!-- Track link -->
-        <a
-          href={`/cargo-tracking/${awb}`}
-          class="btn-primary flex items-center justify-center gap-2 no-underline"
-          id="link-track-cargo"
+        <button
+          type="button"
+          class="btn-primary flex items-center justify-center gap-2"
+          id="btn-print-cargo-label"
+          onclick={printLabel}
+          disabled={!detailedBooking}
+          title={!detailedBooking ? 'Unlock full details first to print the complete label' : 'Print cargo label'}
         >
+          Print Cargo Label <Printer size={14} />
+        </button>
+
+        <a href={`/cargo-tracking/${awb}`} class="btn-primary flex items-center justify-center gap-2 no-underline" id="link-track-cargo">
           Track This Shipment <ArrowRight size={14} />
         </a>
 

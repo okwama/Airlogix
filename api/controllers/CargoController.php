@@ -6,6 +6,8 @@ require_once __DIR__ . '/../utils/Cache.php';
 
 class CargoController {
     private $cargoModel;
+    private $awbStockTableChecked = false;
+    private $awbStockTableExists = false;
 
     public function __construct() {
         $db = db();
@@ -13,14 +15,138 @@ class CargoController {
     }
 
     private function generateAWB() {
-        // Industry format: 450 + 8 digits, retry until unique.
-        for ($i = 0; $i < 10; $i++) {
-            $awb = "450-" . random_int(1000, 9999) . "-" . random_int(1000, 9999);
-            if (!$this->cargoModel->awbExists($awb)) {
-                return $awb;
-            }
+        // IATA-like AWB format:
+        // - 3-digit airline prefix (configurable)
+        // - 7-digit serial + 1 check digit (mod 7)
+        // - Rendered as PPP-XXXX-XXXX
+        $prefix = $this->getAwbAirlinePrefix();
+
+        if (!$this->hasAwbStockTable()) {
+            throw new RuntimeException('AWB stock table is missing. Run the AWB stock migration first.');
         }
-        return null;
+
+        $db = db();
+        $maxAttempts = 100;
+
+        try {
+            $db->beginTransaction();
+
+            $seedStmt = $db->prepare("
+                INSERT INTO cargo_awb_stock (airline_prefix, next_serial)
+                VALUES (?, 1)
+                ON DUPLICATE KEY UPDATE airline_prefix = VALUES(airline_prefix)
+            ");
+            $seedStmt->execute([$prefix]);
+
+            $lockStmt = $db->prepare("
+                SELECT next_serial
+                FROM cargo_awb_stock
+                WHERE airline_prefix = ?
+                FOR UPDATE
+            ");
+            $lockStmt->execute([$prefix]);
+            $row = $lockStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                throw new RuntimeException('Failed to load AWB stock row for prefix ' . $prefix);
+            }
+
+            $nextSerial = (int)($row['next_serial'] ?? 1);
+            if ($nextSerial <= 0) {
+                $nextSerial = 1;
+            }
+
+            $selectedAwb = null;
+
+            for ($i = 0; $i < $maxAttempts; $i++) {
+                if ($nextSerial > 9999999) {
+                    throw new RuntimeException('AWB serial range exhausted for prefix ' . $prefix);
+                }
+
+                $awb = $this->formatAwbWithCheckDigit($prefix, $nextSerial);
+                if (!$this->cargoModel->awbExists($awb)) {
+                    $selectedAwb = $awb;
+                    break;
+                }
+
+                $nextSerial++;
+            }
+
+            if ($selectedAwb === null) {
+                throw new RuntimeException('Could not allocate a unique AWB from stock');
+            }
+
+            $advanceStmt = $db->prepare("
+                UPDATE cargo_awb_stock
+                SET next_serial = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE airline_prefix = ?
+            ");
+            $advanceStmt->execute([$nextSerial + 1, $prefix]);
+
+            $db->commit();
+            return $selectedAwb;
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log('AWB generation failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    private function hasAwbStockTable(): bool
+    {
+        if ($this->awbStockTableChecked) {
+            return $this->awbStockTableExists;
+        }
+
+        $this->awbStockTableChecked = true;
+        try {
+            $stmt = db()->query("SHOW TABLES LIKE 'cargo_awb_stock'");
+            $this->awbStockTableExists = (bool)$stmt->fetch(PDO::FETCH_NUM);
+        } catch (Throwable $e) {
+            $this->awbStockTableExists = false;
+        }
+
+        return $this->awbStockTableExists;
+    }
+
+    private function getAwbAirlinePrefix(): string
+    {
+        $prefix = preg_replace('/\D+/', '', (string)env('CARGO_AWB_AIRLINE_PREFIX', '450'));
+        if (!is_string($prefix) || strlen($prefix) === 0) {
+            $prefix = '450';
+        }
+        if (strlen($prefix) > 3) {
+            $prefix = substr($prefix, -3);
+        }
+        return str_pad($prefix, 3, '0', STR_PAD_LEFT);
+    }
+
+    private function formatAwbWithCheckDigit(string $prefix, int $serial7): string
+    {
+        $sevenDigitSerial = str_pad((string)$serial7, 7, '0', STR_PAD_LEFT);
+        $checkDigit = ((int)$sevenDigitSerial) % 7;
+        $serial8 = $sevenDigitSerial . (string)$checkDigit;
+        return $prefix . '-' . substr($serial8, 0, 4) . '-' . substr($serial8, 4, 4);
+    }
+
+    private function normalizeAwb(string $rawAwb): ?string
+    {
+        $digits = preg_replace('/\D+/', '', strtoupper(trim($rawAwb)));
+        if (!is_string($digits) || strlen($digits) !== 11) {
+            return null;
+        }
+
+        $prefix = substr($digits, 0, 3);
+        $serial8 = substr($digits, 3, 8);
+        $serial7 = substr($serial8, 0, 7);
+        $checkDigit = (int)substr($serial8, 7, 1);
+
+        if (((int)$serial7 % 7) !== $checkDigit) {
+            return null;
+        }
+
+        return $prefix . '-' . substr($serial8, 0, 4) . '-' . substr($serial8, 4, 4);
     }
 
     private function readRequestHeaders(): array
@@ -70,12 +196,12 @@ class CargoController {
 
     private function issueCargoAccessToken(string $awb): string
     {
-        $awb = strtoupper(trim($awb));
-        if ($awb === '') {
+        $normalizedAwb = $this->normalizeAwb($awb);
+        if ($normalizedAwb === null) {
             throw new RuntimeException('Cannot issue cargo access token for empty AWB');
         }
 
-        $activeKey = "cargo_access_active:{$awb}";
+        $activeKey = "cargo_access_active:{$normalizedAwb}";
         $previousTokenHash = Cache::get($activeKey);
         if (is_string($previousTokenHash) && $previousTokenHash !== '') {
             Cache::delete("cargo_access_session:{$previousTokenHash}");
@@ -85,7 +211,7 @@ class CargoController {
         $tokenHash = hash('sha256', $token);
         $ttl = $this->getCargoAccessTokenTtlSeconds();
 
-        Cache::set("cargo_access_session:{$tokenHash}", ['awb' => $awb], $ttl);
+        Cache::set("cargo_access_session:{$tokenHash}", ['awb' => $normalizedAwb], $ttl);
         Cache::set($activeKey, $tokenHash, $ttl);
 
         return $token;
@@ -93,7 +219,7 @@ class CargoController {
 
     private function validateCargoAccessToken(string $awb, string $accessToken): bool
     {
-        $awb = strtoupper(trim($awb));
+        $awb = $this->normalizeAwb($awb) ?? '';
         $accessToken = trim($accessToken);
         if ($awb === '' || $accessToken === '') {
             return false;
@@ -263,7 +389,13 @@ class CargoController {
     }
 
     public function get($reference) {
-        $booking = $this->cargoModel->getByAWB($reference);
+        $awb = $this->normalizeAwb((string)$reference);
+        if ($awb === null) {
+            Response::fail(400, 'Invalid AWB format', 'CARGO_AWB_INVALID');
+            return;
+        }
+
+        $booking = $this->cargoModel->getByAWB($awb);
 
         if ($booking) {
             Response::json(['status' => true, 'data' => $this->buildPublicTrackingData($booking)]);
@@ -273,7 +405,13 @@ class CargoController {
     }
 
     public function getDetails($reference) {
-        $booking = $this->cargoModel->getByAWB($reference);
+        $awb = $this->normalizeAwb((string)$reference);
+        if ($awb === null) {
+            Response::fail(400, 'Invalid AWB format', 'CARGO_AWB_INVALID');
+            return;
+        }
+
+        $booking = $this->cargoModel->getByAWB($awb);
         if (!$booking) {
             Response::fail(404, 'Cargo booking not found', 'CARGO_BOOKING_NOT_FOUND');
             return;
@@ -294,10 +432,10 @@ class CargoController {
      */
     public function requestAccessCode() {
         $data = request_json();
-        $awb = strtoupper(trim((string)($data['awb'] ?? $data['reference'] ?? '')));
+        $awb = $this->normalizeAwb((string)($data['awb'] ?? $data['reference'] ?? ''));
         $email = strtolower(trim((string)($data['email'] ?? '')));
 
-        if ($awb === '' || $email === '') {
+        if ($awb === null || $email === '') {
             Response::fail(400, 'Missing AWB or email', 'CARGO_ACCESS_INPUT_INVALID');
             return;
         }
@@ -376,11 +514,11 @@ class CargoController {
      */
     public function verifyAccessCode() {
         $data = request_json();
-        $awb = strtoupper(trim((string)($data['awb'] ?? $data['reference'] ?? '')));
+        $awb = $this->normalizeAwb((string)($data['awb'] ?? $data['reference'] ?? ''));
         $email = strtolower(trim((string)($data['email'] ?? '')));
         $code = trim((string)($data['code'] ?? ''));
 
-        if ($awb === '' || $email === '' || $code === '') {
+        if ($awb === null || $email === '' || $code === '') {
             Response::fail(400, 'Missing AWB, email, or code', 'CARGO_ACCESS_INPUT_INVALID');
             return;
         }

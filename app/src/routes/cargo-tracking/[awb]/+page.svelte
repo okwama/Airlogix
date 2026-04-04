@@ -265,6 +265,10 @@
             Payment is not yet cleared. Shipment progress may pause until payment is confirmed.
           {/if}
         </div>
+
+        <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] text-amber-800">
+          AWB status reflects booking and tracking milestones. Final uplift remains subject to terminal acceptance checks and payment/credit clearance.
+        </div>
       </div>
 
       <aside class="flex flex-col gap-6">
