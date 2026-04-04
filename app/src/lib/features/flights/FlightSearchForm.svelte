@@ -1,9 +1,8 @@
 <script>
   import { goto } from '$app/navigation';
-  import { ChevronDown, Loader2, Search, X, User, Users } from 'lucide-svelte';
+  import { Loader2, Search, Users } from 'lucide-svelte';
   import { clickOutside } from '../../utils/clickOutside';
-  import { fade, slide } from 'svelte/transition';
-  import { currencyStore } from '$lib/stores/currencyStore.svelte';
+  import { slide } from 'svelte/transition';
 
   let from = $state('NBO');
   let fromLabel = $state('Nairobi');
@@ -13,7 +12,6 @@
   let date = $state('2026-04-10');
   let adults = $state(1);
   let children = $state(0);
-  let isRoundTrip = $state(true);
   let isSearching = $state(false);
 
   let fromSearch = $state('');
@@ -76,8 +74,7 @@
       date, 
       guests: totalGuests.toString(), 
       adults: adults.toString(),
-      children: children.toString(),
-      roundTrip: isRoundTrip.toString() 
+      children: children.toString()
     });
     await goto(`/search?${params.toString()}`);
     isSearching = false;
@@ -259,18 +256,6 @@
       <div class="flex items-center gap-2 rounded-full bg-status-green-bg px-3 py-2 text-[11px] font-medium text-status-green-text">
         <span>7 kg cabin bag free. Extra luggage finalized at check-in.</span>
       </div>
-      
-      <button 
-        class="flex min-h-[40px] items-center gap-2 rounded-full px-3 text-[13px] font-semibold transition-colors sm:px-0 {isRoundTrip ? 'bg-[color:var(--color-surface-low)] text-brand-navy sm:bg-transparent' : 'text-text-muted'}" 
-        onclick={() => isRoundTrip = !isRoundTrip}
-      >
-        <div class="w-4 h-4 border border-brand-blue flex items-center justify-center rounded-sm transition-all {isRoundTrip ? 'bg-brand-blue' : 'bg-transparent'}">
-          {#if isRoundTrip}
-            <div class="w-2 h-2 bg-white rounded-full"></div>
-          {/if}
-        </div>
-        Round Trip
-      </button>
     </div>
 
     <button class="btn-primary w-full md:w-[240px] !min-h-[52px]" onclick={handleSearch} disabled={isSearching}>

@@ -34,6 +34,42 @@ Scope: `account hub v1.1`
 
 ---
 
+### Round-Trip Flight Search and Booking
+
+Status: `todo`
+Priority: `medium`
+Scope: `post-v2 search and booking enhancement`
+
+#### Why Deferred
+- Current DB/backend flow is single-flight oriented:
+  - `bookings` stores one `flight_series_id`
+  - current booking model writes one flight per booking
+  - current flight search loader/service only processes `from`, `to`, and `date`
+- The homepage `Round Trip` toggle was removed because it was UI-only and not backed by schema or booking flow logic.
+
+#### Tasks
+- Extend schema to support round-trip intent:
+  - either linked outbound/inbound bookings, or
+  - a parent itinerary model with separate outbound and return segments
+- Extend search flow to accept:
+  - `trip_type`
+  - `departure_date`
+  - `return_date`
+- Update results UI to support:
+  - outbound selection first
+  - return selection second
+  - combined fare summary
+- Update booking/checkout flow to persist and price both segments safely
+- Update documents, manage booking, and account views to render round-trip itineraries correctly
+
+#### Acceptance Criteria
+- User can search one-way or round-trip intentionally
+- Return date affects search results and pricing
+- Booking persists both segments reliably
+- Manage booking, payment, and documents all understand round-trip itineraries
+
+---
+
 ### Check-in Luggage Finalization (V2)
 
 Status: `todo`
