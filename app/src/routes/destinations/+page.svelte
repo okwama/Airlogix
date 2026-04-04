@@ -32,9 +32,13 @@
     </div>
   </section>
 
-  <section class="container mx-auto px-7 max-w-[1240px] py-14 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8">
-    <div class="bg-white border border-border rounded-xl p-8">
+  <section class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1240px] py-10 sm:py-14 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 sm:gap-8">
+    <div class="bg-white border border-border rounded-xl p-5 sm:p-8">
       <h2 class="text-brand-navy text-[24px] mb-5">By Region</h2>
+      <div class="mb-6 rounded-lg border border-border bg-linear-to-br from-brand-blue/5 to-brand-navy/5 p-4">
+        <p class="text-brand-navy text-[13px] font-medium mb-1">Network Center</p>
+        <p class="text-text-body text-[13px]">Primary hub operations are coordinated from Kinshasa with regional connectivity across nearby markets.</p>
+      </div>
       <div class="space-y-6">
         {#each regions as region}
           <div>
@@ -49,7 +53,13 @@
       </div>
     </div>
 
-    <aside class="bg-white border border-border rounded-xl p-8">
+    <aside class="bg-white border border-border rounded-xl p-5 sm:p-8">
+      <img
+        src="https://images.pexels.com/photos/35841083/pexels-photo-35841083.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+        alt="Kinshasa city panoramic view"
+        class="w-full h-[180px] object-cover rounded-lg border border-border mb-4"
+        loading="lazy"
+      />
       <h3 class="text-brand-navy text-[20px] mb-4">Popular Routes</h3>
       <ul class="space-y-3">
         {#each popularRoutes as route}
@@ -57,6 +67,17 @@
         {/each}
       </ul>
       <a href="/search" class="btn-primary inline-flex mt-6">Search Flights</a>
+      <p class="text-[10px] text-text-muted mt-4">
+        Photo:
+        <a
+          href="https://www.pexels.com/photo/kinshasa-city-panoramic-view-35841083/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline"
+        >
+          Pexels
+        </a>
+      </p>
     </aside>
   </section>
 </main>

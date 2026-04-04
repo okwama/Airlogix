@@ -60,8 +60,14 @@
     </div>
 
     <div class="relative">
-      <div class="rounded-[24px] border-[0.5px] border-border bg-linear-to-br from-brand-navy/5 via-surface to-brand-blue/10 p-6">
-        <div class="rounded-[18px] border-[0.5px] border-brand-blue/25 bg-white/90 p-5">
+      <div class="rounded-[24px] border-[0.5px] border-border bg-linear-to-br from-brand-navy/5 via-surface to-brand-blue/10 p-4 sm:p-6">
+        <div class="rounded-[18px] border-[0.5px] border-brand-blue/25 bg-white/90 p-4 sm:p-5">
+          <img
+            src="https://images.pexels.com/photos/35635297/pexels-photo-35635297.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+            alt="Airport departure gate at night"
+            class="w-full h-[165px] sm:h-[185px] object-cover rounded-lg border border-border mb-4"
+            loading="lazy"
+          />
           <div class="flex items-center justify-between mb-4">
             <span class="text-brand-navy text-[12px] font-medium uppercase tracking-wider">Route Snapshot</span>
             <img src={logo} alt={appConfig.name} class="h-6 w-auto object-contain opacity-80" />
@@ -80,6 +86,17 @@
               <span class="text-[11px] text-brand-blue font-medium">Frequent</span>
             </div>
           </div>
+          <p class="text-[10px] text-text-muted mt-4">
+            Photo:
+            <a
+              href="https://www.pexels.com/photo/departure-gate-at-night-35635297/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline"
+            >
+              Pexels
+            </a>
+          </p>
         </div>
       </div>
     </div>

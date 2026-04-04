@@ -27,17 +27,17 @@
   <title>Search Results: {searchQuery.from} to {searchQuery.to} | {appConfig.name}</title>
 </svelte:head>
 
-<div class="bg-surface min-h-[calc(100vh-58px)] pb-12">
-  <div class="bg-brand-navy pt-8 pb-10">
-    <div class="container mx-auto px-7 max-w-[1240px] flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="bg-surface min-h-[calc(100vh-58px)] pb-10 sm:pb-12">
+  <div class="bg-brand-navy pt-7 sm:pt-8 pb-8 sm:pb-10">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1240px] flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6">
       <div class="flex flex-col gap-1.5">
         <a href="/" class="flex items-center gap-1.5 text-white/72 text-[11px] font-medium uppercase tracking-wider mb-2 hover:text-white transition-all">
           <ChevronLeft size={14} /> Back to Search
         </a>
-        <h1 class="text-white text-[32px] font-medium leading-none">
+        <h1 class="text-white text-[26px] sm:text-[32px] font-medium leading-tight sm:leading-none">
           {searchQuery.from} <span class="text-white/40 mx-2">-&gt;</span> {searchQuery.to}
         </h1>
-        <div class="flex items-center gap-4 mt-2">
+        <div class="flex flex-wrap items-center gap-3 sm:gap-4 mt-2">
           <span class="text-white/72 text-[13px] font-medium">{formattedDate}</span>
           <div class="w-1.5 h-1.5 rounded-full bg-brand-blue"></div>
           <span class="text-white/72 text-[13px] font-medium">{passengersLabel}</span>
@@ -52,9 +52,9 @@
     </div>
   </div>
 
-  <div class="container mx-auto px-7 max-w-[1240px] mt-12 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12 items-start">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1240px] mt-8 sm:mt-12 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-7 lg:gap-12 items-start">
     <main class="flex flex-col gap-4">
-      <div class="flex items-center justify-between mb-2">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
         <span class="text-text-muted text-[13px] font-medium">{flights.length} Flights available</span>
         <div class="text-status-green-text bg-status-green-bg px-3 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-2">
           <Info size={12} />
@@ -104,7 +104,7 @@
           </div>
         {/each}
       {:else}
-        <div class="bg-surface border-[0.5px] border-border rounded-lg p-20 flex flex-col items-center justify-center text-center">
+        <div class="bg-surface border-[0.5px] border-border rounded-lg p-8 sm:p-20 flex flex-col items-center justify-center text-center">
           <div class="w-16 h-16 bg-brand-navy rounded-full flex items-center justify-center text-white mb-6">
             <Plane size={32} />
           </div>

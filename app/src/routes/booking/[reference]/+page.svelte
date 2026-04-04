@@ -109,10 +109,10 @@
   <title>Complete Your Booking | {appConfig.name}</title>
 </svelte:head>
 
-<div class="bg-surface min-h-[calc(100vh-58px)] pb-24">
-  <div class="bg-brand-navy pt-12 pb-20">
-    <div class="container mx-auto px-7 max-w-[1240px]">
-      <div class="flex flex-col items-center gap-12">
+<div class="bg-surface min-h-[calc(100vh-58px)] pb-14 sm:pb-24">
+  <div class="bg-brand-navy pt-8 sm:pt-12 pb-14 sm:pb-20">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1240px]">
+      <div class="flex flex-col items-center gap-8 sm:gap-12">
         <div class="flex items-center justify-center w-full max-w-[800px] relative">
           <div class="flex items-center justify-between w-full relative z-10">
             <div class="flex flex-col items-center gap-3">
@@ -122,7 +122,7 @@
               <span class="text-[11px] font-medium uppercase tracking-wider {step === 'passenger' ? 'text-white' : 'text-white/40'}">Passenger</span>
             </div>
 
-            <div class="flex-1 h-[1px] bg-white/10 mx-4 -mt-8"></div>
+            <div class="flex-1 h-[1px] bg-white/10 mx-2 sm:mx-4 -mt-8"></div>
 
             <div class="flex flex-col items-center gap-3">
               <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-[12px] font-medium transition-all {step === 'luggage' ? 'border-brand-blue bg-brand-blue text-white' : ((step === 'review' || step === 'payment') ? 'border-status-green-bg bg-status-green-bg text-status-green-text' : 'border-white/10 text-white/40')}">
@@ -131,7 +131,7 @@
               <span class="text-[11px] font-medium uppercase tracking-wider {step === 'luggage' ? 'text-white' : 'text-white/40'}">Luggage</span>
             </div>
 
-            <div class="flex-1 h-[1px] bg-white/10 mx-4 -mt-8"></div>
+            <div class="flex-1 h-[1px] bg-white/10 mx-2 sm:mx-4 -mt-8"></div>
 
             <div class="flex flex-col items-center gap-3">
               <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-[12px] font-medium transition-all {(step === 'review' || step === 'payment') ? 'border-brand-blue bg-brand-blue text-white' : 'border-white/10 text-white/40'}">
@@ -143,7 +143,7 @@
         </div>
 
         <div class="text-center">
-          <h1 class="text-white text-[32px] font-medium mb-3">Complete Your Booking</h1>
+          <h1 class="text-white text-[28px] sm:text-[32px] font-medium mb-3">Complete Your Booking</h1>
           <p class="text-white/40 text-[13px] font-medium uppercase tracking-widest">
             Booking Ref: <span class="text-white">{reference || 'PENDING'}</span>
           </p>
@@ -152,8 +152,8 @@
     </div>
   </div>
 
-  <div class="container mx-auto px-7 max-w-[1240px] -mt-12 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-12 items-start">
-    <main class="flex flex-col gap-8">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1240px] -mt-8 sm:-mt-12 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-7 lg:gap-12 items-start">
+    <main class="flex flex-col gap-6 sm:gap-8">
       {#if errorMessage}
         <div class="bg-red-50 text-red-600 p-4 rounded-md text-[13px] border border-red-200" role="alert" aria-live="assertive">
           {errorMessage}
@@ -190,7 +190,7 @@
           </div>
         {/if}
 
-        <div class="bg-surface border-[0.5px] border-border rounded-lg p-6 lg:p-8">
+        <div class="bg-surface border-[0.5px] border-border rounded-lg p-5 sm:p-6 lg:p-8">
           <h3 class="text-[20px] font-medium text-brand-navy mb-6 border-b-[0.5px] border-border pb-3">Booking Review</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-[13px]">
             <div>
@@ -253,8 +253,8 @@
       {/if}
     </main>
 
-    <aside class="flex flex-col gap-6 sticky top-24">
-      <div class="bg-surface border-[0.5px] border-border rounded-lg p-7">
+    <aside class="flex flex-col gap-5 sm:gap-6 lg:sticky lg:top-24">
+      <div class="bg-surface border-[0.5px] border-border rounded-lg p-5 sm:p-7">
         <h3 class="text-[18px] font-medium text-brand-navy mb-8 border-b-[0.5px] border-border pb-4">
           Order Summary
         </h3>

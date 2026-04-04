@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { page } from '$app/state';
   import { Search, Hash, User, ArrowRight, HelpCircle, Package, CheckCircle2, Clock, History, CreditCard, ListFilter } from 'lucide-svelte';
   import Button from '$lib/components/ui/Button.svelte';
@@ -248,19 +248,19 @@
   <title>Manage Booking | {appConfig.name}</title>
 </svelte:head>
 
-<main class="min-h-[calc(100vh-58px-300px)] py-16 px-6 bg-slate-50/50">
-  <div class="max-w-[1440px] mx-auto space-y-10">
+<main class="min-h-[calc(100vh-58px-300px)] py-10 md:py-14 px-4 sm:px-6 bg-slate-50/50">
+  <div class="max-w-[1440px] mx-auto space-y-8 md:space-y-10">
     
     <header class="text-center max-w-[900px] mx-auto">
         <h1 class="text-brand-navy mb-4">Manage Your Booking</h1>
-        <p class="text-text-body/80 text-lg leading-relaxed">
+        <p class="text-text-body/80 text-[15px] md:text-lg leading-relaxed">
           View your itinerary, select seats, add luggage, or update your contact information quickly and securely.
         </p>
     </header>
 
     {#if authStore.isAuthenticated}
       <Card padding="none" class="bg-white">
-        <div class="p-7">
+        <div class="p-4 sm:p-6 lg:p-7">
           <div class="flex items-start justify-between gap-6 flex-wrap mb-6">
             <div class="space-y-1">
               <div class="ui-label text-brand-blue flex items-center gap-2">
@@ -273,11 +273,11 @@
             </div>
 
             <div class="flex items-center gap-3 flex-wrap">
-              <div class="w-[260px] max-w-full">
+              <div class="w-full sm:w-[260px] max-w-full">
                 <Input
                   label="Search"
                   icon={Search}
-                  placeholder="PNR, route, flight…"
+                  placeholder="PNR, route, flight..."
                   bind:value={searchQuery}
                 />
               </div>
@@ -341,9 +341,9 @@
           {/if}
 
           {#if myBookingsLoading}
-            <p class="text-[13px] text-text-muted">Loading your bookings…</p>
+            <p class="text-[13px] text-text-muted">Loading your bookings...</p>
           {:else if activeTab === 'checked_in' && checkedInLoading}
-            <p class="text-[13px] text-text-muted">Checking which trips are checked in…</p>
+            <p class="text-[13px] text-text-muted">Checking which trips are checked in...</p>
           {:else if filteredBookings.length === 0}
             <p class="text-[13px] text-text-muted">No bookings match this filter.</p>
           {:else}
@@ -364,11 +364,11 @@
                   <div class="px-4 py-4 font-mono text-[12px] text-brand-navy">{b.booking_reference}</div>
                   <div class="px-4 py-4">
                     <div class="text-brand-navy font-medium">
-                      {b.from_code} → {b.to_code}
+                      {b.from_code} -> {b.to_code}
                       <span class="text-text-muted text-[12px] font-medium ml-2">{b.flight_number}</span>
                     </div>
                     <div class="text-[12px] text-text-muted">
-                      {b.from_city || ''}{b.from_city && b.to_city ? ' → ' : ''}{b.to_city || ''}
+                      {b.from_city || ''}{b.from_city && b.to_city ? ' -> ' : ''}{b.to_city || ''}
                     </div>
                   </div>
                   <div class="px-4 py-4 text-[12px] text-text-muted">{b.booking_date}</div>
@@ -396,7 +396,7 @@
                   <div class="flex items-center justify-between gap-4">
                     <div class="space-y-1">
                       <p class="text-brand-navy font-medium">
-                        {b.from_code} → {b.to_code}
+                        {b.from_code} -> {b.to_code}
                         <span class="text-text-muted text-[12px] font-medium ml-2">{b.flight_number}</span>
                       </p>
                       <p class="text-[12px] text-text-muted">
@@ -415,7 +415,7 @@
             <!-- Pagination -->
             <div class="flex items-center justify-between gap-4 mt-5 flex-wrap">
               <p class="text-[12px] text-text-muted">
-                Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalRecords)} of {totalRecords}
+                Showing {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalRecords)} of {totalRecords}
               </p>
 
               <div class="flex items-center gap-2">
@@ -445,7 +445,7 @@
       </Card>
     {/if}
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-7 lg:gap-10 items-start">
       <div class="space-y-6">
         <div class="flex gap-4 items-start">
           <div class="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue shrink-0">
@@ -479,7 +479,7 @@
       </div>
 
       <Card padding="none" class="shadow-lg transform transition-all hover:scale-[1.01] bg-white overflow-hidden">
-        <div class="max-w-[560px] mx-auto py-12 px-6">
+        <div class="max-w-[560px] mx-auto py-8 sm:py-10 md:py-12 px-4 sm:px-6">
           <div class="mb-10 text-center">
             <h3 class="text-brand-navy text-xl font-medium mb-2">Find Your Booking</h3>
             <p class="text-[13px] text-text-muted">Enter your booking details to access your itinerary, continue payment, or download documents.</p>
@@ -554,3 +554,4 @@
     </div>
   </div>
 </main>
+

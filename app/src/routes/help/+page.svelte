@@ -36,8 +36,8 @@
     </div>
   </section>
 
-  <section class="container mx-auto px-7 max-w-[1240px] py-14 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8">
-    <div class="bg-white border border-border rounded-xl p-8">
+  <section class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1240px] py-10 sm:py-14 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 sm:gap-8">
+    <div class="bg-white border border-border rounded-xl p-5 sm:p-8">
       <h2 class="text-brand-navy text-[24px] mb-5">Frequently Asked Questions</h2>
       <div class="space-y-4">
         {#each faqs as faq}
@@ -49,7 +49,13 @@
       </div>
     </div>
 
-    <aside class="bg-white border border-border rounded-xl p-8">
+    <aside class="bg-white border border-border rounded-xl p-5 sm:p-8">
+      <img
+        src="https://images.pexels.com/photos/7681570/pexels-photo-7681570.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+        alt="Support team wearing headsets"
+        class="w-full h-[180px] object-cover rounded-lg border border-border mb-4"
+        loading="lazy"
+      />
       <h3 class="text-brand-navy text-[20px] mb-4">Still Need Help?</h3>
       <p class="text-text-body text-[14px] mb-5">
         If you cannot find your answer here, our support team can help with booking access, payment issues, and travel updates.
@@ -60,6 +66,17 @@
         <p><span class="font-medium text-brand-navy">Hours:</span> 06:00 to 22:00 (CAT, UTC+2), daily</p>
       </div>
       <a href="/contact" class="btn-primary inline-flex mt-6">Contact Support</a>
+      <p class="text-[10px] text-text-muted mt-4">
+        Photo:
+        <a
+          href="https://www.pexels.com/photo/women-wearing-headsets-7681570/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline"
+        >
+          Pexels
+        </a>
+      </p>
     </aside>
   </section>
 </main>

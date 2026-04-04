@@ -2,6 +2,7 @@
   import '../app.css';
   import Navbar from '$lib/components/ui/Navbar.svelte';
   import Footer from '$lib/components/ui/Footer.svelte';
+  import CookieConsent from '$lib/components/ui/CookieConsent.svelte';
   import { onMount } from 'svelte';
   import { authStore } from '$lib/stores/authStore.svelte';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
@@ -62,12 +63,13 @@
   <Navbar />
   {#if !isOnline}
     <div class="offline-banner" role="status" aria-live="polite">
-      You’re offline. Some actions may fail — we’ll keep trying when the network returns.
+      You're offline. Some actions may fail - we'll keep trying when the network returns.
     </div>
   {/if}
   <main>
     {@render children()}
   </main>
+  <CookieConsent />
   <Footer />
 </div>
 
