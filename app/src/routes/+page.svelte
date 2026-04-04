@@ -39,18 +39,19 @@
   <meta name="description" content={appConfig.description} />
 </svelte:head>
 
-<section class="relative min-h-[610px] sm:min-h-[670px] overflow-hidden border-b border-white/20">
-  <img
-    src="https://images.pexels.com/photos/35635297/pexels-photo-35635297.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
-    alt="Airport departure gate at night"
-    class="absolute inset-0 h-full w-full object-cover"
-    loading="lazy"
-  />
-  <div class="absolute inset-0 bg-linear-to-b from-[#0b1733]/78 via-[#102449]/70 to-[#0e1f3f]/82"></div>
+<section class="border-b border-border bg-white">
+  <div class="relative">
+    <img
+      src="https://images.pexels.com/photos/35635297/pexels-photo-35635297.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+      alt="Airport departure gate at night"
+      class="absolute inset-0 h-full w-full object-cover"
+      loading="lazy"
+    />
+    <div class="absolute inset-0 bg-linear-to-b from-[#0b1733]/78 via-[#102449]/70 to-[#0e1f3f]/82"></div>
 
-  <div class="relative container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1200px] pt-6 sm:pt-8">
-    <div class="bg-white/96 backdrop-blur-sm border border-white/30 rounded-[14px] shadow-xl overflow-hidden">
-      <div class="flex items-center w-full max-w-fit bg-surface border-b border-border/80 overflow-hidden">
+    <div class="relative container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1200px] pt-6 sm:pt-8 pb-6 sm:pb-8">
+      <div class="bg-white/98 backdrop-blur-sm border border-white/30 rounded-[14px] shadow-xl overflow-visible relative z-40">
+        <div class="flex items-center w-full max-w-fit bg-surface border-b border-border/80 overflow-hidden">
         <button
           class="h-[44px] px-5 sm:px-7 flex items-center gap-2 text-[12px] sm:text-[13px] font-medium transition-all {searchMode === 'flight' ? 'bg-brand-navy text-white' : 'text-text-body hover:bg-slate-50'}"
           onclick={() => (searchMode = 'flight')}
@@ -66,73 +67,74 @@
         </button>
       </div>
 
-      <div class="bg-white p-4 lg:p-6 w-full">
-        {#if searchMode === 'flight'}
-          <FlightSearchForm />
-        {:else}
-          <CargoSearchForm />
-        {/if}
+        <div class="bg-white p-4 lg:p-6 w-full">
+          {#if searchMode === 'flight'}
+            <FlightSearchForm />
+          {:else}
+            <CargoSearchForm />
+          {/if}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1200px] py-8 sm:py-9 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-6 lg:gap-8 items-start">
+    <div>
+      <h1 class="hero-display mb-4 text-brand-navy">
+        Fly Congo and Beyond <br class="hidden sm:block" /><span class="text-brand-blue">With Confidence</span>
+      </h1>
+      <p class="text-text-body text-[15px] leading-relaxed max-w-[520px]">
+        Book regional routes in minutes, manage trips securely, and stay updated from search to check-in.
+      </p>
+      <div class="mt-5 grid grid-cols-3 gap-2.5 sm:gap-3 max-w-[520px]">
+        <div class="rounded-xl border border-border bg-surface px-3 sm:px-4 py-3">
+          <div class="text-brand-blue text-[18px] sm:text-[19px] font-semibold">20+</div>
+          <div class="text-text-muted text-[10px] sm:text-[11px] uppercase tracking-wider">Destinations</div>
+        </div>
+        <div class="rounded-xl border border-border bg-surface px-3 sm:px-4 py-3">
+          <div class="text-brand-blue text-[18px] sm:text-[19px] font-semibold">24/7</div>
+          <div class="text-text-muted text-[10px] sm:text-[11px] uppercase tracking-wider">Support</div>
+        </div>
+        <div class="rounded-xl border border-border bg-surface px-3 sm:px-4 py-3">
+          <div class="text-brand-blue text-[18px] sm:text-[19px] font-semibold">99%</div>
+          <div class="text-text-muted text-[10px] sm:text-[11px] uppercase tracking-wider">Reliability</div>
+        </div>
       </div>
     </div>
 
-    <div class="mt-7 sm:mt-9 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-6 lg:gap-8 items-start">
-      <div>
-        <h1 class="hero-display mb-4 text-white">
-          Fly Congo and Beyond <br class="hidden sm:block" /><span class="text-brand-blue">With Confidence</span>
-        </h1>
-        <p class="text-white/88 text-[15px] leading-relaxed max-w-[520px]">
-          Book regional routes in minutes, manage trips securely, and stay updated from search to check-in.
-        </p>
-        <div class="mt-5 grid grid-cols-3 gap-2.5 sm:gap-3 max-w-[520px]">
-          <div class="rounded-xl border border-white/30 bg-white/12 backdrop-blur-sm px-3 sm:px-4 py-3">
-            <div class="text-white text-[18px] sm:text-[19px] font-semibold">20+</div>
-            <div class="text-white/80 text-[10px] sm:text-[11px] uppercase tracking-wider">Destinations</div>
-          </div>
-          <div class="rounded-xl border border-white/30 bg-white/12 backdrop-blur-sm px-3 sm:px-4 py-3">
-            <div class="text-white text-[18px] sm:text-[19px] font-semibold">24/7</div>
-            <div class="text-white/80 text-[10px] sm:text-[11px] uppercase tracking-wider">Support</div>
-          </div>
-          <div class="rounded-xl border border-white/30 bg-white/12 backdrop-blur-sm px-3 sm:px-4 py-3">
-            <div class="text-white text-[18px] sm:text-[19px] font-semibold">99%</div>
-            <div class="text-white/80 text-[10px] sm:text-[11px] uppercase tracking-wider">Reliability</div>
-          </div>
-        </div>
+    <aside class="rounded-[18px] border border-border bg-white p-4 sm:p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-brand-navy text-[12px] font-medium uppercase tracking-wider">Route Snapshot</span>
+        <img src={logo} alt={appConfig.name} class="h-5 w-auto object-contain opacity-85" />
       </div>
 
-      <aside class="rounded-[18px] border border-white/35 bg-white/95 p-4 sm:p-5 shadow-lg">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-brand-navy text-[12px] font-medium uppercase tracking-wider">Route Snapshot</span>
-          <img src={logo} alt={appConfig.name} class="h-5 w-auto object-contain opacity-85" />
-        </div>
+      <div class="rounded-[12px] border border-brand-blue/20 bg-white p-3 mb-3">
+        <svg viewBox="0 0 320 120" class="w-full h-[90px]" aria-label="Route map illustration">
+          <path d="M28 86 C90 36, 150 88, 214 48 S300 26, 304 26" fill="none" stroke="#0066CC" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="28" cy="86" r="6" fill="#1e293b" />
+          <circle cx="214" cy="48" r="5" fill="#1e293b" />
+          <circle cx="304" cy="26" r="6" fill="#1e293b" />
+          <text x="16" y="106" font-size="11" fill="#64748b">FIH</text>
+          <text x="202" y="68" font-size="11" fill="#64748b">FBM</text>
+          <text x="290" y="46" font-size="11" fill="#64748b">BZV</text>
+        </svg>
+      </div>
 
-        <div class="rounded-[12px] border border-brand-blue/20 bg-white p-3 mb-3">
-          <svg viewBox="0 0 320 120" class="w-full h-[90px]" aria-label="Route map illustration">
-            <path d="M28 86 C90 36, 150 88, 214 48 S300 26, 304 26" fill="none" stroke="#0066CC" stroke-width="3" stroke-linecap="round"/>
-            <circle cx="28" cy="86" r="6" fill="#1e293b" />
-            <circle cx="214" cy="48" r="5" fill="#1e293b" />
-            <circle cx="304" cy="26" r="6" fill="#1e293b" />
-            <text x="16" y="106" font-size="11" fill="#64748b">FIH</text>
-            <text x="202" y="68" font-size="11" fill="#64748b">FBM</text>
-            <text x="290" y="46" font-size="11" fill="#64748b">BZV</text>
-          </svg>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
+          <span class="text-[12px] text-text-body">Kinshasa to Lubumbashi</span>
+          <span class="text-[11px] text-brand-blue font-medium">Daily</span>
         </div>
-
-        <div class="space-y-2">
-          <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
-            <span class="text-[12px] text-text-body">Kinshasa to Lubumbashi</span>
-            <span class="text-[11px] text-brand-blue font-medium">Daily</span>
-          </div>
-          <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
-            <span class="text-[12px] text-text-body">Kinshasa to Brazzaville</span>
-            <span class="text-[11px] text-brand-blue font-medium">Frequent</span>
-          </div>
-          <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
-            <span class="text-[12px] text-text-body">Kinshasa to Goma</span>
-            <span class="text-[11px] text-brand-blue font-medium">Daily</span>
-          </div>
+        <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
+          <span class="text-[12px] text-text-body">Kinshasa to Brazzaville</span>
+          <span class="text-[11px] text-brand-blue font-medium">Frequent</span>
         </div>
-      </aside>
-    </div>
+        <div class="flex items-center justify-between rounded-lg border border-border px-3 py-2 bg-slate-50">
+          <span class="text-[12px] text-text-body">Kinshasa to Goma</span>
+          <span class="text-[11px] text-brand-blue font-medium">Daily</span>
+        </div>
+      </div>
+    </aside>
   </div>
 </section>
 
