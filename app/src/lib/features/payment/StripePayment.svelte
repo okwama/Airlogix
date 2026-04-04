@@ -18,42 +18,38 @@
   async function handleSubmit(e) {
     e.preventDefault();
     isProcessing = true;
-    
-    // Simulate Stripe payment intent confirmation
     await new Promise(resolve => setTimeout(resolve, 2500));
-    
     isProcessing = false;
     onComplete();
   }
 </script>
 
-<form onsubmit={handleSubmit} class="flex flex-col gap-6 animate-slide-in">
-  <div class="flex flex-col gap-4">
-    <div class="flex flex-col">
-      <span class="ui-label mb-1">Name on card</span>
-      <input 
-        type="text" 
-        bind:value={cardName} 
-        placeholder="Jane Doe" 
-        class="input-field w-full" 
-        required
-      />
+<form onsubmit={handleSubmit} class="flex flex-col gap-6">
+  <div class="space-y-2">
+    <p class="ui-label">Card Payment</p>
+    <h3 class="text-[22px] font-bold text-[color:var(--color-brand-navy)]">Secure card checkout</h3>
+  </div>
+
+  <div class="space-y-5 rounded-[22px] bg-[color:var(--color-surface-lowest)] px-6 py-6 shadow-[0_18px_42px_rgba(26,28,26,0.05)]">
+    <div class="flex flex-col gap-2">
+      <span class="ui-label">Name on card</span>
+      <input type="text" bind:value={cardName} placeholder="Jane Doe" class="input-field w-full min-h-[52px] px-4" required />
     </div>
 
-    <div class="flex flex-col">
-      <span class="ui-label mb-1">Card details</span>
-      <div class="input-field w-full flex items-center gap-3 bg-slate-50/50 px-2">
-        <div class="flex-1 text-[13px] text-text-muted">â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢</div>
-        <div class="w-12 text-[13px] text-text-muted">MM / YY</div>
-        <div class="w-8 text-[13px] text-text-muted">CVC</div>
+    <div class="flex flex-col gap-2">
+      <span class="ui-label">Card details</span>
+      <div class="input-field flex min-h-[52px] w-full items-center gap-3 px-4">
+        <div class="flex-1 text-[13px] tracking-[0.18em] text-[color:var(--color-text-muted)]">•••• •••• •••• ••••</div>
+        <div class="w-14 text-[13px] text-[color:var(--color-text-muted)]">MM / YY</div>
+        <div class="w-10 text-[13px] text-[color:var(--color-text-muted)]">CVC</div>
       </div>
-      <p class="text-[11px] text-text-muted mt-2 flex items-center gap-1.5">
+      <p class="mt-1 flex items-center gap-1.5 text-[11px] text-[color:var(--color-text-muted)]">
         <Lock size={10} /> Secure payment powered by Stripe
       </p>
     </div>
   </div>
 
-  <button type="submit" class="btn-primary w-full !h-[48px]" disabled={isProcessing}>
+  <button type="submit" class="btn-primary w-full !min-h-[50px]" disabled={isProcessing}>
     {#if isProcessing}
       <Loader2 size={18} class="animate-spin mr-2" /> Processing...
     {:else}

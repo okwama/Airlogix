@@ -11,10 +11,10 @@
   }
 
   let { amount, reference, onComplete }: Props = $props();
-  
+
   let isCopied = $state(false);
   let isLoading = $state(true);
-  let bankDetails = $state<any>(null);
+  let bankDetails = $state<any | null>(null);
   let loadError = $state('');
 
   onMount(async () => {
@@ -55,55 +55,48 @@
   }
 </script>
 
-<div class="flex flex-col gap-6 animate-slide-in">
+<div class="flex flex-col gap-6">
   <div class="flex items-start gap-4">
-    <div class="w-10 h-10 rounded-full bg-brand-navy/5 flex items-center justify-center shrink-0">
-      <Building2 size={20} class="text-brand-navy" />
+    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]">
+      <Building2 size={20} />
     </div>
-    <div class="flex flex-col gap-1">
-      <h4 class="text-[16px] font-medium text-brand-navy">International Wire Transfer</h4>
-      <p class="text-[13px] text-text-body leading-relaxed">
-        Please transfer <strong>{currencyStore.format(amount)}</strong> to the account below. Use your reference <strong>{reference}</strong> as the payment description.
-      </p>
+    <div class="space-y-2">
+      <h4 class="text-[18px] font-semibold text-[color:var(--color-brand-navy)]">International wire transfer</h4>
+      <p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">Please transfer <strong>{currencyStore.format(amount)}</strong> to the account below. Use your reference <strong>{reference}</strong> as the payment description.</p>
     </div>
   </div>
 
   {#if isLoading}
-    <div class="bg-slate-50 border border-slate-200 rounded-lg p-10 flex flex-col items-center justify-center gap-3">
-      <Loader2 size={24} class="text-brand-blue animate-spin" />
-      <span class="text-[13px] text-text-muted font-medium">Loading bank details...</span>
+    <div class="flex flex-col items-center justify-center gap-3 rounded-[18px] bg-[color:var(--color-surface-low)] p-10">
+      <Loader2 size={24} class="animate-spin text-[color:var(--color-brand-blue)]" />
+      <span class="text-[13px] font-medium text-[color:var(--color-text-muted)]">Loading bank details...</span>
     </div>
   {:else if bankDetails}
-    <div class="relative bg-slate-50 border border-slate-200 rounded-lg p-5 font-mono text-[13px] leading-loose text-brand-navy">
-      <div class="grid grid-cols-[120px_1fr] gap-x-4">
-        <span class="text-text-muted">Beneficiary:</span> <strong>{bankDetails.bank_beneficiary}</strong>
-        <span class="text-text-muted">Bank Name:</span> <strong>{bankDetails.bank_name}</strong>
-        <span class="text-text-muted">SWIFT/BIC:</span> <strong>{bankDetails.bank_swift_bic}</strong>
-        <span class="text-text-muted">Reg Code:</span> <strong>{bankDetails.bank_reg_code}</strong>
-        <span class="text-text-muted">Address:</span> <span>{bankDetails.bank_address}</span>
-        <span class="text-text-muted mt-2">IBAN:</span> <strong class="mt-2 text-[15px]">{bankDetails.bank_iban}</strong>
+    <div class="relative rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-5 font-mono text-[13px] leading-loose text-[color:var(--color-brand-navy)]">
+      <div class="grid gap-x-4 gap-y-1 sm:grid-cols-[120px_1fr]">
+        <span class="text-[color:var(--color-text-muted)]">Beneficiary:</span><strong>{bankDetails.bank_beneficiary}</strong>
+        <span class="text-[color:var(--color-text-muted)]">Bank name:</span><strong>{bankDetails.bank_name}</strong>
+        <span class="text-[color:var(--color-text-muted)]">SWIFT/BIC:</span><strong>{bankDetails.bank_swift_bic}</strong>
+        <span class="text-[color:var(--color-text-muted)]">Reg code:</span><strong>{bankDetails.bank_reg_code}</strong>
+        <span class="text-[color:var(--color-text-muted)]">Address:</span><span>{bankDetails.bank_address}</span>
+        <span class="text-[color:var(--color-text-muted)] mt-2">IBAN:</span><strong class="mt-2 text-[15px]">{bankDetails.bank_iban}</strong>
       </div>
 
-      <button 
-        onclick={copyToClipboard}
-        class="absolute top-4 right-4 text-xs font-sans font-medium text-brand-blue hover:text-brand-navy transition-colors bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-sm"
-      >
-        {isCopied ? 'Copied!' : 'Copy Details'}
+      <button onclick={copyToClipboard} class="absolute right-4 top-4 rounded-full bg-[color:var(--color-surface-lowest)] px-3 py-1.5 text-[12px] font-semibold text-[color:var(--color-brand-blue)] shadow-[0_10px_24px_rgba(26,28,26,0.04)] transition-colors hover:text-[color:var(--color-brand-navy)]">
+        {isCopied ? 'Copied!' : 'Copy details'}
       </button>
     </div>
-    
-    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
-      <p class="text-[12px] text-amber-800 leading-relaxed">
-        <strong>Note:</strong> {bankDetails.payment_instruction_note || 'Your booking status will remain "Pending" until the funds clear in our account.'}
-      </p>
+
+    <div class="rounded-[18px] bg-[color:var(--color-status-amber-bg)] px-5 py-4 text-[12px] leading-7 text-[color:var(--color-status-amber-text)]">
+      <strong>Note:</strong> {bankDetails.payment_instruction_note || 'Your booking status will remain pending until the funds clear in our account.'}
     </div>
   {:else}
-    <div class="bg-red-50 border border-red-100 rounded-lg p-5 text-center">
-      <p class="text-[13px] text-red-600 font-medium">{loadError || 'Failed to load bank details. Please try again later.'}</p>
+    <div class="rounded-[18px] bg-[color:var(--color-status-red-bg)] px-5 py-5 text-center text-[13px] font-medium text-[color:var(--color-status-red-text)]">
+      {loadError || 'Failed to load bank details. Please try again later.'}
     </div>
   {/if}
 
-  <button onclick={handleComplete} class="btn-primary w-full h-[48px]! mt-2 flex items-center justify-center gap-2">
+  <button onclick={handleComplete} class="btn-primary mt-2 flex w-full items-center justify-center gap-2 !min-h-[50px]">
     <Save size={16} /> I have initiated the transfer
   </button>
 </div>

@@ -7,10 +7,12 @@ interface AuthState {
 }
 
 function createAuthStore() {
+  const initialToken = authService.getToken();
+
   let state = $state<AuthState>({
     user: null,
-    token: null,
-    loading: true
+    token: initialToken,
+    loading: !!initialToken
   });
 
   async function init() {
@@ -24,7 +26,12 @@ function createAuthStore() {
 
     try {
       const profile = await authService.fetchProfile();
-      state = { ...state, user: profile, loading: false };
+      const refreshedToken = authService.getToken();
+      if (!profile || !refreshedToken) {
+        state = { user: null, token: null, loading: false };
+        return;
+      }
+      state = { ...state, token: refreshedToken, user: profile, loading: false };
     } catch {
       authService.logout();
       state = { user: null, token: null, loading: false };

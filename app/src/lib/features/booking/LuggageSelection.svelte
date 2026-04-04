@@ -1,6 +1,5 @@
 <script>
   import { Briefcase, ShoppingBag, Luggage, Plus, Minus, Info } from 'lucide-svelte';
-  import { currencyStore } from '$lib/stores/currencyStore.svelte';
 
   /**
    * @typedef {Object} Props
@@ -13,8 +12,6 @@
 
   let checkedBags = $state(0);
   let specialItems = $state(0);
-  // Pricing for optional checked/special items is finalized at check-in review.
-  // Keep zero in booking checkout to avoid charging before check-in confirmation.
   const checkedBagPrice = 0;
   const specialItemPrice = 0;
 
@@ -25,97 +22,85 @@
   }
 </script>
 
-<div class="flex flex-col gap-6 animate-slide-in">
-  <div class="bg-surface border-[0.5px] border-border rounded-lg p-6 lg:p-10">
-    <h3 class="text-[22px] font-medium text-brand-navy mb-8 pb-3 border-b-[0.5px] border-border">
-      Luggage Selection
-    </h3>
+<div class="flex flex-col gap-6">
+  <div class="space-y-2">
+    <p class="ui-label">Luggage Preferences</p>
+    <h2 class="text-[28px] font-bold text-[color:var(--color-brand-navy)]">Select luggage preferences</h2>
+    <p class="max-w-[620px] text-[14px] leading-7 text-[color:var(--color-text-body)]">
+      Personal and cabin bags remain free. Optional checked luggage and special items are noted now and finalized during check-in review.
+    </p>
+  </div>
 
-    <div class="flex flex-col gap-8">
-      <!-- Free Tier: Personal Item -->
-      <div class="flex items-center justify-between p-4 border-[0.5px] border-border rounded-lg bg-slate-50/50">
+  <div class="rounded-[22px] bg-[color:var(--color-surface-lowest)] px-6 py-6 shadow-[0_18px_42px_rgba(26,28,26,0.05)] sm:px-7 sm:py-7">
+    <div class="space-y-5">
+      <div class="flex items-center justify-between rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-4">
         <div class="flex items-center gap-4">
-          <div class="w-10 h-10 bg-brand-navy/5 text-brand-navy rounded-sm flex items-center justify-center">
+          <div class="flex h-11 w-11 items-center justify-center rounded-full bg-[color:var(--color-brand-navy)]/8 text-[color:var(--color-brand-navy)]">
             <Briefcase size={20} />
           </div>
-          <div class="flex flex-col">
-            <span class="text-brand-navy text-[14px] font-medium">Personal Item</span>
-            <span class="text-text-muted text-[11px]">Under-seat bag, max 7kg</span>
+          <div>
+            <p class="font-semibold text-[color:var(--color-brand-navy)]">Personal item</p>
+            <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">Under-seat bag, max 7kg</p>
           </div>
         </div>
-        <div class="text-status-green-text text-[13px] font-medium uppercase tracking-wider">Free</div>
+        <span class="status-badge bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]">Free</span>
       </div>
 
-      <!-- Free Tier: Cabin Bag -->
-      <div class="flex items-center justify-between p-4 border-[0.5px] border-border rounded-lg bg-slate-50/50">
+      <div class="flex items-center justify-between rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-4">
         <div class="flex items-center gap-4">
-          <div class="w-10 h-10 bg-brand-navy/5 text-brand-navy rounded-sm flex items-center justify-center">
+          <div class="flex h-11 w-11 items-center justify-center rounded-full bg-[color:var(--color-brand-navy)]/8 text-[color:var(--color-brand-navy)]">
             <ShoppingBag size={20} />
           </div>
-          <div class="flex flex-col">
-            <span class="text-brand-navy text-[14px] font-medium">Cabin Bag</span>
-            <span class="text-text-muted text-[11px]">Overhead bin, standard dimensions</span>
+          <div>
+            <p class="font-semibold text-[color:var(--color-brand-navy)]">Cabin bag</p>
+            <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">Overhead bin, standard dimensions</p>
           </div>
         </div>
-        <div class="text-status-green-text text-[13px] font-medium uppercase tracking-wider">Free</div>
+        <span class="status-badge bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]">Free</span>
       </div>
 
-      <!-- Paid Tier: Checked Bag -->
-      <div class="flex items-center justify-between p-4 border-[0.5px] border-border rounded-lg hover:border-brand-blue transition-all">
+      <div class="flex flex-col gap-5 rounded-[20px] bg-[color:var(--color-surface-low)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-4">
-          <div class="w-10 h-10 bg-brand-blue/10 text-brand-blue rounded-sm flex items-center justify-center">
+          <div class="flex h-11 w-11 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]">
             <Luggage size={20} />
           </div>
-          <div class="flex flex-col">
-            <span class="text-brand-navy text-[14px] font-medium">Checked Bag</span>
-            <span class="text-text-muted text-[11px]">Stored in aircraft hold, max 23kg</span>
+          <div>
+            <p class="font-semibold text-[color:var(--color-brand-navy)]">Checked bag</p>
+            <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">Stored in aircraft hold, max 23kg</p>
           </div>
         </div>
-        <div class="flex items-center gap-6">
-          <span class="text-brand-navy text-[14px] font-medium">Priced at check-in</span>
-          <div class="flex items-center gap-3 bg-slate-50 rounded-full p-1 border-[0.5px] border-border">
-            <button 
-              class="w-6 h-6 flex items-center justify-center text-text-body hover:text-brand-navy transition-all disabled:opacity-20"
-              onclick={() => checkedBags = Math.max(0, checkedBags - 1)}
-              disabled={checkedBags === 0}
-            >
+        <div class="flex flex-wrap items-center gap-4 sm:justify-end">
+          <span class="text-[13px] font-semibold text-[color:var(--color-brand-navy)]">Priced at check-in</span>
+          <div class="flex items-center gap-3 rounded-full bg-[color:var(--color-surface-lowest)] p-1.5 shadow-[0_10px_24px_rgba(26,28,26,0.04)]">
+            <button class="flex h-8 w-8 items-center justify-center rounded-full text-[color:var(--color-text-body)] transition-colors hover:text-[color:var(--color-brand-navy)] disabled:opacity-20" onclick={() => checkedBags = Math.max(0, checkedBags - 1)} disabled={checkedBags === 0}>
               <Minus size={14} />
             </button>
-            <span class="text-brand-navy text-[13px] font-medium min-w-[12px] text-center">{checkedBags}</span>
-            <button 
-              class="w-6 h-6 flex items-center justify-center text-text-body hover:text-brand-navy transition-all"
-              onclick={() => checkedBags++}
-            >
+            <span class="min-w-[20px] text-center text-[13px] font-semibold text-[color:var(--color-brand-navy)]">{checkedBags}</span>
+            <button class="flex h-8 w-8 items-center justify-center rounded-full text-[color:var(--color-text-body)] transition-colors hover:text-[color:var(--color-brand-navy)]" onclick={() => checkedBags++}>
               <Plus size={14} />
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Paid Tier: Special Items -->
-      <div class="flex items-center justify-between p-4 border-[0.5px] border-border rounded-lg hover:border-brand-blue transition-all">
+      <div class="flex flex-col gap-5 rounded-[20px] bg-[color:var(--color-surface-low)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-4">
-          <div class="w-10 h-10 bg-brand-blue/10 text-brand-blue rounded-sm flex items-center justify-center font-medium text-[12px]">SO</div>
-          <div class="flex flex-col">
-            <span class="text-brand-navy text-[14px] font-medium">Special Objects</span>
-            <span class="text-text-muted text-[11px]">Sports gear, fragile equipment, etc.</span>
+          <div class="flex h-11 w-11 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)] font-semibold text-[12px]">
+            SO
+          </div>
+          <div>
+            <p class="font-semibold text-[color:var(--color-brand-navy)]">Special objects</p>
+            <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">Sports gear, instruments, fragile equipment</p>
           </div>
         </div>
-        <div class="flex items-center gap-6">
-          <span class="text-brand-navy text-[14px] font-medium">Priced at check-in</span>
-          <div class="flex items-center gap-3 bg-slate-50 rounded-full p-1 border-[0.5px] border-border">
-            <button 
-              class="w-6 h-6 flex items-center justify-center text-text-body hover:text-brand-navy transition-all disabled:opacity-20"
-              onclick={() => specialItems = Math.max(0, specialItems - 1)}
-              disabled={specialItems === 0}
-            >
+        <div class="flex flex-wrap items-center gap-4 sm:justify-end">
+          <span class="text-[13px] font-semibold text-[color:var(--color-brand-navy)]">Priced at check-in</span>
+          <div class="flex items-center gap-3 rounded-full bg-[color:var(--color-surface-lowest)] p-1.5 shadow-[0_10px_24px_rgba(26,28,26,0.04)]">
+            <button class="flex h-8 w-8 items-center justify-center rounded-full text-[color:var(--color-text-body)] transition-colors hover:text-[color:var(--color-brand-navy)] disabled:opacity-20" onclick={() => specialItems = Math.max(0, specialItems - 1)} disabled={specialItems === 0}>
               <Minus size={14} />
             </button>
-            <span class="text-brand-navy text-[13px] font-medium min-w-[12px] text-center">{specialItems}</span>
-            <button 
-              class="w-6 h-6 flex items-center justify-center text-text-body hover:text-brand-navy transition-all"
-              onclick={() => specialItems++}
-            >
+            <span class="min-w-[20px] text-center text-[13px] font-semibold text-[color:var(--color-brand-navy)]">{specialItems}</span>
+            <button class="flex h-8 w-8 items-center justify-center rounded-full text-[color:var(--color-text-body)] transition-colors hover:text-[color:var(--color-brand-navy)]" onclick={() => specialItems++}>
               <Plus size={14} />
             </button>
           </div>
@@ -123,17 +108,17 @@
       </div>
     </div>
 
-    <div class="mt-12 flex items-start gap-3 p-4 bg-status-blue-bg/40 border-[0.5px] border-status-blue rounded-lg">
-      <Info size={16} class="text-status-blue-text mt-0.5 shrink-0" />
-      <p class="text-status-blue-text text-[11px] leading-relaxed">
-        <strong>Luggage Policy:</strong> Personal and cabin bags are free. Checked bags and special items are selected now and finalized during check-in review.
-      </p>
+    <div class="mt-6 rounded-[18px] bg-[color:var(--color-status-blue-bg)] px-5 py-4 text-[13px] leading-7 text-[color:var(--color-status-blue-text)]">
+      <div class="flex items-start gap-3">
+        <Info size={16} class="mt-0.5 shrink-0" />
+        <p><strong>Luggage policy:</strong> Personal and cabin bags are included. Checked bags and special items are selected now and finalized during check-in review.</p>
+      </div>
     </div>
   </div>
 
-  <div class="flex justify-end mt-4">
-    <button class="btn-primary w-full md:w-[280px] h-[48px]!" onclick={handleSubmit}>
-      Reserve Seats
+  <div class="flex justify-end pt-2">
+    <button class="btn-primary w-full md:w-[280px] !min-h-[50px]" onclick={handleSubmit}>
+      Reserve seats
     </button>
   </div>
 </div>

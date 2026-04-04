@@ -77,7 +77,9 @@
         <CurrencySelector />
       </div>
 
-      {#if authStore.isAuthenticated}
+      {#if authStore.loading}
+        <div class="h-[42px] w-[108px] rounded-[999px] bg-[color:var(--color-surface-high)]/85 animate-pulse"></div>
+      {:else if authStore.isAuthenticated}
         <span class="hidden text-[13px] text-[color:var(--color-text-body)] sm:block">
           Hi, {authStore.user?.first_name || 'traveler'}
         </span>

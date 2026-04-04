@@ -17,7 +17,7 @@
   let isProcessing = $state(false);
   let selectedMethod = $state<'bank' | 'mpesa' | 'card'>('bank');
   let phoneNumber = $state('');
-  
+
   let mpesaStatus = $state<'idle' | 'polling' | 'success' | 'failed'>('idle');
   let mpesaError = $state('');
   let stripeError = $state('');
@@ -31,14 +31,14 @@
     mpesaStatus = 'idle';
     mpesaError = '';
     checkoutRequestId = null;
-    
+
     try {
       const init = await bookingService.initiateMpesa(reference, phoneNumber, amount);
       const id = init?.CheckoutRequestID || init?.checkout_request_id || init?.checkoutRequestId || null;
       if (!id) throw new Error('M-Pesa initialization did not return a CheckoutRequestID.');
       checkoutRequestId = String(id);
       mpesaStatus = 'polling';
-      
+
       const pollInterval = setInterval(async () => {
         if (!checkoutRequestId) return;
         let check: any = null;
@@ -61,14 +61,12 @@
           }
           return;
         }
-        
+
         if (check && check.status) {
-          // API returns {status: boolean, result_code, result_desc, data:{...}}
           clearInterval(pollInterval);
           mpesaStatus = 'success';
           setTimeout(() => { goto(`/booking/${reference}/success`); }, 2000);
         } else if (check && check.status === false) {
-          // Query can fail while still pending; only hard-fail on definitive result codes when present.
           const code = String(check.result_code ?? '');
           if (code !== '' && code !== '0') {
             clearInterval(pollInterval);
@@ -78,7 +76,7 @@
           }
         }
       }, 3000);
-      
+
       setTimeout(() => {
         if (mpesaStatus === 'polling') {
           clearInterval(pollInterval);
@@ -87,7 +85,6 @@
           mpesaError = 'Timed out waiting for M-Pesa response. Please check your phone.';
         }
       }, 60000);
-      
     } catch (err) {
       isProcessing = false;
       mpesaStatus = 'failed';
@@ -121,7 +118,7 @@
         );
       }
       const session = await bookingService.initiateStripePayment(reference, amount, normalizedEmail);
-      
+
       if (session && session.url) {
         window.location.href = session.url;
       } else {
@@ -168,152 +165,134 @@
       }
     }
   }
+
+  const methods = [
+    { key: 'bank', label: 'Wire transfer', icon: Building2 },
+    { key: 'mpesa', label: 'M-Pesa', icon: Smartphone },
+    { key: 'card', label: 'Card', icon: CreditCard }
+  ] as const;
 </script>
 
-<div class="flex flex-col gap-8 w-full max-w-[600px] mx-auto">
-  <div class="flex flex-col gap-4 text-center lg:text-left">
-    <h3 class="text-[22px] font-medium text-brand-navy">Complete Payment For Your Reserved Seats</h3>
-    <p class="text-[14px] text-text-body">Select a payment method to secure booking <strong>{reference}</strong> before the reservation window expires.</p>
+<div class="mx-auto flex w-full max-w-[760px] flex-col gap-6">
+  <div class="space-y-2 text-center sm:text-left">
+    <p class="ui-label">Payment</p>
+    <h2 class="text-[28px] font-bold text-[color:var(--color-brand-navy)]">Complete payment for your reserved seats</h2>
+    <p class="text-[14px] leading-7 text-[color:var(--color-text-body)]">Choose a payment method to secure booking <strong>{reference}</strong> before the reservation window expires.</p>
   </div>
 
-  <div class="flex border-[0.5px] border-border rounded-[12px] overflow-hidden bg-surface shadow-sm sticky top-0 z-20" role="tablist" aria-label="Payment methods">
-    <button 
-      type="button"
-      class="flex-1 h-[64px] flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-all {selectedMethod === 'bank' ? 'bg-brand-navy text-white' : 'bg-white text-text-body hover:bg-slate-50'}"
-      onclick={() => selectedMethod = 'bank'}
-      disabled={isProcessing}
-      role="tab"
-      aria-selected={selectedMethod === 'bank'}
-    >
-      <Building2 size={18} /> <span>Wire Transfer</span>
-    </button>
-    <div class="w-[0.5px] h-full bg-border shrink-0"></div>
-    <button 
-      type="button"
-      class="flex-1 h-[64px] flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-all {selectedMethod === 'mpesa' ? 'bg-brand-navy text-white' : 'bg-white text-text-body hover:bg-slate-50'}"
-      onclick={() => selectedMethod = 'mpesa'}
-      disabled={isProcessing}
-      role="tab"
-      aria-selected={selectedMethod === 'mpesa'}
-    >
-      <Smartphone size={18} /> <span>M-Pesa</span>
-    </button>
-    <div class="w-[0.5px] h-full bg-border shrink-0"></div>
-    <button 
-      type="button"
-      class="flex-1 h-[64px] flex flex-col items-center justify-center gap-1 text-[11px] font-medium transition-all {selectedMethod === 'card' ? 'bg-brand-navy text-white' : 'bg-white text-text-body hover:bg-slate-50'}"
-      onclick={() => selectedMethod = 'card'}
-      disabled={isProcessing}
-      role="tab"
-      aria-selected={selectedMethod === 'card'}
-    >
-      <CreditCard size={18} /> <span>Card (Stripe)</span>
-    </button>
+  <div class="grid gap-3 sm:grid-cols-3" role="tablist" aria-label="Payment methods">
+    {#each methods as method}
+      {@const Icon = method.icon}
+      <button
+        type="button"
+        class={`rounded-[18px] px-4 py-4 text-left shadow-[0_18px_40px_rgba(26,28,26,0.04)] transition-all ${selectedMethod === method.key ? 'bg-[color:var(--color-brand-navy)] text-white' : 'bg-[color:var(--color-surface-lowest)] text-[color:var(--color-text-body)] hover:-translate-y-0.5'}`}
+        onclick={() => selectedMethod = method.key}
+        disabled={isProcessing}
+        role="tab"
+        aria-selected={selectedMethod === method.key}
+      >
+        <div class="flex items-center gap-3">
+          <div class={`flex h-10 w-10 items-center justify-center rounded-full ${selectedMethod === method.key ? 'bg-white/12 text-white' : 'bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]'}`}>
+            <Icon size={18} />
+          </div>
+          <div>
+            <p class={`font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] ${selectedMethod === method.key ? 'text-white/62' : 'text-[color:var(--color-text-muted)]'}`}>Method</p>
+            <p class="mt-1 text-[14px] font-semibold">{method.label}</p>
+          </div>
+        </div>
+      </button>
+    {/each}
   </div>
 
-  <div class="bg-surface border-[0.5px] border-border rounded-[12px] p-6 lg:p-10 shadow-md relative overflow-hidden" aria-live="polite" aria-busy={isProcessing}>
+  <div class="rounded-[22px] bg-[color:var(--color-surface-lowest)] p-6 shadow-[0_18px_42px_rgba(26,28,26,0.05)] sm:p-7" aria-live="polite" aria-busy={isProcessing}>
     {#if selectedMethod === 'bank'}
       <BankTransfer {amount} {reference} onComplete={handleBankTransferComplete} />
       {#if bankError}
-        <div class="bg-red-50 text-red-600 p-4 rounded-md text-[13px] border border-red-200 mt-4 flex gap-3 items-start">
-          <AlertCircle size={16} class="shrink-0 mt-0.5" />
+        <div class="mt-4 flex items-start gap-3 rounded-[16px] bg-[color:var(--color-status-red-bg)] px-4 py-4 text-[13px] text-[color:var(--color-status-red-text)]">
+          <AlertCircle size={16} class="mt-0.5 shrink-0" />
           <span>{bankError}</span>
         </div>
       {/if}
-      
-      {#if isProcessing}
-        <div class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
-          <Loader2 size={32} class="animate-spin text-brand-navy" />
-        </div>
-      {/if}
 
+      {#if isProcessing}
+        <div class="absolute inset-0"></div>
+      {/if}
     {:else if selectedMethod === 'mpesa'}
-      <div class="animate-slide-in relative">
+      <div class="relative">
         {#if mpesaStatus === 'polling'}
           <div class="flex flex-col items-center justify-center gap-6 py-10">
-            <div class="relative w-16 h-16 flex items-center justify-center">
-              <Loader2 size={48} class="animate-spin text-brand-green opacity-20" />
-              <Smartphone size={24} class="absolute text-brand-navy animate-pulse" />
+            <div class="relative flex h-16 w-16 items-center justify-center">
+              <Loader2 size={48} class="animate-spin text-[color:var(--color-brand-blue)] opacity-20" />
+              <Smartphone size={24} class="absolute animate-pulse text-[color:var(--color-brand-navy)]" />
             </div>
             <div class="text-center">
-              <h4 class="text-brand-navy font-medium text-[16px]">Check your phone</h4>
-              <p class="text-text-muted text-[13px] max-w-[280px] mx-auto mt-2">
-                We've sent an M-Pesa prompt to {phoneNumber}. Enter your PIN to complete the transaction.
-              </p>
+              <h4 class="text-[18px] font-semibold text-[color:var(--color-brand-navy)]">Check your phone</h4>
+              <p class="mx-auto mt-2 max-w-[320px] text-[13px] leading-7 text-[color:var(--color-text-body)]">We've sent an M-Pesa prompt to {phoneNumber}. Enter your PIN to complete the transaction.</p>
             </div>
           </div>
         {:else if mpesaStatus === 'success'}
           <div class="flex flex-col items-center gap-4 py-8">
-            <div class="w-16 h-16 rounded-full bg-brand-green/20 flex items-center justify-center text-brand-green">
+            <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]">
               <CheckCircle2 size={32} />
             </div>
-            <h4 class="text-brand-navy font-medium text-[18px]">Payment Received!</h4>
-            <p class="text-text-muted text-[13px]">Redirecting to your ticket...</p>
+            <h4 class="text-[20px] font-semibold text-[color:var(--color-brand-navy)]">Payment received</h4>
+            <p class="text-[13px] text-[color:var(--color-text-body)]">Redirecting to your ticket...</p>
           </div>
         {:else}
           <form onsubmit={handleMpesaPayment} class="flex flex-col gap-6">
-            <div class="flex flex-col gap-1.5">
-              <p class="text-[14px] text-text-body">Ensure your phone is unlocked. You will receive an <strong>STK Push</strong> directly to your screen.</p>
-              
-              {#if mpesaError}
-                <div class="bg-red-50 text-red-600 p-4 rounded-md text-[13px] border border-red-200 mt-2 flex gap-3 items-start" role="alert">
-                  <AlertCircle size={16} class="shrink-0 mt-0.5" />
-                  <span>{mpesaError}</span>
-                </div>
-              {/if}
+            <p class="text-[14px] leading-7 text-[color:var(--color-text-body)]">Ensure your phone is unlocked. You will receive an <strong>STK Push</strong> directly on your screen.</p>
 
-              <div class="flex flex-col mt-4">
-                <label for="mpesa_phone_number" class="ui-label mb-1">M-Pesa Registered Number</label>
-                <input 
-                  id="mpesa_phone_number"
-                  type="tel" 
-                  bind:value={phoneNumber} 
-                  placeholder="2547XXXXXXXX" 
-                  class="input-field w-full font-mono text-[16px] tracking-wide" 
-                  required
-                  disabled={isProcessing}
-                  autocomplete="tel"
-                  inputmode="numeric"
-                />
+            {#if mpesaError}
+              <div class="flex items-start gap-3 rounded-[16px] bg-[color:var(--color-status-red-bg)] px-4 py-4 text-[13px] text-[color:var(--color-status-red-text)]" role="alert">
+                <AlertCircle size={16} class="mt-0.5 shrink-0" />
+                <span>{mpesaError}</span>
               </div>
+            {/if}
+
+            <div class="flex flex-col gap-2">
+              <label for="mpesa_phone_number" class="ui-label">M-Pesa registered number</label>
+              <input
+                id="mpesa_phone_number"
+                type="tel"
+                bind:value={phoneNumber}
+                placeholder="2547XXXXXXXX"
+                class="input-field w-full min-h-[52px] px-4 font-mono text-[16px] tracking-wide"
+                required
+                disabled={isProcessing}
+                autocomplete="tel"
+                inputmode="numeric"
+              />
             </div>
-            <button type="submit" class="btn-primary w-full h-[56px]! text-[15px] font-medium shadow-md hover:shadow-lg transition-all" disabled={isProcessing || !phoneNumber}>
+
+            <button type="submit" class="btn-primary w-full !min-h-[52px]" disabled={isProcessing || !phoneNumber}>
               Pay {currencyStore.format(amount)} via M-Pesa
             </button>
           </form>
         {/if}
       </div>
-
     {:else if selectedMethod === 'card'}
-      <div class="animate-slide-in flex flex-col items-center gap-8 py-4">
-        <div class="w-16 h-16 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue">
+      <div class="flex flex-col items-center gap-8 py-4">
+        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]">
           <CreditCard size={32} />
         </div>
-        
-        <div class="text-center flex flex-col gap-2">
-          <h4 class="text-brand-navy font-medium text-[18px]">Pay with Card</h4>
-          <p class="text-text-muted text-[13px] max-w-[320px]">
-            You will be redirected to Stripe to securely process your Credit/Debit card payment.
-          </p>
+
+        <div class="flex flex-col gap-2 text-center">
+          <h4 class="text-[20px] font-semibold text-[color:var(--color-brand-navy)]">Pay with card</h4>
+          <p class="max-w-[340px] text-[13px] leading-7 text-[color:var(--color-text-body)]">You will be redirected to Stripe to securely process your credit or debit card payment.</p>
         </div>
 
         {#if stripeError}
-          <div class="bg-red-50 text-red-600 p-4 rounded-md text-[13px] border border-red-200 flex gap-3 items-start w-full" role="alert">
-            <AlertCircle size={16} class="shrink-0 mt-0.5" />
+          <div class="flex w-full items-start gap-3 rounded-[16px] bg-[color:var(--color-status-red-bg)] px-4 py-4 text-[13px] text-[color:var(--color-status-red-text)]" role="alert">
+            <AlertCircle size={16} class="mt-0.5 shrink-0" />
             <span>{stripeError}</span>
           </div>
         {/if}
 
-        <button 
-          onclick={handleStripePayment}
-          class="btn-primary w-full h-[56px]! text-[15px] font-medium shadow-md flex items-center justify-center gap-2"
-          disabled={isProcessing}
-          aria-label="Continue to Stripe secure checkout"
-        >
+        <button onclick={handleStripePayment} class="btn-primary flex w-full items-center justify-center gap-2 !min-h-[52px]" disabled={isProcessing} aria-label="Continue to Stripe secure checkout">
           {#if isProcessing}
-            <Loader2 size={20} class="animate-spin" /> Preparing Checkout...
+            <Loader2 size={20} class="animate-spin" /> Preparing checkout...
           {:else}
-            Continue to Stripe Checkout
+            Continue to Stripe checkout
           {/if}
         </button>
 
@@ -326,7 +305,5 @@
     {/if}
   </div>
 
-  <p class="text-[11px] text-center text-text-muted mt-6">
-    By proceeding, you agree to {appConfig.name} <a href="/terms" class="text-brand-blue font-medium hover:underline">Conditions of Carriage</a>.
-  </p>
+  <p class="text-center text-[12px] text-[color:var(--color-text-muted)]">By proceeding, you agree to {appConfig.name} <a href="/terms" class="font-semibold text-[color:var(--color-brand-blue)] hover:underline">Conditions of Carriage</a>.</p>
 </div>
