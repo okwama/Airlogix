@@ -29,11 +29,10 @@
   const adultsTotal = $derived(adultFare * adultCount);
   const childrenTotal = $derived(childFare * childCount);
   const baseTotal = $derived(adultsTotal + childrenTotal);
+  const payableTotal = $derived(baseTotal);
 
   let step = $state('passenger');
   let luggageData = $state({ checkedBags: 0, specialItems: 0, totalLuggagePrice: 0 });
-
-  const finalTotal = $derived(baseTotal + luggageData.totalLuggagePrice);
 
   let isSubmitting = $state(false);
   let errorMessage = $state('');
@@ -73,13 +72,9 @@
         flight_series_id: Number(booking.id),
         passengers: bookingStore.passengers,
         payment_method: 'pending',
-        total_amount: finalTotal,
+        total_amount: payableTotal,
         contact_email: contactEmail || undefined,
-        contact_phone: contactPhone || undefined,
-        luggage: {
-          checked_bags: luggageData.checkedBags,
-          special_items: luggageData.specialItems
-        }
+        contact_phone: contactPhone || undefined
       });
 
       reference = response.reference || response.data?.reference || response.data?.booking_reference || reference;
@@ -232,7 +227,7 @@
             <div class="space-y-2 text-[13px] text-brand-navy">
               <p>Checked Bags: {luggageData.checkedBags}</p>
               <p>Special Items: {luggageData.specialItems}</p>
-              <p>Check-in Luggage Charges: {currencyStore.format(luggageData.totalLuggagePrice)}</p>
+              <p>Check-in Luggage Charges: Finalized at check-in review</p>
             </div>
           </div>
 
@@ -251,7 +246,7 @@
             Your seats are being held temporarily. Complete payment before <strong>{new Date(reservationExpiresAt).toLocaleString()}</strong> or the reservation will expire automatically.
           </div>
         {/if}
-        <PaymentPicker amount={finalTotal} {reference} email={contactEmail} />
+        <PaymentPicker amount={payableTotal} {reference} email={contactEmail} />
         <button class="flex items-center justify-start gap-2 text-text-muted text-[13px] font-medium hover:text-brand-navy transition-all" onclick={() => step = 'review'}>
           <ChevronLeft size={14} /> Back to booking review
         </button>
@@ -290,16 +285,16 @@
               </div>
             {/if}
 
-            {#if luggageData.totalLuggagePrice > 0}
+            {#if luggageData.checkedBags > 0 || luggageData.specialItems > 0}
               <div class="flex justify-between items-center text-[13px]">
-                <span class="text-text-body">Luggage & Surcharges</span>
-                <span class="text-brand-navy font-medium">{currencyStore.format(luggageData.totalLuggagePrice)}</span>
+                <span class="text-text-body">Luggage selected</span>
+                <span class="text-brand-navy font-medium">Finalized at check-in</span>
               </div>
             {/if}
 
             <div class="flex justify-between items-center pt-4 border-t-[0.5px] border-border">
               <span class="text-brand-navy font-medium">Total Amount</span>
-              <span class="text-brand-navy text-[22px] font-bold">{currencyStore.format(finalTotal)}</span>
+              <span class="text-brand-navy text-[22px] font-bold">{currencyStore.format(payableTotal)}</span>
             </div>
           </div>
         </div>

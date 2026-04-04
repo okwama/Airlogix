@@ -115,7 +115,7 @@
         <div class="relative z-10">
           <h3 class="text-white text-2xl font-medium mb-4">Meticulous Maintenance</h3>
           <p class="text-white/70 max-w-xl mx-auto text-[15px] leading-relaxed">
-            Our fleet undergoes rigorous maintenance checks at world-leading MRO facilities, exceeding IATA and international safety standards. Safety is not just our priority—it's our core value.
+            Our fleet undergoes rigorous maintenance checks at world-leading MRO facilities, exceeding IATA and international safety standards. Safety is not just our priority - it is our core value.
           </p>
         </div>
         <Wind size={200} class="absolute -bottom-10 -right-10 text-white/5 rotate-12" />

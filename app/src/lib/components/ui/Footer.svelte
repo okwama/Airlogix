@@ -33,11 +33,21 @@
       <div class="footer-apps">
         <h4>Get the App</h4>
         <div class="flex flex-wrap gap-4">
-          <a href="https://mcaviation.com/apple" class="btn-secondary gap-3 h-[48px]! px-8!">
+          <a
+            href="https://mcaviation.com/apple"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-secondary gap-3 h-[48px]! px-8!"
+          >
             <img src={appStoreImg} alt="App Store" class="h-5" />
             <span>App Store</span>
           </a>
-          <a href="https://mcaviation.com/google" class="btn-secondary gap-3 h-[48px]! px-8!">
+          <a
+            href="https://mcaviation.com/google"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-secondary gap-3 h-[48px]! px-8!"
+          >
             <img src={playStoreImg} alt="Google Play" class="h-5" />
             <span>Google Play</span>
           </a>
