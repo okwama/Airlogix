@@ -16,7 +16,7 @@
     { href: '/check-in', label: 'Check-in', key: 'checkin' },
     { href: '/status', label: 'Flight status', key: 'status' },
     { href: '/cargo', label: 'Cargo', key: 'cargo' },
-    { href: '/manage', label: 'Manage', key: 'manage' }
+    { href: '/manage', label: 'Manage booking', key: 'manage' }
   ];
 
   function isActive(href: string) {

@@ -1,4 +1,4 @@
-<script lang="ts">
+ï»¿<script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { appConfig } from '$lib/config/appConfig';
@@ -11,13 +11,10 @@
   import {
     Bell,
     Box,
-    CalendarDays,
     ChevronRight,
-    CreditCard,
     Package,
-    Plane,
-    Shield,
-    Star,
+    ReceiptText,
+    Sparkles,
     UserRound
   } from 'lucide-svelte';
 
@@ -50,7 +47,7 @@
   const recentBookings = $derived((() => {
     return [...bookings]
       .sort((a, b) => String(b?.booking_date || '').localeCompare(String(a?.booking_date || '')))
-      .slice(0, 2);
+      .slice(0, 3);
   })());
 
   async function loadAccount() {
@@ -98,12 +95,12 @@
 
 <main class="page-shell pb-20 pt-8 sm:pt-10">
   <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
+    <header class="rounded-[28px] bg-[color:var(--color-surface-lowest)] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
       <div class="max-w-[980px] space-y-3">
-        <p class="ui-label">Account Hub</p>
+        <p class="ui-label">My Account</p>
         <h1 class="hero-display">Welcome back, {authStore.user?.first_name || 'traveler'}</h1>
         <p class="max-w-[760px] text-[15px] text-[color:var(--color-text-body)] sm:text-[17px]">
-          Your upcoming journeys, loyalty standing, notifications, and cargo history now live in one editorial home.
+          This is your signed-in home for trips, cargo history, loyalty, notifications, and profile details. Use Manage only when you need lookup and recovery tools.
         </p>
       </div>
     </header>
@@ -121,9 +118,8 @@
     {:else}
       <section class="grid gap-8 lg:grid-cols-12">
         <div class="flex flex-col gap-8 lg:col-span-4">
-          <Card tone="highest" class="relative overflow-hidden px-6 py-7 sm:px-8 sm:py-8">
-            <div class="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[color:var(--color-brand-blue)]/8 blur-3xl"></div>
-            <div class="relative space-y-7">
+          <Card tone="highest" class="px-6 py-7 sm:px-8 sm:py-8">
+            <div class="space-y-7">
               <div class="space-y-5">
                 <p class="ui-label">Membership Tier</p>
                 <div class="flex items-center gap-4">
@@ -165,7 +161,7 @@
                   </span>
                 </div>
                 <div class="h-2 overflow-hidden rounded-full bg-[color:var(--color-surface-high)]">
-                  <div class="h-full w-[72%] rounded-full bg-[linear-gradient(90deg,#4858ab,#96a5ff)]"></div>
+                  <div class="h-full w-[72%] rounded-full bg-[color:var(--color-brand-blue)]"></div>
                 </div>
               </div>
 
@@ -176,8 +172,8 @@
           <Card tone="default" class="px-6 py-7 sm:px-8">
             <div class="space-y-5">
               <div>
-                <p class="ui-label">Quick Preferences</p>
-                <h3 class="mt-2 text-[22px] font-bold text-[color:var(--color-brand-navy)]">Profile snapshot</h3>
+                <p class="ui-label">Profile Snapshot</p>
+                <h3 class="mt-2 text-[22px] font-bold text-[color:var(--color-brand-navy)]">Identity and alerts</h3>
               </div>
 
               <div class="space-y-4 text-[14px] text-[color:var(--color-text-body)]">
@@ -198,7 +194,7 @@
               <div class="grid grid-cols-2 gap-3">
                 <Button variant="secondary" href="/account/profile" class="w-full"><UserRound size={16} /> Edit profile</Button>
                 <Button variant="secondary" href="/account/notifications" class="w-full"><Bell size={16} /> Notifications</Button>
-                <Button variant="secondary" href="/manage" class="w-full"><Plane size={16} /> My trips</Button>
+                <Button variant="secondary" href="/manage" class="w-full"><ReceiptText size={16} /> Manage tools</Button>
                 <Button variant="secondary" href="/cargo" class="w-full"><Package size={16} /> Book cargo</Button>
               </div>
             </div>
@@ -212,7 +208,7 @@
                 <p class="ui-label">Upcoming Trips</p>
                 <h2 class="mt-2 text-[30px] font-bold text-[color:var(--color-brand-navy)]">Next journeys</h2>
               </div>
-              <Button variant="ghost" href="/manage">View all</Button>
+              <Button variant="ghost" href="#travel-history">Jump to history</Button>
             </div>
 
             {#if upcomingBookings.length === 0}
@@ -223,7 +219,7 @@
               {#each upcomingBookings.slice(0, 1) as booking (booking.id)}
                 <Card tone="highest" class="overflow-hidden p-0">
                   <div class="grid gap-0 md:grid-cols-[0.95fr_1.35fr]">
-                    <div class="min-h-[240px] bg-[linear-gradient(160deg,#000b60,#223596)] p-7 text-white sm:p-8">
+                    <div class="min-h-[240px] bg-[color:var(--color-brand-navy)] p-7 text-white sm:p-8">
                       <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/65">Flight {booking.flight_number || 'Scheduled'}</p>
                       <div class="mt-6 space-y-3">
                         <h3 class="text-[34px] font-bold tracking-[-0.03em] text-white">
@@ -262,7 +258,7 @@
 
                       <div class="mt-8 flex flex-wrap gap-3">
                         <Button variant="primary" href={`/my-bookings/${String(booking.booking_reference || '').toUpperCase()}`}>Open itinerary</Button>
-                        <Button variant="secondary" href="/manage">Manage booking</Button>
+                        <Button variant="secondary" href={`/my-bookings/${String(booking.booking_reference || '').toUpperCase()}`}>Review details</Button>
                       </div>
                     </div>
                   </div>
@@ -296,12 +292,12 @@
                         </div>
                         <div>
                           <p class="font-mono text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{shipment.awb_number}</p>
-                          <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">{shipment.origin_code} -> {shipment.destination_code} · {shipment.booking_date}</p>
+                          <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">{shipment.origin_code} to {shipment.destination_code} Â· {shipment.booking_date}</p>
                         </div>
                       </div>
                       <div class="text-right">
                         <span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">{String(shipment.status || 'booked').toUpperCase()}</span>
-                        <p class="mt-2 text-[12px] text-[color:var(--color-text-muted)]">{shipment.weight_kg} kg · {shipment.pieces} pieces</p>
+                        <p class="mt-2 text-[12px] text-[color:var(--color-text-muted)]">{shipment.weight_kg} kg Â· {shipment.pieces} pieces</p>
                       </div>
                     </button>
                   {/each}
@@ -310,7 +306,7 @@
             </Card>
           </div>
 
-          <div class="grid gap-8 xl:grid-cols-[1fr_0.88fr]">
+          <div class="grid gap-8 xl:grid-cols-[1fr_0.88fr]" id="travel-history">
             <div class="space-y-5">
               <div class="flex items-center justify-between gap-4">
                 <div>
@@ -345,8 +341,8 @@
 
             <div class="space-y-5">
               <div>
-                <p class="ui-label">Past Bookings</p>
-                <h2 class="mt-2 text-[26px] font-bold text-[color:var(--color-brand-navy)]">Quick path</h2>
+                <p class="ui-label">Travel History</p>
+                <h2 class="mt-2 text-[26px] font-bold text-[color:var(--color-brand-navy)]">Your bookings and account tools</h2>
               </div>
 
               <Card tone="default" class="px-5 py-5 sm:px-6">
@@ -355,18 +351,26 @@
                     {#each recentBookings as booking (booking.id)}
                       <a href={`/my-bookings/${String(booking.booking_reference || '').toUpperCase()}`} class="block rounded-[16px] bg-[color:var(--color-surface-lowest)] px-5 py-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(26,28,26,0.06)]">
                         <p class="ui-label">{booking.booking_date}</p>
-                        <p class="mt-2 text-[20px] font-bold text-[color:var(--color-brand-navy)]">{booking.from_code} -> {booking.to_code}</p>
-                        <p class="mt-1 text-[13px] text-[color:var(--color-text-body)]">{booking.flight_number || 'Scheduled flight'} · {booking.booking_reference}</p>
+                        <p class="mt-2 text-[20px] font-bold text-[color:var(--color-brand-navy)]">{booking.from_code} to {booking.to_code}</p>
+                        <p class="mt-1 text-[13px] text-[color:var(--color-text-body)]">{booking.flight_number || 'Scheduled flight'} Â· {booking.booking_reference}</p>
                       </a>
                     {/each}
                   {/if}
 
                   <a href="/manage" class="flex items-center justify-between rounded-[16px] bg-[color:var(--color-surface-lowest)] px-5 py-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(26,28,26,0.06)]">
                     <div>
-                      <p class="font-semibold text-[color:var(--color-brand-navy)]">Open Manage Booking</p>
-                      <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">Continue payments, retrieve documents, and verify guest bookings.</p>
+                      <p class="font-semibold text-[color:var(--color-brand-navy)]">Open manage tools</p>
+                      <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">Use guest lookup, OTP recovery, or AWB tracking without leaving the account area.</p>
                     </div>
                     <ChevronRight size={18} class="text-[color:var(--color-text-muted)]" />
+                  </a>
+
+                  <a href="/account/loyalty" class="flex items-center justify-between rounded-[16px] bg-[color:var(--color-surface-lowest)] px-5 py-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(26,28,26,0.06)]">
+                    <div>
+                      <p class="font-semibold text-[color:var(--color-brand-navy)]">Review loyalty standing</p>
+                      <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">Track points, tier progress, and current member benefits.</p>
+                    </div>
+                    <Sparkles size={18} class="text-[color:var(--color-text-muted)]" />
                   </a>
 
                   <a href="/account/profile" class="flex items-center justify-between rounded-[16px] bg-[color:var(--color-surface-lowest)] px-5 py-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(26,28,26,0.06)]">

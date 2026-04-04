@@ -2,7 +2,7 @@
   import CargoLabel from '$lib/features/cargo/CargoLabel.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import { bookingService } from '$lib/services/booking/bookingService';
-  import { CheckCircle2, Package, ArrowRight, Printer } from 'lucide-svelte';
+  import { CheckCircle2, Package, ArrowRight, Printer, Box } from 'lucide-svelte';
   import { onMount } from 'svelte';
   import { appConfig } from '$lib/config/appConfig';
 
@@ -46,9 +46,9 @@
 
 <main class="page-shell pb-20 pt-8 sm:pt-10">
   <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[linear-gradient(135deg,#000b60,#223596)] px-6 py-8 text-white shadow-[0_26px_70px_rgba(0,11,96,0.18)] sm:px-8 md:px-10 md:py-10">
+    <header class="rounded-[28px] bg-[color:var(--color-brand-navy)] px-6 py-8 text-white shadow-[0_26px_70px_rgba(0,11,96,0.12)] sm:px-8 md:px-10 md:py-10">
       <div class="flex flex-col items-center text-center gap-5">
-        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20"><CheckCircle2 size={34} class="text-emerald-300" /></div>
+        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-white/12"><CheckCircle2 size={34} class="text-white" /></div>
         <div class="space-y-3">
           <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Cargo confirmed</p>
           <h1 class="text-[38px] font-bold tracking-[-0.03em] text-white">Your AWB is ready.</h1>
@@ -91,8 +91,19 @@
         </Card>
 
         <Card tone="default" class="px-6 py-6 sm:px-7">
+          <div class="space-y-3 text-[13px]">
+            <p class="ui-label">Signed-in account</p>
+            <h2 class="text-[22px] font-bold text-[color:var(--color-brand-navy)]">Linked cargo appears in My account.</h2>
+            <p class="leading-7 text-[color:var(--color-text-body)]">If you booked while signed in, this shipment can appear alongside your passenger trips, loyalty, and notifications.</p>
+            <a href="/account" class="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-[10px] bg-[color:var(--color-surface-high)] px-5 text-[13px] font-semibold text-[color:var(--color-brand-navy)] no-underline">
+              Open My account <Box size={14} />
+            </a>
+          </div>
+        </Card>
+
+        <Card tone="default" class="px-6 py-6 sm:px-7">
           <div class="space-y-4 text-[13px]">
-            <div class="rounded-[16px] bg-amber-50 px-4 py-4 text-amber-800">AWB issuance confirms the booking reference. Final carriage is confirmed after cargo acceptance at terminal and payment or credit clearance.</div>
+            <div class="rounded-[16px] bg-[color:var(--color-status-amber-bg)] px-4 py-4 text-[color:var(--color-status-amber-text)]">AWB issuance confirms the booking reference. Final carriage is confirmed after cargo acceptance at terminal and payment or credit clearance.</div>
             <div>
               <p class="ui-label">Next steps</p>
               <div class="mt-4 space-y-4">
@@ -109,7 +120,7 @@
           </div>
         </Card>
 
-        <button type="button" class="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] bg-[linear-gradient(135deg,#000b60,#142283)] px-5 text-[13px] font-semibold text-white shadow-[0_18px_40px_rgba(0,11,96,0.16)] disabled:cursor-not-allowed disabled:opacity-50" id="btn-print-cargo-label" onclick={printLabel} disabled={!detailedBooking} title={!detailedBooking ? 'Unlock full details first to print the complete label' : 'Print cargo label'}>
+        <button type="button" class="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] bg-[color:var(--color-brand-navy)] px-5 text-[13px] font-semibold text-white shadow-[0_18px_40px_rgba(0,11,96,0.12)] disabled:cursor-not-allowed disabled:opacity-50" id="btn-print-cargo-label" onclick={printLabel} disabled={!detailedBooking} title={!detailedBooking ? 'Unlock full details first to print the complete label' : 'Print cargo label'}>
           Print Cargo Label <Printer size={14} />
         </button>
 
