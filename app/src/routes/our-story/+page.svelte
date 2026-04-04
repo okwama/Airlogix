@@ -1,5 +1,6 @@
 <script>
   import { appConfig } from '$lib/config/appConfig';
+  import logo from '$lib/assets/logo.png';
 
   const milestones = [
     { year: '2018', title: 'Regional Launch', description: 'Started scheduled operations with core East Africa routes.' },
@@ -39,6 +40,13 @@
       <p class="text-text-body leading-relaxed">
         As the network has grown, we have continued investing in better operations, smoother digital booking flows, and stronger partnerships that help people and businesses move with confidence.
       </p>
+      <div class="mt-6 rounded-lg border border-border bg-slate-50 p-4 flex items-center gap-4">
+        <img src={logo} alt={appConfig.name} class="h-10 w-auto object-contain opacity-80" />
+        <div>
+          <p class="text-brand-navy text-[13px] font-medium">Head Office</p>
+          <p class="text-text-body text-[13px]">Kinshasa, DRC serving regional routes across neighboring markets.</p>
+        </div>
+      </div>
     </article>
 
     <aside class="bg-white border border-border rounded-xl p-8">

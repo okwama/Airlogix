@@ -21,17 +21,17 @@
     <aside class="bg-white border border-border rounded-xl p-8">
       <h2 class="text-brand-navy text-[22px] mb-4">Support Channels</h2>
       <div class="space-y-4 text-[14px]">
-        <p><span class="font-medium text-brand-navy">General Support:</span> support@mcaviation.com</p>
-        <p><span class="font-medium text-brand-navy">Bookings:</span> bookings@mcaviation.com</p>
-        <p><span class="font-medium text-brand-navy">Cargo:</span> cargo@mcaviation.com</p>
-        <p><span class="font-medium text-brand-navy">Phone:</span> +254 700 000 000</p>
-        <p><span class="font-medium text-brand-navy">Hours:</span> 24/7</p>
+        <p><span class="font-medium text-brand-navy">General Support:</span> support@mcaviation.cd</p>
+        <p><span class="font-medium text-brand-navy">Bookings:</span> bookings@mcaviation.cd</p>
+        <p><span class="font-medium text-brand-navy">Cargo:</span> cargo@mcaviation.cd</p>
+        <p><span class="font-medium text-brand-navy">Phone:</span> +243 81 000 0000</p>
+        <p><span class="font-medium text-brand-navy">Hours:</span> 06:00 to 22:00 (CAT, UTC+2), daily</p>
       </div>
 
       <div class="mt-6 pt-6 border-t border-border text-[14px] text-text-body">
         <p class="font-medium text-brand-navy mb-2">Head Office</p>
-        <p>Mc Aviation House, Airport North Road</p>
-        <p>Nairobi, Kenya</p>
+        <p>Gombe District, Avenue Colonel Lukusa</p>
+        <p>Kinshasa, Democratic Republic of the Congo</p>
       </div>
     </aside>
 

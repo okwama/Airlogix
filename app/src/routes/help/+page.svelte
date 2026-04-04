@@ -55,9 +55,9 @@
         If you cannot find your answer here, our support team can help with booking access, payment issues, and travel updates.
       </p>
       <div class="space-y-3 text-[14px]">
-        <p><span class="font-medium text-brand-navy">Email:</span> support@mcaviation.com</p>
-        <p><span class="font-medium text-brand-navy">Phone:</span> +254 700 000 000</p>
-        <p><span class="font-medium text-brand-navy">Hours:</span> 24/7</p>
+        <p><span class="font-medium text-brand-navy">Email:</span> support@mcaviation.cd</p>
+        <p><span class="font-medium text-brand-navy">Phone:</span> +243 81 000 0000</p>
+        <p><span class="font-medium text-brand-navy">Hours:</span> 06:00 to 22:00 (CAT, UTC+2), daily</p>
       </div>
       <a href="/contact" class="btn-primary inline-flex mt-6">Contact Support</a>
     </aside>
