@@ -43,7 +43,7 @@
     <div class="flex flex-col">
       <span class="ui-label mb-1">Origin</span>
       <div class="relative group">
-        <select bind:value={from} class="input-field w-full appearance-none cursor-pointer pr-8">
+        <select bind:value={from} class="input-field w-full min-h-[56px] appearance-none rounded-[12px] bg-[color:var(--color-surface-high)] px-4 cursor-pointer pr-10">
           {#each destinations as group}
             <optgroup label={group.label}>
               {#each group.options as opt}
@@ -60,7 +60,7 @@
     <div class="flex flex-col">
       <span class="ui-label mb-1">Destination</span>
       <div class="relative group">
-        <select bind:value={to} class="input-field w-full appearance-none cursor-pointer pr-8">
+        <select bind:value={to} class="input-field w-full min-h-[56px] appearance-none rounded-[12px] bg-[color:var(--color-surface-high)] px-4 cursor-pointer pr-10">
           {#each destinations as group}
             <optgroup label={group.label}>
               {#each group.options as opt}
@@ -76,20 +76,20 @@
     <!-- DATE Field -->
     <div class="flex flex-col">
       <span class="ui-label mb-1">Departure Date</span>
-      <input type="date" bind:value={date} class="input-field w-full cursor-pointer" />
+      <input type="date" bind:value={date} class="input-field w-full min-h-[56px] rounded-[12px] bg-[color:var(--color-surface-high)] px-4 cursor-pointer" />
     </div>
 
     <!-- WEIGHT Field -->
     <div class="flex flex-col">
       <span class="ui-label mb-1">Weight (kg)</span>
-      <input type="number" bind:value={weight} min="1" class="input-field w-full" />
+      <input type="number" bind:value={weight} min="1" class="input-field w-full min-h-[56px] rounded-[12px] bg-[color:var(--color-surface-high)] px-4" />
     </div>
 
     <!-- COMMODITY Field -->
     <div class="flex flex-col">
       <span class="ui-label mb-1">Commodity</span>
       <div class="relative group">
-        <select bind:value={commodity} class="input-field w-full appearance-none cursor-pointer pr-8">
+        <select bind:value={commodity} class="input-field w-full min-h-[56px] appearance-none rounded-[12px] bg-[color:var(--color-surface-high)] px-4 cursor-pointer pr-10">
           <option value="general">General Cargo</option>
           <option value="perishables">Perishables</option>
           <option value="dgr">Dangerous Goods</option>

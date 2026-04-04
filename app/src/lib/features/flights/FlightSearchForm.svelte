@@ -99,7 +99,7 @@
     <div class="flex flex-col relative" use:clickOutside={() => showFromDropdown = false}>
       <span class="ui-label mb-1">Origin</span>
       <button 
-        class="input-field w-full flex items-center justify-between text-left group transition-all {showFromDropdown ? 'border-brand-blue' : ''}"
+        class="input-field w-full rounded-[12px] bg-[color:var(--color-surface-high)] px-4 flex min-h-[56px] items-center justify-between text-left group transition-all {showFromDropdown ? 'border-brand-blue' : ''}"
         onclick={() => { showFromDropdown = !showFromDropdown; if (showFromDropdown) fromSearch = ''; }}
       >
         <div class="flex flex-col overflow-hidden">
@@ -112,7 +112,7 @@
       </button>
 
       {#if showFromDropdown}
-        <div class="absolute top-[calc(100%+4px)] left-0 w-full bg-white border-[0.5px] border-border rounded-[8px] z-50 shadow-xl overflow-hidden" transition:slide={{ duration: 150 }}>
+        <div class="absolute top-[calc(100%+6px)] left-0 w-full bg-white border-[0.5px] border-border rounded-[12px] z-[80] shadow-xl overflow-hidden" transition:slide={{ duration: 150 }}>
           <div class="p-2 border-b-[0.5px] border-border bg-slate-50">
             <input 
               type="text" 
@@ -143,7 +143,7 @@
     <div class="flex flex-col relative" use:clickOutside={() => showToDropdown = false}>
       <span class="ui-label mb-1">Destination</span>
       <button 
-        class="input-field w-full flex items-center justify-between text-left group transition-all {showToDropdown ? 'border-brand-blue' : ''}"
+        class="input-field w-full rounded-[12px] bg-[color:var(--color-surface-high)] px-4 flex min-h-[56px] items-center justify-between text-left group transition-all {showToDropdown ? 'border-brand-blue' : ''}"
         onclick={() => { showToDropdown = !showToDropdown; if (showToDropdown) toSearch = ''; }}
       >
         <div class="flex flex-col overflow-hidden">
@@ -156,7 +156,7 @@
       </button>
 
       {#if showToDropdown}
-        <div class="absolute top-[calc(100%+4px)] left-0 w-full bg-white border-[0.5px] border-border rounded-[8px] z-50 shadow-xl overflow-hidden" transition:slide={{ duration: 150 }}>
+        <div class="absolute top-[calc(100%+6px)] left-0 w-full bg-white border-[0.5px] border-border rounded-[12px] z-[80] shadow-xl overflow-hidden" transition:slide={{ duration: 150 }}>
           <div class="p-2 border-b-[0.5px] border-border bg-slate-50">
             <input 
               type="text" 
@@ -186,14 +186,14 @@
     <!-- DATE Field -->
     <div class="flex flex-col">
       <span class="ui-label mb-1">Departure Date</span>
-      <input type="date" bind:value={date} class="input-field w-full cursor-pointer" />
+      <input type="date" bind:value={date} class="input-field w-full min-h-[56px] rounded-[12px] bg-[color:var(--color-surface-high)] px-4 cursor-pointer" />
     </div>
 
     <!-- PASSENGERS Field -->
     <div class="flex flex-col relative" use:clickOutside={() => showPassengerDropdown = false}>
       <span class="ui-label mb-1">Passengers</span>
       <button 
-        class="input-field w-full flex items-center justify-between group transition-all {showPassengerDropdown ? 'border-brand-blue' : ''}"
+        class="input-field w-full rounded-[12px] bg-[color:var(--color-surface-high)] px-4 flex min-h-[56px] items-center justify-between group transition-all {showPassengerDropdown ? 'border-brand-blue' : ''}"
         onclick={() => showPassengerDropdown = !showPassengerDropdown}
       >
         <span class="text-[13px] font-medium text-brand-navy truncate">
@@ -203,7 +203,7 @@
       </button>
 
       {#if showPassengerDropdown}
-        <div class="absolute top-[calc(100%+4px)] right-0 w-[240px] bg-white border-[0.5px] border-border rounded-[8px] z-50 shadow-xl p-4" transition:slide={{ duration: 150 }}>
+        <div class="absolute top-[calc(100%+6px)] right-0 w-[240px] bg-white border-[0.5px] border-border rounded-[12px] z-[80] shadow-xl p-4" transition:slide={{ duration: 150 }}>
           <div class="flex flex-col gap-6">
             <!-- Adults -->
             <div class="flex items-center justify-between">

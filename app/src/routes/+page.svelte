@@ -40,55 +40,109 @@
 </svelte:head>
 
 <main class="pb-20">
-  <section class="page-shell pt-8 sm:pt-10">
-    <div class="page-width grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
-      <div class="space-y-5">
-        <p class="ui-label">Modern Concierge Aviation</p>
-        <h1 class="hero-display">Fly Congo and beyond with confidence, calm, and regional precision.</h1>
-        <p class="max-w-[620px] text-[16px] leading-8 text-[color:var(--color-text-body)] sm:text-[18px]">
-          Search flights, secure cargo space, manage bookings, and move from booking to check-in through one editorial system built around clarity.
-        </p>
-        <div class="grid max-w-[560px] grid-cols-3 gap-3">
-          <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
-            <div class="text-[22px] font-bold text-[color:var(--color-brand-blue)]">20+</div>
-            <div class="ui-label mt-1">Destinations</div>
+  <section class="relative overflow-hidden pt-3 sm:pt-4">
+    <div class="absolute inset-x-0 top-0 h-[220px] sm:h-[260px]">
+      <img
+        src="https://images.unsplash.com/photo-1517479149777-5f3b1511d5ad?auto=format&fit=crop&w=1800&q=80"
+        alt="Premium aircraft cabin"
+        class="h-full w-full object-cover"
+      />
+      <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,11,96,0.18),rgba(0,11,96,0.08),rgba(250,249,245,1))]"></div>
+    </div>
+
+    <div class="page-shell relative z-10">
+      <div class="page-width space-y-8">
+        <div class="mx-auto max-w-[980px] pt-10 sm:pt-14">
+          <Card tone="ghost" class="overflow-visible p-0">
+            <div class="rounded-[22px] bg-[color:var(--color-surface-lowest)] text-[color:var(--color-text-heading)] shadow-[0_24px_70px_rgba(26,28,26,0.12)]">
+              <div class="grid grid-cols-2 border-b border-[color:var(--color-border)]/80">
+                <button
+                  class="flex min-h-[46px] items-center justify-center gap-2 px-4 text-[12px] font-semibold transition-all sm:text-[13px]"
+                  class:text-[color:var(--color-brand-navy)]={searchMode === 'flight'}
+                  class:border-b-2={searchMode === 'flight'}
+                  class:border-[color:var(--color-brand-navy)]={searchMode === 'flight'}
+                  class:text-[color:var(--color-text-muted)]={searchMode !== 'flight'}
+                  onclick={() => (searchMode = 'flight')}
+                >
+                  <Plane size={15} /> Passenger Flights
+                </button>
+                <button
+                  class="flex min-h-[46px] items-center justify-center gap-2 px-4 text-[12px] font-semibold transition-all sm:text-[13px]"
+                  class:text-[color:var(--color-brand-navy)]={searchMode === 'cargo'}
+                  class:border-b-2={searchMode === 'cargo'}
+                  class:border-[color:var(--color-brand-navy)]={searchMode === 'cargo'}
+                  class:text-[color:var(--color-text-muted)]={searchMode !== 'cargo'}
+                  onclick={() => (searchMode = 'cargo')}
+                >
+                  <Package size={15} /> Cargo Logistics
+                </button>
+              </div>
+
+              <div class="min-h-[210px] px-4 py-5 sm:min-h-[196px] sm:px-6 sm:py-6 overflow-visible">
+                {#if searchMode === 'flight'}
+                  <FlightSearchForm />
+                {:else}
+                  <CargoSearchForm />
+                {/if}
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <div class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+        <div class="space-y-5">
+          <p class="ui-label">Modern Concierge Aviation</p>
+          <h1 class="text-[clamp(2.8rem,5vw,4.4rem)] font-extrabold leading-[0.96] tracking-[-0.045em] text-[color:var(--color-text-heading)] max-w-[760px]">Fly Congo and beyond with confidence, calm, and regional precision.</h1>
+          <p class="max-w-[560px] text-[15px] leading-7 text-[color:var(--color-text-body)] sm:text-[17px]">
+            Search flights, secure cargo space, manage bookings, and move from booking to check-in through one editorial system built around clarity.
+          </p>
+          <div class="grid max-w-[560px] grid-cols-3 gap-3">
+            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+              <div class="text-[22px] font-bold text-[color:var(--color-brand-blue)]">20+</div>
+              <div class="ui-label mt-1">Destinations</div>
+            </div>
+            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+              <div class="text-[22px] font-bold text-[color:var(--color-brand-blue)]">24/7</div>
+              <div class="ui-label mt-1">Support</div>
+            </div>
+            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+              <div class="text-[22px] font-bold text-[color:var(--color-brand-blue)]">99%</div>
+              <div class="ui-label mt-1">Reliability</div>
+            </div>
           </div>
-          <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
-            <div class="text-[22px] font-bold text-[color:var(--color-brand-blue)]">24/7</div>
-            <div class="ui-label mt-1">Support</div>
+        </div>
+
+        <Card tone="default" class="px-6 py-7 sm:px-7">
+          <div class="space-y-5">
+            <div>
+              <p class="ui-label">Route Snapshot</p>
+              <h2 class="mt-2 text-[28px] font-bold text-[color:var(--color-brand-navy)]">Regional network, presented simply.</h2>
+            </div>
+            <div class="rounded-[20px] bg-[color:var(--color-surface-lowest)] p-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+              <svg viewBox="0 0 320 120" class="h-[100px] w-full" aria-label="Route map illustration">
+                <path d="M28 86 C90 36, 150 88, 214 48 S300 26, 304 26" fill="none" stroke="#4858ab" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="28" cy="86" r="6" fill="#1a1c1a" />
+                <circle cx="214" cy="48" r="5" fill="#1a1c1a" />
+                <circle cx="304" cy="26" r="6" fill="#1a1c1a" />
+                <text x="16" y="106" font-size="11" fill="#767683">FIH</text>
+                <text x="202" y="68" font-size="11" fill="#767683">FBM</text>
+                <text x="290" y="46" font-size="11" fill="#767683">BZV</text>
+              </svg>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]"><span class="text-[14px] text-[color:var(--color-text-body)]">Kinshasa to Lubumbashi</span><span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">Daily</span></div>
+              <div class="flex items-center justify-between rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]"><span class="text-[14px] text-[color:var(--color-text-body)]">Kinshasa to Brazzaville</span><span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">Frequent</span></div>
+              <div class="flex items-center justify-between rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]"><span class="text-[14px] text-[color:var(--color-text-body)]">Kinshasa to Goma</span><span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">Daily</span></div>
+            </div>
           </div>
-          <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
-            <div class="text-[22px] font-bold text-[color:var(--color-brand-blue)]">99%</div>
-            <div class="ui-label mt-1">Reliability</div>
-          </div>
+        </Card>
         </div>
       </div>
-
-      <Card tone="ghost" class="overflow-hidden p-0">
-        <div class="rounded-[24px] bg-[linear-gradient(160deg,#000b60,#223596)] p-6 text-white sm:p-7">
-          <div class="mb-5 flex flex-wrap gap-2">
-            <button class="status-badge bg-white/10 text-white" class:!bg-white={searchMode === 'flight'} class:!text-[color:var(--color-brand-navy)]={searchMode === 'flight'} onclick={() => (searchMode = 'flight')}>
-              <Plane size={14} class="inline" /> Book a flight
-            </button>
-            <button class="status-badge bg-white/10 text-white" class:!bg-white={searchMode === 'cargo'} class:!text-[color:var(--color-brand-navy)]={searchMode === 'cargo'} onclick={() => (searchMode = 'cargo')}>
-              <Package size={14} class="inline" /> Book cargo
-            </button>
-          </div>
-
-          <div class="rounded-[20px] bg-[color:var(--color-surface-lowest)] p-4 text-[color:var(--color-text-heading)] sm:p-5">
-            {#if searchMode === 'flight'}
-              <FlightSearchForm />
-            {:else}
-              <CargoSearchForm />
-            {/if}
-          </div>
-        </div>
-      </Card>
     </div>
   </section>
 
   <section class="page-shell pt-14 sm:pt-18">
-    <div class="page-width grid gap-8 lg:grid-cols-[1fr_360px]">
+    <div class="page-width">
       <div class="grid gap-6 md:grid-cols-3">
         {#each benefits as benefit}
           {@const Icon = benefit.icon}
@@ -107,31 +161,6 @@
           </Card>
         {/each}
       </div>
-
-      <Card tone="default" class="px-6 py-7 sm:px-7">
-        <div class="space-y-5">
-          <div>
-            <p class="ui-label">Route Snapshot</p>
-            <h2 class="mt-2 text-[28px] font-bold text-[color:var(--color-brand-navy)]">Regional network, presented simply.</h2>
-          </div>
-          <div class="rounded-[20px] bg-[color:var(--color-surface-lowest)] p-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
-            <svg viewBox="0 0 320 120" class="h-[100px] w-full" aria-label="Route map illustration">
-              <path d="M28 86 C90 36, 150 88, 214 48 S300 26, 304 26" fill="none" stroke="#4858ab" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="28" cy="86" r="6" fill="#1a1c1a" />
-              <circle cx="214" cy="48" r="5" fill="#1a1c1a" />
-              <circle cx="304" cy="26" r="6" fill="#1a1c1a" />
-              <text x="16" y="106" font-size="11" fill="#767683">FIH</text>
-              <text x="202" y="68" font-size="11" fill="#767683">FBM</text>
-              <text x="290" y="46" font-size="11" fill="#767683">BZV</text>
-            </svg>
-          </div>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]"><span class="text-[14px] text-[color:var(--color-text-body)]">Kinshasa to Lubumbashi</span><span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">Daily</span></div>
-            <div class="flex items-center justify-between rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]"><span class="text-[14px] text-[color:var(--color-text-body)]">Kinshasa to Brazzaville</span><span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">Frequent</span></div>
-            <div class="flex items-center justify-between rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]"><span class="text-[14px] text-[color:var(--color-text-body)]">Kinshasa to Goma</span><span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">Daily</span></div>
-          </div>
-        </div>
-      </Card>
     </div>
   </section>
 
