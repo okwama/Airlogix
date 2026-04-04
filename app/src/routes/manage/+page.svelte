@@ -15,6 +15,7 @@
   let reference = $state('');
   let email = $state('');
   let accessCode = $state('');
+  let cargoAwb = $state('');
   let loading = $state(false);
   let error = $state('');
   let stage = $state<'request' | 'verify'>('request');
@@ -241,6 +242,16 @@
     } finally {
       loading = false;
     }
+  }
+
+  function handleCargoLookup() {
+    const awb = cargoAwb.trim().toUpperCase();
+    if (!awb) {
+      error = 'Please enter an AWB number to track cargo.';
+      return;
+    }
+    error = '';
+    goto(`/cargo-tracking/${encodeURIComponent(awb)}`);
   }
 </script>
 
@@ -478,6 +489,7 @@
         </div>
       </div>
 
+      <div class="space-y-6">
       <Card padding="none" class="shadow-lg transform transition-all hover:scale-[1.01] bg-white overflow-hidden">
         <div class="max-w-[560px] mx-auto py-8 sm:py-10 md:py-12 px-4 sm:px-6">
           <div class="mb-10 text-center">
@@ -549,8 +561,37 @@
             Reserved seats but left the payment page? Use your PNR and booking email here to continue payment before the hold expires.
           </p>
         </div>
-      </div>
+        </div>
       </Card>
+
+      <Card padding="none" class="bg-white overflow-hidden">
+        <div class="max-w-[560px] mx-auto py-8 px-4 sm:px-6">
+          <div class="mb-6 text-center">
+            <h3 class="text-brand-navy text-xl font-medium mb-2">Track Cargo Shipment</h3>
+            <p class="text-[13px] text-text-muted">Enter your AWB to view cargo status and milestones.</p>
+          </div>
+
+          <div class="space-y-6">
+            <Input
+              id="cargoAwb"
+              label="AWB Number"
+              icon={Package}
+              placeholder="e.g. 450-0000-0011"
+              bind:value={cargoAwb}
+            />
+
+            <Button class="w-full h-12 text-base font-medium group" variant="primary" onclick={handleCargoLookup}>
+              Open Cargo Tracking
+              <ArrowRight size={18} class="ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+
+            <p class="text-center text-[12px] text-text-muted">
+              Need full shipment details? Open tracking and verify with the OTP sent to shipper/consignee email.
+            </p>
+          </div>
+        </div>
+      </Card>
+      </div>
     </div>
   </div>
 </main>

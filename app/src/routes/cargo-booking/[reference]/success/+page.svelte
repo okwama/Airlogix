@@ -27,8 +27,8 @@
     if (typeof sessionStorage === 'undefined') return;
     const key = `cargo_tracking_full:${awb}`;
     const token = awb ? sessionStorage.getItem(`cargo_token:${awb}`) : null;
-    if (awb && token) sessionStorage.setItem(key, '1');
-    if (awb) {
+    if (awb && token) {
+      sessionStorage.setItem(key, '1');
       bookingService.getCargoBookingDetails(awb)
         .then((full) => {
           detailedBooking = full;
