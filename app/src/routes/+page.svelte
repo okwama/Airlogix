@@ -51,23 +51,22 @@
 
     <div class="relative container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1200px] pt-6 sm:pt-8 pb-6 sm:pb-8">
       <div class="bg-white/98 backdrop-blur-sm border border-white/30 rounded-[14px] shadow-xl overflow-visible relative z-40">
-        <div class="flex items-center w-full bg-surface border-b border-border/80 rounded-t-[14px] overflow-hidden">
+        <div class="grid grid-cols-2 w-full bg-surface border-b border-border/80 rounded-t-[14px] overflow-hidden">
         <button
-          class="h-[44px] px-5 sm:px-7 flex items-center gap-2 text-[12px] sm:text-[13px] font-medium transition-all {searchMode === 'flight' ? 'bg-brand-navy text-white' : 'text-text-body hover:bg-slate-50'}"
+          class="h-[44px] px-5 sm:px-7 flex items-center justify-center gap-2 text-[12px] sm:text-[13px] font-medium transition-all border-r border-border/80 {searchMode === 'flight' ? 'bg-brand-navy text-white' : 'text-text-body hover:bg-slate-50'}"
           onclick={() => (searchMode = 'flight')}
         >
           <Plane size={16} /> Book a Flight
         </button>
-        <div class="w-[0.5px] h-full bg-border shrink-0"></div>
         <button
-          class="h-[44px] px-5 sm:px-7 flex items-center gap-2 text-[12px] sm:text-[13px] font-medium transition-all {searchMode === 'cargo' ? 'bg-brand-navy text-white' : 'text-text-body hover:bg-slate-50'}"
+          class="h-[44px] px-5 sm:px-7 flex items-center justify-center gap-2 text-[12px] sm:text-[13px] font-medium transition-all {searchMode === 'cargo' ? 'bg-brand-navy text-white' : 'text-text-body hover:bg-slate-50'}"
           onclick={() => (searchMode = 'cargo')}
         >
           <Package size={16} /> Book Cargo
         </button>
       </div>
 
-        <div class="bg-white p-4 lg:p-6 w-full">
+        <div class="bg-white p-4 lg:p-6 w-full rounded-b-[14px]">
           {#if searchMode === 'flight'}
             <FlightSearchForm />
           {:else}
