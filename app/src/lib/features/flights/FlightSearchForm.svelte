@@ -273,7 +273,7 @@
       </button>
     </div>
 
-    <button class="btn-primary w-full md:w-[220px]" onclick={handleSearch} disabled={isSearching}>
+    <button class="btn-primary w-full md:w-[240px] !min-h-[52px] text-[14px]" onclick={handleSearch} disabled={isSearching}>
       {#if isSearching}
         <Loader2 size={16} class="animate-spin mr-2" /> Searching...
       {:else}

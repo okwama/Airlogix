@@ -51,7 +51,7 @@
   }
 </script>
 
-<div class="bg-surface border-[0.5px] border-border rounded-lg p-6 mb-4 flex flex-col md:flex-row items-center gap-8 transition-all hover:border-brand-blue group">
+<div class="mb-4 flex flex-col items-center gap-8 rounded-[22px] bg-[color:var(--color-surface-lowest)] p-6 shadow-[0_18px_42px_rgba(26,28,26,0.05)] transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_54px_rgba(26,28,26,0.08)] md:flex-row">
   <div class="flex items-center gap-4 min-w-[160px]">
     <div class="w-10 h-10 bg-brand-navy rounded-sm flex items-center justify-center text-white text-[14px] font-medium shrink-0">
       Mc
@@ -84,7 +84,7 @@
     </div>
   </div>
 
-  <div class="flex flex-col items-end gap-3 min-w-[180px] border-l-[0.5px] border-border pl-8 md:pl-12">
+  <div class="flex min-w-[190px] flex-col items-end gap-3 border-l-[0.5px] border-border pl-8 md:pl-12">
     <div class="flex flex-col items-end">
       <span class="ui-label">from</span>
       <span class="text-brand-navy text-[22px] font-medium leading-none">{currencyStore.format(price)}</span>
@@ -96,7 +96,7 @@
     </div>
 
     <button
-      class="btn-primary w-full !h-[40px]"
+      class="btn-primary w-full !min-h-[46px] text-[14px]"
       onclick={handleSelectFlight}
       disabled={isSelecting}
       aria-busy={isSelecting}

@@ -51,7 +51,7 @@
     </div>
 
     <div class="page-shell relative z-10">
-      <div class="page-width space-y-8">
+      <div class="page-width space-y-6">
         <div class="mx-auto max-w-[980px] pt-10 sm:pt-14">
           <Card tone="ghost" class="overflow-visible p-0">
             <div class="rounded-[22px] bg-[color:var(--color-surface-lowest)] text-[color:var(--color-text-heading)] shadow-[0_24px_70px_rgba(26,28,26,0.12)]">
@@ -89,30 +89,30 @@
           </Card>
         </div>
 
-        <div class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
-        <div class="space-y-5">
+        <div class="grid gap-6 lg:grid-cols-[1fr_0.98fr] lg:items-start">
+        <div class="space-y-4">
           <p class="ui-label">Modern Concierge Aviation</p>
-          <h1 class="text-[clamp(2.8rem,5vw,4.4rem)] font-extrabold leading-[0.96] tracking-[-0.045em] text-[color:var(--color-text-heading)] max-w-[760px]">Fly Congo and beyond with confidence, calm, and regional precision.</h1>
-          <p class="max-w-[560px] text-[15px] leading-7 text-[color:var(--color-text-body)] sm:text-[17px]">
+          <h1 class="max-w-[620px] text-[clamp(2.35rem,4.4vw,3.8rem)] font-extrabold leading-[0.97] tracking-[-0.045em] text-[color:var(--color-text-heading)]">Fly Congo and beyond with confidence, calm, and regional precision.</h1>
+          <p class="max-w-[500px] text-[14px] leading-7 text-[color:var(--color-text-body)] sm:text-[16px]">
             Search flights, secure cargo space, manage bookings, and move from booking to check-in through one editorial system built around clarity.
           </p>
-          <div class="grid max-w-[560px] grid-cols-3 gap-3">
-            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
-              <div class="text-[22px] font-bold text-[color:var(--color-brand-blue)]">20+</div>
+          <div class="grid max-w-[440px] grid-cols-3 gap-2.5">
+            <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-3.5 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+              <div class="text-[20px] font-bold text-[color:var(--color-brand-blue)]">20+</div>
               <div class="ui-label mt-1">Destinations</div>
             </div>
-            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
-              <div class="text-[22px] font-bold text-[color:var(--color-brand-blue)]">24/7</div>
+            <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-3.5 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+              <div class="text-[20px] font-bold text-[color:var(--color-brand-blue)]">24/7</div>
               <div class="ui-label mt-1">Support</div>
             </div>
-            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
-              <div class="text-[22px] font-bold text-[color:var(--color-brand-blue)]">99%</div>
+            <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-3.5 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+              <div class="text-[20px] font-bold text-[color:var(--color-brand-blue)]">99%</div>
               <div class="ui-label mt-1">Reliability</div>
             </div>
           </div>
         </div>
 
-        <Card tone="default" class="px-6 py-7 sm:px-7">
+        <Card tone="default" class="px-6 py-6 sm:px-7">
           <div class="space-y-5">
             <div>
               <p class="ui-label">Route Snapshot</p>
