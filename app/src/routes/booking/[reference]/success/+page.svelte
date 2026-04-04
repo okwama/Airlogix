@@ -2,7 +2,7 @@
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import { appConfig } from '$lib/config/appConfig';
-  import { CheckCircle, Download, Home, Mail } from 'lucide-svelte';
+  import { CheckCircle2, Download, Home, Mail, Plane, ReceiptText } from 'lucide-svelte';
   import { confetti } from '@neoconfetti/svelte';
   import { onMount } from 'svelte';
 
@@ -37,117 +37,195 @@
       return destroy;
     }
   });
+
+  const heading = $derived(
+    !booking
+      ? 'Booking saved'
+      : paymentState.toLowerCase() === 'pending' && booking.payment_method === 'bank_transfer'
+        ? 'Booking reserved'
+        : paymentState.toLowerCase() === 'failed'
+          ? 'Payment failed'
+          : paymentState.toLowerCase() === 'paid' && ticketState === 'PENDING'
+            ? 'Payment received'
+            : 'Booking confirmed'
+  );
+
+  const subtitle = $derived(
+    !booking
+      ? 'We could not load the full details yet, but your reference is active and can still be managed.'
+      : paymentState.toLowerCase() === 'pending' && booking.payment_method === 'bank_transfer'
+        ? 'Your seats are reserved. We are waiting for your bank transfer to clear before ticketing.'
+        : paymentState.toLowerCase() === 'failed'
+          ? 'We could not confirm the payment. You can reopen the booking and try again.'
+          : paymentState.toLowerCase() === 'paid' && ticketState === 'PENDING'
+            ? 'Payment is confirmed and ticketing is in progress. We will email you as soon as issuance completes.'
+            : `Your trip is in place and the booking is now live with ${appConfig.name}.`
+  );
+
+  const infoMessage = $derived(
+    !booking
+      ? bookingError || 'Use your reference in Manage Booking to continue payment or view live status.'
+      : paymentState.toLowerCase() === 'pending' && booking.payment_method === 'bank_transfer'
+        ? 'We will email your e-ticket once the transfer is confirmed. Include your booking reference in the payment description.'
+        : paymentState.toLowerCase() === 'paid' && ticketState === 'PENDING'
+          ? 'Ticketing is still being finalized. If the email does not arrive shortly, contact support with your booking reference.'
+          : paymentState.toLowerCase() === 'failed'
+            ? 'Your payment did not complete successfully. You can retry from the booking page or contact support.'
+            : 'A confirmation email and ticket documents have been sent to your inbox.'
+  );
+
+  const statusTone = $derived(
+    paymentState.toLowerCase() === 'failed'
+      ? 'bg-[color:var(--color-status-red-bg)] text-[color:var(--color-status-red-text)]'
+      : paymentState.toLowerCase() === 'pending' || ticketState === 'PENDING'
+        ? 'bg-[color:var(--color-status-amber-bg)] text-[color:var(--color-status-amber-text)]'
+        : 'bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]'
+  );
 </script>
 
 <svelte:head>
   <title>Booking Confirmed | {appConfig.name}</title>
 </svelte:head>
 
-<div class="success-page" role="main">
+<main class="page-shell pb-20 pt-6 sm:pt-8">
   <div class="confetti-portal" bind:this={confettiEl}></div>
 
-  <div class="container content">
-    <div class="success-card-wrapper">
-      <Card padding="lg">
-        <div class="icon-header">
-          {#if !booking}
-            <div class="icon-bg" style="background: rgba(255, 152, 0, 0.1);">
-              <CheckCircle size={64} color="var(--color-brand-orange)" strokeWidth={1.5} />
-            </div>
-            <h1>Booking Saved</h1>
-            <p class="subtitle">We could not load full booking details yet, but your reference is active.</p>
-          {:else if paymentState.toLowerCase() === 'pending' && booking.payment_method === 'bank_transfer'}
-            <div class="icon-bg" style="background: rgba(255, 152, 0, 0.1);">
-              <CheckCircle size={64} color="var(--color-brand-orange)" strokeWidth={1.5} />
-            </div>
-            <h1>Booking Reserved!</h1>
-            <p class="subtitle">Your booking is secured. We are awaiting your bank transfer to clear.</p>
-          {:else if paymentState.toLowerCase() === 'failed'}
-            <div class="icon-bg" style="background: rgba(244, 67, 54, 0.08);">
-              <CheckCircle size={64} color="rgb(244, 67, 54)" strokeWidth={1.5} />
-            </div>
-            <h1>Payment Failed</h1>
-            <p class="subtitle">We could not confirm your payment. Retry payment or contact support with your reference.</p>
-          {:else if paymentState.toLowerCase() === 'paid' && ticketState === 'PENDING'}
-            <div class="icon-bg" style="background: rgba(255, 152, 0, 0.1);">
-              <CheckCircle size={64} color="var(--color-brand-orange)" strokeWidth={1.5} />
-            </div>
-            <h1>Payment Received</h1>
-            <p class="subtitle">We've received your payment. Your ticket is being issued and will be emailed shortly.</p>
-          {:else}
-            <div class="icon-bg" style="background: rgba(76, 175, 80, 0.1);">
-              <CheckCircle size={64} color="var(--color-success)" strokeWidth={1.5} />
-            </div>
-            <h1>Booking Confirmed!</h1>
-            <p class="subtitle">Thank you for choosing {appConfig.name}. Your journey starts here.</p>
-          {/if}
+  <div class="page-width space-y-6">
+    <header class="rounded-[28px] bg-[color:var(--color-brand-navy)] px-6 py-6 text-white shadow-[0_24px_64px_rgba(0,11,96,0.1)] sm:px-8 sm:py-7">
+      <div class="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+        <div class="space-y-3">
+          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Booking Status</p>
+          <h1 class="max-w-[640px] text-[clamp(1.9rem,3.6vw,3rem)] font-extrabold leading-[0.98] tracking-[-0.04em] text-white">{heading}</h1>
+          <p class="max-w-[580px] text-[13px] leading-6 text-white/74 sm:text-[14px]">{subtitle}</p>
         </div>
 
-        <div class="booking-details-box">
-          <div class="ref-row">
-            <span class="label">Booking Reference</span>
-            <span class="value ref-code">{reference}</span>
-          </div>
-          <div class="flight-summary">
-            <div class="route">
-              <span class="city">{booking?.origin_iata || '---'}</span>
-              <span class="arrow">-&gt;</span>
-              <span class="city">{booking?.destination_iata || '---'}</span>
-            </div>
-            <div class="flight-no">Flight {booking?.flight_number || 'TBA'}</div>
+        <div class="rounded-[22px] bg-white/10 px-5 py-5 backdrop-blur-sm">
+          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Reference</p>
+          <p class="mt-2 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference}</p>
+          <div class="mt-4 flex flex-wrap items-center gap-3 text-[12px] text-white/72">
+            <span>{booking?.origin_iata || '---'} to {booking?.destination_iata || '---'}</span>
+            <span class="h-1.5 w-1.5 rounded-full bg-white/36"></span>
+            <span>{booking?.flight_number || 'Flight details pending'}</span>
           </div>
         </div>
+      </div>
+    </header>
 
-        <div class="info-alert" aria-live="polite">
-          <Mail size={18} />
-          {#if !booking}
-            <span>{bookingError || 'Use your reference on Manage Booking to continue payment or view live status.'}</span>
-          {:else if paymentState.toLowerCase() === 'pending' && booking.payment_method === 'bank_transfer'}
-            <span>We'll email your e-ticket after we confirm your transfer. Use your reference in the payment description.</span>
-          {:else if paymentState.toLowerCase() === 'paid' && ticketState === 'PENDING'}
-            <span>Ticketing is in progress. If you do not receive an email shortly, contact support with your reference.</span>
-          {:else if paymentState.toLowerCase() === 'failed'}
-            <span>Your payment was not confirmed. You can retry payment from the booking page or contact support.</span>
-          {:else}
-            <span>A confirmation email with your e-ticket has been sent to your inbox.</span>
-          {/if}
+    <div class="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+      <section class="space-y-6">
+        <Card tone="highest" class="px-6 py-7 sm:px-7 sm:py-8">
+          <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-start gap-4">
+              <div class={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${statusTone}`}>
+                <CheckCircle2 size={24} />
+              </div>
+              <div>
+                <p class="ui-label">Confirmation</p>
+                <p class="mt-2 text-[26px] font-bold leading-tight text-[color:var(--color-brand-navy)]">{heading}</p>
+                <p class="mt-2 max-w-[540px] text-[14px] leading-7 text-[color:var(--color-text-body)]">{subtitle}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-7 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-5">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-surface-lowest)] text-[color:var(--color-brand-blue)]">
+                  <Plane size={18} />
+                </div>
+                <div>
+                  <p class="ui-label">Journey</p>
+                  <p class="mt-1 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '---'} to {booking?.destination_iata || '---'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-5">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-surface-lowest)] text-[color:var(--color-brand-blue)]">
+                  <ReceiptText size={18} />
+                </div>
+                <div>
+                  <p class="ui-label">Flight</p>
+                  <p class="mt-1 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.flight_number || 'TBA'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <div class={`flex items-start gap-3 rounded-[18px] px-5 py-4 text-[13px] leading-6 shadow-[0_18px_40px_rgba(26,28,26,0.04)] ${statusTone}`} aria-live="polite">
+          <Mail size={18} class="mt-0.5 shrink-0" />
+          <span>{infoMessage}</span>
         </div>
 
-        <div class="actions">
-          {#if !booking}
-            <Button variant="primary" href={`/manage?reference=${reference}`}>
-              <Download size={18} /> Open Manage Booking
-            </Button>
-          {:else if paymentState.toLowerCase() === 'paid' || ticketState === 'TICKETED'}
-            <Button variant="primary" href={`/my-bookings/${reference}/documents`}>
-              <Download size={18} /> View E-Ticket (PDF)
-            </Button>
-          {:else}
-            <Button variant="primary" href={`/my-bookings/${reference}`}>
-              <Download size={18} /> View Booking
-            </Button>
-          {/if}
-          <Button variant="secondary" href="/">
-            <Home size={18} /> Back to Home
-          </Button>
-        </div>
-      </Card>
+        <Card tone="default" class="px-6 py-6 sm:px-7">
+          <div class="space-y-4">
+            <div>
+              <p class="ui-label">Next Steps</p>
+              <h2 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Everything you need is ready from here.</h2>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              {#if !booking}
+                <Button variant="primary" href={`/manage?reference=${reference}`} class="w-full justify-center">
+                  <Download size={18} /> Open Manage Booking
+                </Button>
+              {:else if paymentState.toLowerCase() === 'paid' || ticketState === 'TICKETED'}
+                <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="w-full justify-center">
+                  <Download size={18} /> View E-Ticket PDF
+                </Button>
+              {:else}
+                <Button variant="primary" href={`/my-bookings/${reference}`} class="w-full justify-center">
+                  <Download size={18} /> View Booking
+                </Button>
+              {/if}
+
+              <Button variant="secondary" href="/" class="w-full justify-center">
+                <Home size={18} /> Back to Home
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </section>
+
+      <aside class="space-y-5 lg:sticky lg:top-20">
+        <Card tone="highest" class="overflow-hidden p-0">
+          <div class="bg-[color:var(--color-brand-navy)] px-6 py-6 text-white sm:px-7">
+            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Booking Reference</p>
+            <p class="mt-3 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference}</p>
+          </div>
+
+          <div class="space-y-4 bg-[color:var(--color-surface-lowest)] px-6 py-6 sm:px-7">
+            <div>
+              <p class="ui-label">Route</p>
+              <p class="mt-2 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '---'} to {booking?.destination_iata || '---'}</p>
+            </div>
+
+            <div class="soft-divider"></div>
+
+            <div class="flex items-center justify-between text-[14px]">
+              <span class="text-[color:var(--color-text-body)]">Payment</span>
+              <span class={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${statusTone}`}>{paymentState || 'Pending'}</span>
+            </div>
+
+            <div class="flex items-center justify-between text-[14px]">
+              <span class="text-[color:var(--color-text-body)]">Ticket</span>
+              <span class="font-semibold text-[color:var(--color-brand-navy)]">{ticketState || 'Pending'}</span>
+            </div>
+
+            <div class="flex items-center justify-between text-[14px]">
+              <span class="text-[color:var(--color-text-body)]">Flight</span>
+              <span class="font-semibold text-[color:var(--color-brand-navy)]">{booking?.flight_number || 'TBA'}</span>
+            </div>
+          </div>
+        </Card>
+      </aside>
     </div>
   </div>
-</div>
+</main>
 
 <style>
-  .success-page {
-    padding: var(--spacing-2xl) 0;
-    min-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at top right, rgba(255, 87, 34, 0.05), transparent 60%),
-                radial-gradient(circle at bottom left, rgba(10, 31, 64, 0.05), transparent 60%);
-  }
-
   .confetti-portal {
     position: fixed;
     top: 0;
@@ -155,151 +233,5 @@
     transform: translateX(-50%);
     z-index: 100;
     pointer-events: none;
-  }
-
-  .content {
-    width: 100%;
-  }
-
-  .success-card-wrapper {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .icon-header {
-    text-align: center;
-    margin-bottom: var(--spacing-xl);
-  }
-
-  .icon-bg {
-    width: 100px;
-    height: 100px;
-    background: rgba(76, 175, 80, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto var(--spacing-lg);
-    animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-  }
-
-  @keyframes pop-in {
-    0% { transform: scale(0); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  h1 {
-    font-size: var(--font-size-3xl);
-    margin-bottom: var(--spacing-xs);
-    color: var(--color-primary-navy);
-    animation: fade-up 0.4s ease 0.2s both;
-  }
-
-  .subtitle {
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-base);
-    animation: fade-up 0.4s ease 0.3s both;
-  }
-
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .booking-details-box {
-    background: var(--color-bg-subtle, #f8f9fa);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-xl);
-    margin-bottom: var(--spacing-xl);
-    border: 1px solid var(--color-border);
-    animation: fade-up 0.4s ease 0.4s both;
-  }
-
-  .ref-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-lg);
-    padding-bottom: var(--spacing-md);
-    border-bottom: 1px dashed var(--color-border);
-  }
-
-  .ref-row .label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-  }
-
-  .ref-code {
-    font-family: 'Courier New', monospace;
-    font-weight: 700;
-    font-size: var(--font-size-lg);
-    color: var(--color-brand-orange);
-    letter-spacing: 2px;
-  }
-
-  .flight-summary {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-xs);
-    text-align: center;
-  }
-
-  .route {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-md);
-    font-size: var(--font-size-2xl);
-    font-weight: 800;
-    color: var(--color-primary-navy);
-  }
-
-  .arrow {
-    color: var(--color-brand-orange);
-  }
-
-  .flight-no {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-  }
-
-  .info-alert {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    background: rgba(10, 31, 64, 0.05);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-md);
-    color: var(--color-primary-navy);
-    font-size: var(--font-size-sm);
-    margin-bottom: var(--spacing-xl);
-    animation: fade-up 0.4s ease 0.5s both;
-  }
-
-  .actions {
-    display: flex;
-    gap: var(--spacing-md);
-    animation: fade-up 0.4s ease 0.6s both;
-  }
-
-  :global(.actions > *) {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-xs);
-  }
-
-  @media (max-width: 640px) {
-    .actions {
-      flex-direction: column;
-    }
-    .route {
-      font-size: var(--font-size-xl);
-    }
-    h1 {
-      font-size: var(--font-size-2xl);
-    }
   }
 </style>

@@ -130,7 +130,7 @@
 
 <main class="page-shell pb-20 pt-6 sm:pt-8">
   <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[linear-gradient(135deg,#000b60,#20338d)] px-6 py-6 text-white shadow-[0_24px_64px_rgba(0,11,96,0.15)] sm:px-8 sm:py-7 md:px-9">
+    <header class="rounded-[28px] bg-[color:var(--color-brand-navy)] px-6 py-5 text-white shadow-[0_24px_64px_rgba(0,11,96,0.11)] sm:px-8 sm:py-6 md:px-9">
       <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
         <div class="space-y-3">
           <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Flight Booking Wizard</p>
@@ -155,25 +155,25 @@
       </div>
     </header>
 
-    <section class="grid gap-4 md:grid-cols-3">
+    <section class="grid gap-3 md:grid-cols-3">
       {#each steps as item, index}
         {@const Icon = item.icon}
         {@const state = stepState(item.key)}
-        <div class={`rounded-[20px] px-5 py-5 shadow-[0_18px_40px_rgba(26,28,26,0.04)] ${state === 'active' ? 'bg-[color:var(--color-brand-navy)] text-white' : state === 'complete' ? 'bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]' : 'bg-[color:var(--color-surface-lowest)] text-[color:var(--color-text-body)]'}`}>
+        <div class={`rounded-[18px] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)] ${state === 'active' ? 'bg-[color:var(--color-brand-navy)] text-white' : state === 'complete' ? 'bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]' : 'bg-[color:var(--color-surface-lowest)] text-[color:var(--color-text-body)]'}`}>
           <div class="flex items-center gap-3">
-            <div class={`flex h-10 w-10 items-center justify-center rounded-full ${state === 'active' ? 'bg-white/12 text-white' : state === 'complete' ? 'bg-white/65 text-[color:var(--color-status-green-text)]' : 'bg-[color:var(--color-surface-low)] text-[color:var(--color-brand-blue)]'}`}>
-              <Icon size={18} />
+            <div class={`flex h-9 w-9 items-center justify-center rounded-full ${state === 'active' ? 'bg-white/12 text-white' : state === 'complete' ? 'bg-white/65 text-[color:var(--color-status-green-text)]' : 'bg-[color:var(--color-surface-low)] text-[color:var(--color-brand-blue)]'}`}>
+              <Icon size={17} />
             </div>
             <div>
               <p class={`font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] ${state === 'active' ? 'text-white/62' : 'text-[color:var(--color-text-muted)]'}`}>Step {index + 1}</p>
-              <p class="mt-1 text-[15px] font-semibold">{item.label}</p>
+              <p class="mt-1 text-[14px] font-semibold">{item.label}</p>
             </div>
           </div>
         </div>
       {/each}
     </section>
 
-    <div class="grid gap-7 lg:grid-cols-[1fr_360px] lg:items-start">
+    <div class="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
       <section class="space-y-6">
         {#if errorMessage}
           <div class="rounded-[18px] bg-[color:var(--color-status-red-bg)] px-5 py-4 text-[13px] text-[color:var(--color-status-red-text)] shadow-[0_18px_40px_rgba(26,28,26,0.04)]" role="alert" aria-live="assertive">
@@ -283,12 +283,12 @@
         {/if}
       </section>
 
-      <aside class="space-y-5 lg:sticky lg:top-24">
+      <aside class="space-y-5 lg:sticky lg:top-20">
         <Card tone="highest" class="overflow-hidden p-0">
-          <div class="bg-[linear-gradient(160deg,#000b60,#223596)] px-6 py-7 text-white sm:px-7">
+          <div class="bg-[color:var(--color-brand-navy)] px-6 py-6 text-white sm:px-7">
             <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Order Summary</p>
-            <div class="mt-5 flex items-start gap-4">
-              <div class="flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-white">
+            <div class="mt-4 flex items-start gap-4">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/12 text-white">
                 <Plane size={18} />
               </div>
               <div>
