@@ -2,7 +2,8 @@
   import { goto } from '$app/navigation';
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
-  import { Search } from 'lucide-svelte';
+  import Card from '$lib/components/ui/Card.svelte';
+  import { Search, PackageSearch } from 'lucide-svelte';
   import { appConfig } from '$lib/config/appConfig';
 
   let awb = $state('');
@@ -19,24 +20,34 @@
   <meta name="description" content="Track your cargo shipment using your AWB number." />
 </svelte:head>
 
-<main class="bg-surface min-h-[calc(100vh-58px)] py-20">
-  <div class="container max-w-[720px] mx-auto px-7">
-    <div class="bg-white border border-border rounded-lg p-8 md:p-10">
-      <h1 class="text-brand-navy text-3xl font-medium mb-3">Track Shipment</h1>
-      <p class="text-text-body mb-8">Enter your AWB number to view current cargo status and milestones.</p>
-
-      <div class="space-y-4">
-        <Input
-          label="AWB / Waybill Number"
-          icon={Search}
-          placeholder="e.g. 450-1234-5678"
-          bind:value={awb}
-        />
-
-        <Button variant="primary" class="w-full md:w-auto" onclick={trackShipment} disabled={!awb.trim()}>
-          Track Shipment
-        </Button>
-      </div>
+<main class="page-shell pb-20 pt-8 sm:pt-10">
+  <div class="page-width grid gap-8 lg:grid-cols-[0.95fr_0.85fr] lg:items-center">
+    <div class="space-y-4">
+      <p class="ui-label">Cargo Tracking</p>
+      <h1 class="hero-display">Open shipment milestones with a single AWB.</h1>
+      <p class="max-w-[560px] text-[16px] leading-8 text-[color:var(--color-text-body)]">Enter the waybill number to view public cargo progress, then unlock full label data through the OTP flow when needed.</p>
     </div>
+
+    <Card tone="highest" class="px-6 py-7 sm:px-8 sm:py-9">
+      <div class="space-y-7">
+        <div class="space-y-2">
+          <p class="ui-label">Track Shipment</p>
+          <h2 class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">Enter AWB number</h2>
+        </div>
+
+        <Input label="AWB / Waybill Number" icon={Search} placeholder="e.g. 450-1234-5678" bind:value={awb} />
+
+        <Button variant="primary" class="w-full sm:w-auto" onclick={trackShipment} disabled={!awb.trim()}>
+          Track shipment
+        </Button>
+
+        <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-5">
+          <div class="flex gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><PackageSearch size={18} /></div>
+            <p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">Public tracking shows booking and milestone progress. Full shipment details require OTP verification sent to shipper or consignee contact details.</p>
+          </div>
+        </div>
+      </div>
+    </Card>
   </div>
 </main>

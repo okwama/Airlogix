@@ -1,5 +1,6 @@
 <script lang="ts">
   import CargoLabel from '$lib/features/cargo/CargoLabel.svelte';
+  import Card from '$lib/components/ui/Card.svelte';
   import { bookingService } from '$lib/services/booking/bookingService';
   import { CheckCircle2, Package, ArrowRight, Printer } from 'lucide-svelte';
   import { onMount } from 'svelte';
@@ -8,9 +9,9 @@
   interface PageData {
     booking: any;
   }
-  
+
   let { data }: { data: PageData } = $props();
-  
+
   const booking = $derived(data.booking);
   const awb = $derived(booking?.awb_number ?? '');
   let detailedBooking = $state<any | null>(null);
@@ -21,8 +22,6 @@
     }
   }
 
-  // If the booking flow already issued a cargo token for this AWB in session,
-  // mark this AWB as trusted in-browser so tracking can open full details directly.
   onMount(() => {
     if (typeof sessionStorage === 'undefined') return;
     const key = `cargo_tracking_full:${awb}`;
@@ -42,36 +41,24 @@
 
 <svelte:head>
   <title>AWB Confirmed - {awb} | {appConfig.name} Cargo</title>
-  <meta
-    name="description"
-    content={`Your ${appConfig.name} cargo shipment has been confirmed. Print your Air Waybill label for tracking.`}
-  />
+  <meta name="description" content={`Your ${appConfig.name} cargo shipment has been confirmed. Print your Air Waybill label for tracking.`} />
 </svelte:head>
 
-<div class="bg-surface min-h-screen pb-24">
-  <!-- Success Banner -->
-  <div class="bg-brand-navy pt-16 pb-28">
-    <div class="container mx-auto px-7 max-w-[880px] flex flex-col items-center text-center gap-6">
-      <div class="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
-        <CheckCircle2 size={34} class="text-emerald-400" />
+<main class="page-shell pb-20 pt-8 sm:pt-10">
+  <div class="page-width space-y-8">
+    <header class="rounded-[28px] bg-[linear-gradient(135deg,#000b60,#223596)] px-6 py-8 text-white shadow-[0_26px_70px_rgba(0,11,96,0.18)] sm:px-8 md:px-10 md:py-10">
+      <div class="flex flex-col items-center text-center gap-5">
+        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20"><CheckCircle2 size={34} class="text-emerald-300" /></div>
+        <div class="space-y-3">
+          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Cargo confirmed</p>
+          <h1 class="text-[38px] font-bold tracking-[-0.03em] text-white">Your AWB is ready.</h1>
+          <p class="mx-auto max-w-[520px] text-[14px] leading-7 text-white/72">Your shipment is registered in our system. Print the label below and attach it to each piece before drop-off.</p>
+        </div>
       </div>
+    </header>
+
+    <div class="grid gap-8 lg:grid-cols-[1fr_300px] lg:items-start">
       <div>
-        <h1 class="text-white text-[34px] font-semibold leading-tight mb-3">
-          Cargo Booking Confirmed
-        </h1>
-        <p class="text-white/50 text-[14px] max-w-[480px] mx-auto leading-relaxed">
-          Your shipment has been registered in our system. Print the label below and attach it to each piece before drop-off.
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Content -->
-  <div class="container mx-auto px-7 max-w-[880px] -mt-16">
-    <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10 items-start">
-
-      <!-- Label Column -->
-      <div class="flex flex-col gap-2">
         {#if detailedBooking}
           <CargoLabel
             awb={detailedBooking.awb_number}
@@ -87,70 +74,51 @@
             bookingDate={detailedBooking.booking_date}
           />
         {:else}
-          <div class="bg-surface border border-border rounded-lg p-10 text-center text-text-muted">
-            <Package size={32} class="mx-auto mb-4 opacity-40" />
-            <p>Booking details are protected. Open tracking and verify access to unlock full label data for AWB: <strong>{awb}</strong></p>
-          </div>
+          <Card tone="ghost" class="px-6 py-10 text-center sm:px-8">
+            <div class="flex flex-col items-center justify-center">
+              <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Package size={26} /></div>
+              <p class="max-w-[460px] text-[14px] leading-7 text-[color:var(--color-text-body)]">Booking details are protected. Open tracking and verify access to unlock full label data for AWB <strong>{awb}</strong>.</p>
+            </div>
+          </Card>
         {/if}
       </div>
 
-      <!-- Instructions Column -->
-      <div class="flex flex-col gap-6 sticky top-8">
-        <!-- AWB Reference card -->
-        <div class="bg-surface border border-brand-blue/30 rounded-lg p-6">
-          <p class="text-[11px] font-medium uppercase tracking-widest text-text-muted mb-2">Your AWB Number</p>
-          <p class="text-brand-navy text-[24px] font-bold font-mono tracking-wide">{awb}</p>
-          <p class="text-text-muted text-[12px] mt-2">Keep this number for tracking updates.</p>
-        </div>
+      <aside class="space-y-6 lg:sticky lg:top-[96px]">
+        <Card tone="highest" class="px-6 py-7 sm:px-7">
+          <p class="ui-label">Your AWB Number</p>
+          <p class="mt-3 font-mono text-[28px] font-bold tracking-[0.04em] text-[color:var(--color-brand-navy)]">{awb}</p>
+          <p class="mt-2 text-[13px] text-[color:var(--color-text-body)]">Keep this number for tracking updates.</p>
+        </Card>
 
-        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <p class="text-[12px] text-amber-800 leading-relaxed">
-            AWB issuance confirms your booking reference. Final carriage is confirmed after cargo acceptance at terminal and payment/credit clearance.
-          </p>
-        </div>
-
-        <!-- Steps -->
-        <div class="bg-surface border border-border rounded-lg p-6">
-          <h3 class="text-brand-navy font-medium text-[15px] mb-5">Next Steps</h3>
-          <div class="flex flex-col gap-4">
-            {#each [
-              { step: '1', text: 'Print the label by clicking "Print Cargo Label".' },
-              { step: '2', text: 'Attach one label to each piece of cargo.' },
-              { step: '3', text: `Drop off your shipment at the ${appConfig.name} cargo terminal.` },
-              { step: '4', text: 'Notify your consignee of the AWB number for collection.' }
-            ] as item}
-              <div class="flex items-start gap-3">
-                <div class="w-6 h-6 rounded-full bg-brand-navy/10 text-brand-navy text-[11px] font-bold flex items-center justify-center shrink-0">{item.step}</div>
-                <p class="text-text-body text-[13px] leading-relaxed">{item.text}</p>
+        <Card tone="default" class="px-6 py-6 sm:px-7">
+          <div class="space-y-4 text-[13px]">
+            <div class="rounded-[16px] bg-amber-50 px-4 py-4 text-amber-800">AWB issuance confirms the booking reference. Final carriage is confirmed after cargo acceptance at terminal and payment or credit clearance.</div>
+            <div>
+              <p class="ui-label">Next steps</p>
+              <div class="mt-4 space-y-4">
+                {#each [
+                  'Print the label by clicking Print Cargo Label.',
+                  'Attach one label to each piece of cargo.',
+                  `Drop off your shipment at the ${appConfig.name} cargo terminal.`,
+                  'Notify your consignee of the AWB number for collection.'
+                ] as item, i}
+                  <div class="flex items-start gap-3"><div class="flex h-6 w-6 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[11px] font-bold text-[color:var(--color-brand-navy)]">{i + 1}</div><p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">{item}</p></div>
+                {/each}
               </div>
-            {/each}
+            </div>
           </div>
-        </div>
+        </Card>
 
-        <button
-          type="button"
-          class="btn-primary flex items-center justify-center gap-2"
-          id="btn-print-cargo-label"
-          onclick={printLabel}
-          disabled={!detailedBooking}
-          title={!detailedBooking ? 'Unlock full details first to print the complete label' : 'Print cargo label'}
-        >
+        <button type="button" class="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] bg-[linear-gradient(135deg,#000b60,#142283)] px-5 text-[13px] font-semibold text-white shadow-[0_18px_40px_rgba(0,11,96,0.16)] disabled:cursor-not-allowed disabled:opacity-50" id="btn-print-cargo-label" onclick={printLabel} disabled={!detailedBooking} title={!detailedBooking ? 'Unlock full details first to print the complete label' : 'Print cargo label'}>
           Print Cargo Label <Printer size={14} />
         </button>
 
-        <a href={`/cargo-tracking/${awb}`} class="btn-primary flex items-center justify-center gap-2 no-underline" id="link-track-cargo">
+        <a href={`/cargo-tracking/${awb}`} class="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[10px] bg-[color:var(--color-surface-high)] px-5 text-[13px] font-semibold text-[color:var(--color-brand-navy)] no-underline" id="link-track-cargo">
           Track This Shipment <ArrowRight size={14} />
         </a>
 
-        <a
-          href="/"
-          class="text-center text-text-muted text-[13px] hover:text-brand-navy transition-colors"
-          id="link-book-another"
-        >
-          Book Another Shipment
-        </a>
-      </div>
+        <a href="/" class="block text-center text-[13px] text-[color:var(--color-text-muted)] transition-colors hover:text-[color:var(--color-brand-navy)]" id="link-book-another">Book Another Shipment</a>
+      </aside>
     </div>
   </div>
-</div>
-
+</main>

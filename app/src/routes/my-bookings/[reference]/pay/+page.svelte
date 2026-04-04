@@ -87,136 +87,89 @@
   <title>Continue Payment - {reference} | {appConfig.name}</title>
 </svelte:head>
 
-<main class="min-h-[calc(100vh-58px-300px)] py-12 px-6 bg-slate-50/50">
-  <div class="max-w-[1200px] mx-auto space-y-8">
-    <header class="flex items-start justify-between gap-6 flex-wrap">
-      <div class="space-y-1">
-        <div class="ui-label text-brand-blue">Resume payment</div>
-        <h1 class="text-brand-navy">PNR: <span class="font-mono">{reference}</span></h1>
-        <p class="text-[13px] text-text-muted">
-          Complete payment for your existing reservation without restarting the booking flow.
-        </p>
-      </div>
-      <div class="flex gap-3">
-        <Button variant="secondary" href={`/my-bookings/${reference}`}>
-          Back to booking
-        </Button>
+<main class="page-shell pb-20 pt-8 sm:pt-10">
+  <div class="page-width space-y-8">
+    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
+      <div class="flex flex-wrap items-start justify-between gap-6">
+        <div class="max-w-[760px] space-y-3">
+          <p class="ui-label">Resume Payment</p>
+          <h1 class="hero-display">Complete payment for PNR {reference}</h1>
+          <p class="max-w-[700px] text-[15px] text-[color:var(--color-text-body)] sm:text-[17px]">Finish an existing reservation without restarting the booking flow.</p>
+        </div>
+        <div class="flex gap-3"><Button variant="secondary" href={`/my-bookings/${reference}`}>Back to booking</Button></div>
       </div>
     </header>
 
     {#if loading}
-      <Card padding="none" class="bg-white">
-        <div class="p-8 text-[13px] text-text-muted flex items-center gap-3">
-          <Loader2 size={18} class="animate-spin" />
-          Loading your reservation...
-        </div>
+      <Card tone="ghost" class="px-6 py-6">
+        <div class="flex items-center gap-3 text-[14px] text-[color:var(--color-text-body)]"><Loader2 size={18} class="animate-spin" /> Loading your reservation...</div>
       </Card>
     {:else if error}
-      <div class="bg-red-50 text-red-600 text-[13px] p-4 rounded-md border border-red-100 flex items-start gap-3">
-        <ShieldAlert size={18} class="mt-0.5" />
-        <div class="space-y-1">
-          <p class="font-medium">We couldn’t open this reservation.</p>
-          <p class="text-[12px] text-red-600/80">{error}</p>
+      <div class="rounded-[18px] bg-[color:var(--color-status-red-bg)] px-5 py-4 text-[13px] text-[color:var(--color-status-red-text)] shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+        <div class="flex items-start gap-3">
+          <ShieldAlert size={18} class="mt-0.5" />
+          <div class="space-y-1">
+            <p class="font-semibold">We could not open this reservation.</p>
+            <p>{error}</p>
+          </div>
         </div>
       </div>
     {:else if booking}
-      <div class="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
+      <div class="grid gap-8 lg:grid-cols-[1fr_340px]">
         <div class="space-y-6">
           {#if holdActive}
-            <Card padding="none" class="bg-white">
-              <div class="p-7 space-y-5">
-                <div class="flex items-start justify-between gap-4 flex-wrap">
+            <Card tone="highest" class="px-6 py-7 sm:px-7">
+              <div class="space-y-6">
+                <div class="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <div class="ui-label text-brand-blue flex items-center gap-2">
-                      <CreditCard size={14} /> Payment window
-                    </div>
-                    <h2 class="text-brand-navy text-[18px] font-medium mt-2">Your reservation is still active</h2>
-                    <p class="text-[13px] text-text-muted mt-1">
-                      Pay before <strong>{new Date(reservationExpiresAt).toLocaleString()}</strong> to keep these seats.
-                    </p>
+                    <p class="ui-label flex items-center gap-2"><CreditCard size={14} /> Payment window</p>
+                    <h2 class="mt-2 text-[28px] font-bold text-[color:var(--color-brand-navy)]">Your reservation is still active.</h2>
+                    <p class="mt-2 max-w-[620px] text-[14px] leading-7 text-[color:var(--color-text-body)]">Pay before {new Date(reservationExpiresAt).toLocaleString()} to keep these seats.</p>
                   </div>
-                  <div class="border border-status-blue rounded-lg px-4 py-3 bg-status-blue-bg/30 min-w-[124px] text-center">
-                    <p class="text-[11px] text-status-blue-text uppercase tracking-widest font-medium">Time left</p>
-                    <p class="text-brand-navy text-[24px] font-semibold mt-1">{holdTimeRemaining}</p>
+                  <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-4 text-center">
+                    <p class="ui-label">Time left</p>
+                    <p class="mt-2 text-[28px] font-bold text-[color:var(--color-brand-navy)]">{holdTimeRemaining}</p>
                   </div>
                 </div>
 
-                <PaymentPicker
-                  amount={Number(booking.total_amount || 0)}
-                  reference={reference}
-                  email={booking.passenger_email || ''}
-                />
+                <PaymentPicker amount={Number(booking.total_amount || 0)} reference={reference} email={booking.passenger_email || ''} />
               </div>
             </Card>
           {:else if bookingState === 'EXPIRED' || bookingState === 'CANCELLED'}
-            <Card padding="none" class="bg-white">
-              <div class="p-7 space-y-4">
-                <div class="flex items-start gap-3">
-                  <div class="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0">
-                    <AlertTriangle size={18} />
+            <Card tone="default" class="px-6 py-7 sm:px-7">
+              <div class="flex items-start gap-4">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-status-red-bg)] text-[color:var(--color-status-red-text)]"><AlertTriangle size={18} /></div>
+                <div>
+                  <h2 class="text-[24px] font-bold text-[color:var(--color-brand-navy)]">Reservation expired</h2>
+                  <p class="mt-2 text-[14px] leading-7 text-[color:var(--color-text-body)]">This unpaid hold is no longer active, so payment cannot be resumed for this booking.</p>
+                  <div class="mt-4 flex flex-wrap gap-3">
+                    <Button variant="primary" href="/search">Search flights again</Button>
+                    <Button variant="secondary" href={`/my-bookings/${reference}`}>View booking details</Button>
                   </div>
-                  <div>
-                    <h2 class="text-brand-navy text-[18px] font-medium">Reservation expired</h2>
-                    <p class="text-[13px] text-text-muted mt-1">
-                      This unpaid hold is no longer active, so payment can’t be resumed for this booking.
-                    </p>
-                  </div>
-                </div>
-
-                <div class="flex gap-3 flex-wrap">
-                  <Button variant="primary" href="/search">
-                    Search flights again
-                  </Button>
-                  <Button variant="secondary" href={`/my-bookings/${reference}`}>
-                    View booking details
-                  </Button>
                 </div>
               </div>
             </Card>
           {:else if paymentState === 'PAID'}
-            <Card padding="none" class="bg-white">
-              <div class="p-7 space-y-4">
-                <h2 class="text-brand-navy text-[18px] font-medium">Payment already received</h2>
-                <p class="text-[13px] text-text-muted">
-                  This booking is already paid, so there is nothing left to resume here.
-                </p>
-                <div class="flex gap-3 flex-wrap">
-                  <Button variant="primary" href={`/my-bookings/${reference}/documents`}>
-                    View documents
-                  </Button>
-                  <Button variant="secondary" href={`/my-bookings/${reference}`}>
-                    View booking details
-                  </Button>
-                </div>
+            <Card tone="default" class="px-6 py-7 sm:px-7">
+              <h2 class="text-[24px] font-bold text-[color:var(--color-brand-navy)]">Payment already received.</h2>
+              <p class="mt-2 text-[14px] leading-7 text-[color:var(--color-text-body)]">There is nothing left to resume here.</p>
+              <div class="mt-4 flex flex-wrap gap-3">
+                <Button variant="primary" href={`/my-bookings/${reference}/documents`}>View documents</Button>
+                <Button variant="secondary" href={`/my-bookings/${reference}`}>View booking details</Button>
               </div>
             </Card>
           {/if}
         </div>
 
         <aside class="space-y-6">
-          <Card padding="none" class="bg-white">
-            <div class="p-7 space-y-4">
-              <h2 class="text-brand-navy font-medium text-[16px]">Reservation summary</h2>
+          <Card tone="highest" class="px-6 py-6 sm:px-7">
+            <div class="space-y-4">
+              <p class="ui-label">Reservation summary</p>
               <div class="space-y-3 text-[13px]">
-                <div class="flex items-center justify-between gap-4">
-                  <span class="text-text-muted">Route</span>
-                  <span class="text-brand-navy font-medium">{booking.from_code} → {booking.to_code}</span>
-                </div>
-                <div class="flex items-center justify-between gap-4">
-                  <span class="text-text-muted">Flight</span>
-                  <span class="text-brand-navy font-medium">{booking.flight_number || '—'}</span>
-                </div>
-                <div class="flex items-center justify-between gap-4">
-                  <span class="text-text-muted">Travel date</span>
-                  <span class="text-brand-navy font-medium flex items-center gap-2">
-                    <Calendar size={14} />
-                    {booking.booking_date || '—'}
-                  </span>
-                </div>
-                <div class="flex items-center justify-between gap-4">
-                  <span class="text-text-muted">Total due</span>
-                  <span class="text-brand-navy font-semibold">{currencyStore.format(Number(booking.total_amount || 0))}</span>
-                </div>
+                <div class="flex items-center justify-between gap-4"><span class="text-[color:var(--color-text-muted)]">Route</span><span class="font-semibold text-[color:var(--color-brand-navy)]">{booking.from_code} to {booking.to_code}</span></div>
+                <div class="flex items-center justify-between gap-4"><span class="text-[color:var(--color-text-muted)]">Flight</span><span class="font-semibold text-[color:var(--color-brand-navy)]">{booking.flight_number || '-'}</span></div>
+                <div class="flex items-center justify-between gap-4"><span class="text-[color:var(--color-text-muted)]">Travel date</span><span class="flex items-center gap-2 font-semibold text-[color:var(--color-brand-navy)]"><Calendar size={14} /> {booking.booking_date || '-'}</span></div>
+                <div class="flex items-center justify-between gap-4"><span class="text-[color:var(--color-text-muted)]">Total due</span><span class="font-semibold text-[color:var(--color-brand-navy)]">{currencyStore.format(Number(booking.total_amount || 0))}</span></div>
               </div>
             </div>
           </Card>

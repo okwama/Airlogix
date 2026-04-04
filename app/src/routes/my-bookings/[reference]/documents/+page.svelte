@@ -5,7 +5,8 @@
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
   import Button from '$lib/components/ui/Button.svelte';
-  import { ArrowLeft, Download, Loader2 } from 'lucide-svelte';
+  import Card from '$lib/components/ui/Card.svelte';
+  import { ArrowLeft, Download, Loader2, FileText } from 'lucide-svelte';
 
   const reference = $derived(String(page.params.reference || '').toUpperCase());
 
@@ -70,46 +71,46 @@
   <title>E-ticket - {reference} | {appConfig.name}</title>
 </svelte:head>
 
-<main class="min-h-[calc(100vh-58px)] flex flex-col bg-slate-100">
-  <div
-    class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b bg-white border-border"
-  >
-    <Button variant="ghost" href={`/my-bookings/${reference}`} class="!h-auto !py-2">
-      <ArrowLeft size={18} /> Back to booking
-    </Button>
-    <div class="flex gap-2">
-      <Button variant="secondary" onclick={downloadPdf} disabled={!pdfUrl || loading}>
-        <Download size={16} /> Save PDF
-      </Button>
-    </div>
-  </div>
-
-  {#if loading}
-    <div class="flex-1 flex flex-col items-center justify-center gap-3 text-text-muted py-16">
-      <Loader2 size={32} class="animate-spin text-brand-blue" />
-      <p class="text-[13px]">Opening your e-ticket…</p>
-    </div>
-  {:else if error}
-    <div class="flex-1 flex items-center justify-center p-6">
-      <div class="text-center max-w-md space-y-4">
-        <p class="text-red-600 text-[14px]">{error}</p>
-        <p class="text-[12px] text-text-muted">
-          If you used OTP, verify on Manage first so this browser session can access the booking.
-        </p>
-        <div class="flex flex-wrap gap-2 justify-center">
-          <Button variant="primary" onclick={loadPdf}>Try again</Button>
-          <Button variant="secondary" href="/manage">Manage booking</Button>
-        </div>
+<main class="page-shell pb-16 pt-8 sm:pt-10">
+  <div class="page-width space-y-6">
+    <header class="flex flex-wrap items-center justify-between gap-3">
+      <Button variant="ghost" href={`/my-bookings/${reference}`}><ArrowLeft size={18} /> Back to booking</Button>
+      <div class="flex gap-2">
+        <Button variant="secondary" onclick={downloadPdf} disabled={!pdfUrl || loading}><Download size={16} /> Save PDF</Button>
       </div>
-    </div>
-  {:else if pdfUrl}
-    <div class="flex-1 flex flex-col min-h-0 w-full">
-      <iframe
-        title="E-ticket PDF"
-        class="w-full flex-1 min-h-[75vh] border-0 bg-slate-200"
-        src={pdfUrl}
-      ></iframe>
-    </div>
-  {/if}
-</main>
+    </header>
 
+    {#if loading}
+      <Card tone="ghost" class="flex min-h-[60vh] items-center justify-center px-6 py-10">
+        <div class="flex flex-col items-center gap-3 text-[color:var(--color-text-body)]">
+          <Loader2 size={30} class="animate-spin text-[color:var(--color-brand-blue)]" />
+          <p class="text-[14px]">Opening your e-ticket...</p>
+        </div>
+      </Card>
+    {:else if error}
+      <Card tone="default" class="flex min-h-[60vh] items-center justify-center px-6 py-10">
+        <div class="max-w-md space-y-4 text-center">
+          <p class="text-[14px] text-[color:var(--color-status-red-text)]">{error}</p>
+          <p class="text-[12px] text-[color:var(--color-text-body)]">If you used OTP, verify on Manage first so this browser session can access the booking.</p>
+          <div class="flex flex-wrap justify-center gap-2">
+            <Button variant="primary" onclick={loadPdf}>Try again</Button>
+            <Button variant="secondary" href="/manage">Manage booking</Button>
+          </div>
+        </div>
+      </Card>
+    {:else if pdfUrl}
+      <Card tone="highest" class="overflow-hidden p-0">
+        <div class="flex items-center justify-between gap-4 bg-[color:var(--color-surface-low)] px-5 py-4">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><FileText size={18} /></div>
+            <div>
+              <p class="ui-label">Document Viewer</p>
+              <p class="text-[14px] font-semibold text-[color:var(--color-brand-navy)]">E-ticket and receipt for {reference}</p>
+            </div>
+          </div>
+        </div>
+        <iframe title="E-ticket PDF" class="min-h-[75vh] w-full border-0 bg-[color:var(--color-surface-high)]" src={pdfUrl}></iframe>
+      </Card>
+    {/if}
+  </div>
+</main>

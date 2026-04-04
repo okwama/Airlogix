@@ -2,7 +2,7 @@
   import FlightCard from '$lib/features/flights/FlightCard.svelte';
   import { navigating } from '$app/stores';
   import { Plane, ChevronLeft, SlidersHorizontal, Info } from 'lucide-svelte';
-  import { currencyStore } from '$lib/stores/currencyStore.svelte';
+  import Card from '$lib/components/ui/Card.svelte';
   import { appConfig } from '$lib/config/appConfig';
 
   let { data } = $props();
@@ -27,128 +27,89 @@
   <title>Search Results: {searchQuery.from} to {searchQuery.to} | {appConfig.name}</title>
 </svelte:head>
 
-<div class="bg-surface min-h-[calc(100vh-58px)] pb-10 sm:pb-12">
-  <div class="bg-brand-navy pt-7 sm:pt-8 pb-8 sm:pb-10">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1240px] flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6">
-      <div class="flex flex-col gap-1.5">
-        <a href="/" class="flex items-center gap-1.5 text-white/72 text-[11px] font-medium uppercase tracking-wider mb-2 hover:text-white transition-all">
-          <ChevronLeft size={14} /> Back to Search
-        </a>
-        <h1 class="text-white text-[26px] sm:text-[32px] font-medium leading-tight sm:leading-none">
-          {searchQuery.from} <span class="text-white/40 mx-2">-&gt;</span> {searchQuery.to}
-        </h1>
-        <div class="flex flex-wrap items-center gap-3 sm:gap-4 mt-2">
-          <span class="text-white/72 text-[13px] font-medium">{formattedDate}</span>
-          <div class="w-1.5 h-1.5 rounded-full bg-brand-blue"></div>
-          <span class="text-white/72 text-[13px] font-medium">{passengersLabel}</span>
+<main class="page-shell pb-20 pt-8 sm:pt-10">
+  <div class="page-width space-y-8">
+    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
+      <div class="flex flex-wrap items-end justify-between gap-5">
+        <div class="space-y-3">
+          <a href="/" class="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-brand-navy)]"><ChevronLeft size={14} /> Back to search</a>
+          <h1 class="hero-display">{searchQuery.from} to {searchQuery.to}</h1>
+          <div class="flex flex-wrap items-center gap-3 text-[13px] text-[color:var(--color-text-body)]">
+            <span>{formattedDate}</span>
+            <span class="h-1.5 w-1.5 rounded-full bg-[color:var(--color-brand-blue)]"></span>
+            <span>{passengersLabel}</span>
+          </div>
         </div>
+        <button class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]"><SlidersHorizontal size={14} class="inline" /> Sort and filter</button>
       </div>
+    </header>
 
-      <div class="flex items-center gap-3">
-        <button class="h-10 px-5 border-[0.5px] border-white/20 text-white rounded-btn text-[13px] font-medium flex items-center gap-2 hover:bg-white/10 transition-all">
-          <SlidersHorizontal size={14} /> Sort & Filter
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="container mx-auto px-4 sm:px-6 lg:px-7 max-w-[1240px] mt-8 sm:mt-12 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-7 lg:gap-12 items-start">
-    <main class="flex flex-col gap-4">
-      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-        <span class="text-text-muted text-[13px] font-medium">{flights.length} Flights available</span>
-        <div class="text-status-green-text bg-status-green-bg px-3 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-2">
-          <Info size={12} />
-          <span>Flexible booking active</span>
+    <div class="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
+      <main class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <span class="text-[14px] text-[color:var(--color-text-body)]">{flights.length} flights available</span>
+          <div class="status-badge bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]"><Info size={12} class="inline" /> Flexible booking active</div>
         </div>
-      </div>
 
-      {#if isNavigating}
-        <div class="space-y-4" aria-live="polite">
-          {#each Array(3) as _}
-            <div class="bg-surface border-[0.5px] border-border rounded-lg p-6 animate-pulse">
-              <div class="h-4 w-1/4 bg-slate-200 rounded mb-5"></div>
-              <div class="h-8 w-full bg-slate-200 rounded mb-4"></div>
-              <div class="h-10 w-40 bg-slate-200 rounded ml-auto"></div>
+        {#if isNavigating}
+          <div class="space-y-4" aria-live="polite">
+            {#each Array(3) as _}
+              <Card tone="highest" class="animate-pulse px-6 py-6">
+                <div class="mb-5 h-4 w-1/4 rounded bg-slate-200"></div>
+                <div class="mb-4 h-8 w-full rounded bg-slate-200"></div>
+                <div class="ml-auto h-10 w-40 rounded bg-slate-200"></div>
+              </Card>
+            {/each}
+          </div>
+        {:else if flights.length > 0}
+          {#each flights as flight}
+            <FlightCard {flight} adults={searchQuery.adults} children={searchQuery.children} />
+          {/each}
+        {:else if data.suggestions && data.suggestions.length > 0}
+          <Card tone="default" class="px-5 py-5">
+            <div class="flex items-center gap-4">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Info size={20} /></div>
+              <div>
+                <h2 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">No direct matches for your date.</h2>
+                <p class="mt-1 text-[13px] text-[color:var(--color-text-body)]">We found alternatives nearby that may still work for you.</p>
+              </div>
+            </div>
+          </Card>
+
+          {#each data.suggestions as flight}
+            <div class="relative">
+              <div class="absolute right-6 top-[-10px] z-10 rounded-full bg-[color:var(--color-brand-blue)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-sm">{flight.suggestion_label || 'Suggested'}</div>
+              <FlightCard {flight} adults={searchQuery.adults} children={searchQuery.children} />
             </div>
           {/each}
-        </div>
-      {:else if flights.length > 0}
-        {#each flights as flight}
-          <FlightCard
-            {flight}
-            adults={searchQuery.adults}
-            children={searchQuery.children}
-          />
-        {/each}
-      {:else if data.suggestions && data.suggestions.length > 0}
-        <div class="mb-6 p-4 bg-brand-blue/5 border-[0.5px] border-brand-blue/20 rounded-lg flex items-center gap-4">
-          <div class="w-10 h-10 bg-brand-blue/10 rounded-full flex items-center justify-center text-brand-blue shrink-0">
-            <Info size={20} />
-          </div>
-          <div>
-            <h3 class="text-brand-navy text-[15px] font-medium leading-tight mb-0.5">No direct matches for your date</h3>
-            <p class="text-text-muted text-[13px]">But we found some great alternatives nearby that might work for you.</p>
-          </div>
-        </div>
+        {:else}
+          <Card tone="ghost" class="px-6 py-14 sm:px-8 sm:py-20">
+            <div class="flex flex-col items-center justify-center text-center">
+              <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Plane size={32} /></div>
+              <h2 class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">No flights found.</h2>
+              <p class="mt-3 max-w-[360px] text-[14px] leading-7 text-[color:var(--color-text-body)]">We could not find flights for the selected route and date. Try adjusting your search.</p>
+              <a href="/" class="mt-6 inline-flex min-h-[46px] items-center rounded-[10px] bg-[linear-gradient(135deg,#000b60,#142283)] px-5 text-[13px] font-semibold text-white shadow-[0_18px_40px_rgba(0,11,96,0.16)]">Return to search</a>
+            </div>
+          </Card>
+        {/if}
+      </main>
 
-        {#each data.suggestions as flight}
-          <div class="relative">
-            <div class="absolute -top-2.5 right-6 z-10 bg-brand-blue text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-              {flight.suggestion_label || 'Suggested'}
+      <aside class="space-y-6">
+        <Card tone="default" class="px-6 py-7 sticky top-[96px]">
+          <div class="space-y-5">
+            <div>
+              <p class="ui-label">Luggage Policy</p>
+              <h2 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Cabin and checked baggage</h2>
             </div>
-            <FlightCard
-              {flight}
-              adults={searchQuery.adults}
-              children={searchQuery.children}
-            />
-          </div>
-        {/each}
-      {:else}
-        <div class="bg-surface border-[0.5px] border-border rounded-lg p-8 sm:p-20 flex flex-col items-center justify-center text-center">
-          <div class="w-16 h-16 bg-brand-navy rounded-full flex items-center justify-center text-white mb-6">
-            <Plane size={32} />
-          </div>
-          <h2 class="text-[22px] font-medium text-brand-navy mb-3">No Flights Found</h2>
-          <p class="text-text-body text-[14px] leading-relaxed max-w-[320px] mb-8">
-            We couldn't find any flights for your selected route and date. Try adjusting your parameters.
-          </p>
-          <a href="/" class="btn-primary">Return to Search</a>
-        </div>
-      {/if}
-    </main>
-
-    <aside class="flex flex-col gap-6">
-      <div class="bg-slate-50 border-[0.5px] border-border rounded-lg p-6">
-        <h4 class="ui-label mb-6">Luggage Policy</h4>
-        <div class="flex flex-col gap-5">
-          <div class="flex items-start gap-4">
-            <div class="w-2 h-2 rounded-full bg-brand-blue mt-1.5 shrink-0"></div>
-            <div class="flex flex-col">
-              <span class="text-brand-navy text-[13px] font-medium leading-none mb-1">Personal Item <span class="text-text-muted ml-1">(Free)</span></span>
-              <p class="text-text-body text-[11px]">Under-seat bag, max 7kg weight limit.</p>
+            <div class="space-y-4 text-[13px] text-[color:var(--color-text-body)]">
+              <div class="flex items-start gap-3"><span class="mt-1.5 h-2 w-2 rounded-full bg-[color:var(--color-brand-blue)]"></span><div><p class="font-semibold text-[color:var(--color-brand-navy)]">Personal item <span class="ml-1 text-[color:var(--color-text-muted)]">(Free)</span></p><p class="mt-1 text-[12px]">Under-seat bag, max 7kg weight limit.</p></div></div>
+              <div class="flex items-start gap-3"><span class="mt-1.5 h-2 w-2 rounded-full bg-[color:var(--color-brand-blue)]"></span><div><p class="font-semibold text-[color:var(--color-brand-navy)]">Cabin bag <span class="ml-1 text-[color:var(--color-text-muted)]">(Free)</span></p><p class="mt-1 text-[12px]">Overhead bin, standard aircraft dimensions.</p></div></div>
+              <div class="flex items-start gap-3"><span class="mt-1.5 h-2 w-2 rounded-full bg-[color:var(--color-surface-highest)]"></span><div><p class="font-semibold text-[color:var(--color-brand-navy)]">Checked bag <span class="ml-1 text-[color:var(--color-text-muted)]">(Check-in review)</span></p><p class="mt-1 text-[12px]">Selected during booking, finalized at check-in.</p></div></div>
             </div>
+            <p class="text-[12px] italic leading-7 text-[color:var(--color-text-muted)]">Excess, oversized, or special luggage is finalized during check-in review.</p>
           </div>
-          <div class="flex items-start gap-4">
-            <div class="w-2 h-2 rounded-full bg-brand-blue mt-1.5 shrink-0"></div>
-            <div class="flex flex-col">
-              <span class="text-brand-navy text-[13px] font-medium leading-none mb-1">Cabin Bag <span class="text-text-muted ml-1">(Free)</span></span>
-              <p class="text-text-body text-[11px]">Overhead bin, standard aircraft dimensions.</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-4">
-            <div class="w-2 h-2 rounded-full bg-border mt-1.5 shrink-0"></div>
-            <div class="flex flex-col">
-              <span class="text-brand-navy text-[13px] font-medium leading-none mb-1">Checked Bag <span class="text-text-muted ml-1">(Check-in review)</span></span>
-              <p class="text-text-body text-[11px]">Selected during booking, finalized at check-in.</p>
-            </div>
-          </div>
-        </div>
-        <div class="mt-8 pt-6 border-t-[0.5px] border-border">
-          <p class="text-text-muted text-[11px] leading-relaxed italic">
-            Note: Excess, oversized, or special luggage (sports gear) is finalized during check-in review.
-          </p>
-        </div>
-      </div>
-    </aside>
+        </Card>
+      </aside>
+    </div>
   </div>
-</div>
+</main>

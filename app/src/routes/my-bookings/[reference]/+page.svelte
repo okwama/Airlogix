@@ -5,7 +5,7 @@
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import { appConfig } from '$lib/config/appConfig';
-  import { Calendar, Clock3, CreditCard, Download, Plane, RefreshCw, ShieldAlert } from 'lucide-svelte';
+  import { Calendar, Clock3, CreditCard, Download, Plane, RefreshCw, ShieldAlert, UserRound } from 'lucide-svelte';
 
   const reference = $derived(String(page.params.reference || '').toUpperCase());
 
@@ -87,185 +87,189 @@
   <title>Booking - {reference} | {appConfig.name}</title>
 </svelte:head>
 
-<main class="min-h-[calc(100vh-58px-300px)] py-12 px-6 bg-slate-50/50">
-  <div class="max-w-[1100px] mx-auto space-y-8">
-    <header class="flex items-start justify-between gap-6 flex-wrap">
-      <div class="space-y-1">
-        <div class="ui-label text-brand-blue">My booking</div>
-        <h1 class="text-brand-navy">PNR: <span class="font-mono">{reference}</span></h1>
-        <p class="text-[13px] text-text-muted">
-          View itinerary details, payment state, and resume payment if your hold is still active.
-        </p>
-      </div>
-      <div class="flex gap-3">
-        <Button variant="secondary" onclick={loadBooking} disabled={loading}>
-          <RefreshCw size={16} /> Refresh
-        </Button>
-        <Button variant="primary" href="/manage">
-          Back to dashboard
-        </Button>
+<main class="page-shell pb-20 pt-8 sm:pt-10">
+  <div class="page-width space-y-8">
+    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
+      <div class="flex flex-wrap items-start justify-between gap-6">
+        <div class="max-w-[780px] space-y-3">
+          <p class="ui-label">Booking Detail</p>
+          <h1 class="hero-display">PNR {reference}</h1>
+          <p class="max-w-[700px] text-[15px] text-[color:var(--color-text-body)] sm:text-[17px]">
+            View itinerary details, payment status, documents, and the current hold window without leaving the passenger flow.
+          </p>
+        </div>
+        <div class="flex gap-3">
+          <Button variant="secondary" onclick={loadBooking} disabled={loading}><RefreshCw size={16} /> Refresh</Button>
+          <Button variant="primary" href="/manage">Back to manage</Button>
+        </div>
       </div>
     </header>
 
     {#if error}
-      <div class="bg-red-50 text-red-600 text-[13px] p-4 rounded-md border border-red-100 flex items-start gap-3">
-        <ShieldAlert size={18} class="mt-0.5" />
-        <div class="space-y-1">
-          <p class="font-medium">We couldn’t open this booking.</p>
-          <p class="text-[12px] text-red-600/80">
-            {error}
-          </p>
-          <p class="text-[12px] text-red-600/80">
-            If this booking isn’t linked to your account, use the OTP flow on <a class="underline" href="/manage">Manage</a>.
-          </p>
+      <div class="rounded-[18px] bg-[color:var(--color-status-red-bg)] px-5 py-4 text-[13px] text-[color:var(--color-status-red-text)] shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+        <div class="flex items-start gap-3">
+          <ShieldAlert size={18} class="mt-0.5" />
+          <div class="space-y-1">
+            <p class="font-semibold">We could not open this booking.</p>
+            <p>{error}</p>
+            <p>If this booking is not linked to your account, use the OTP flow on <a class="underline" href="/manage">Manage</a>.</p>
+          </div>
         </div>
       </div>
     {/if}
 
     {#if loading}
-      <Card padding="none" class="bg-white">
-        <div class="p-8 text-[13px] text-text-muted">Loading booking…</div>
+      <Card tone="ghost" class="px-6 py-6">
+        <p class="text-[14px] text-[color:var(--color-text-body)]">Loading booking...</p>
       </Card>
     {:else if booking}
-      <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
-        <Card padding="none" class="bg-white">
-          <div class="p-7 space-y-6">
-            <div class="flex items-center justify-between gap-4 flex-wrap">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-brand-blue/10 text-brand-blue flex items-center justify-center">
-                  <Plane size={18} />
+      <div class="grid gap-8 lg:grid-cols-[1fr_360px]">
+        <div class="space-y-8">
+          <Card tone="highest" class="overflow-hidden p-0">
+            <div class="grid gap-0 md:grid-cols-[0.92fr_1.3fr]">
+              <div class="min-h-[260px] bg-[linear-gradient(160deg,#000b60,#223596)] p-7 text-white sm:p-8">
+                <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/65">Flight {booking.flight_number || 'Scheduled'}</p>
+                <div class="mt-6 space-y-3">
+                  <h2 class="text-[34px] font-bold tracking-[-0.03em] text-white">{booking.from_code} to {booking.to_code}</h2>
+                  <p class="max-w-[260px] text-[14px] leading-7 text-white/72">{booking.from_city || 'Departure city'} to {booking.to_city || 'Arrival city'} on {booking.booking_date}.</p>
                 </div>
-                <div>
-                  <p class="text-brand-navy font-medium">
-                    {booking.from_code} → {booking.to_code}
-                    <span class="text-text-muted text-[12px] font-medium ml-2">{booking.flight_number}</span>
-                  </p>
-                  <p class="text-[12px] text-text-muted flex items-center gap-2">
-                    <Calendar size={14} />
-                    {booking.booking_date}
-                  </p>
+                <div class="mt-10 grid grid-cols-2 gap-4 text-[13px]">
+                  <div>
+                    <p class="font-['Inter'] text-[11px] uppercase tracking-[0.18em] text-white/50">Payment</p>
+                    <p class="mt-1 font-semibold text-white">{paymentState || '-'}</p>
+                  </div>
+                  <div>
+                    <p class="font-['Inter'] text-[11px] uppercase tracking-[0.18em] text-white/50">Ticket</p>
+                    <p class="mt-1 font-semibold text-white">{ticketState || '-'}</p>
+                  </div>
                 </div>
               </div>
 
-              <div class="text-right">
-                <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium">Booking</p>
-                <p class="text-brand-navy font-medium">{bookingState || '—'}</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="border border-border rounded-lg p-4">
-                <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium">Payment</p>
-                <p class="text-brand-navy font-medium mt-1">{paymentState || '—'}</p>
-              </div>
-              <div class="border border-border rounded-lg p-4">
-                <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium">Ticket</p>
-                <p class="text-brand-navy font-medium mt-1">{ticketState || '—'}</p>
-              </div>
-            </div>
-
-            {#if hasActiveHold}
-              <div class="border border-status-blue rounded-lg p-4 bg-status-blue-bg/40">
+              <div class="bg-[color:var(--color-surface-lowest)] p-7 sm:p-8">
                 <div class="flex items-start justify-between gap-4 flex-wrap">
                   <div>
-                    <p class="text-[11px] text-status-blue-text uppercase tracking-widest font-medium">Payment window</p>
-                    <p class="text-status-blue-text font-medium mt-1">
-                      Seats reserved until {new Date(reservationExpiresAt).toLocaleString()}
-                    </p>
-                    <p class="text-[12px] text-status-blue-text/80 mt-1">
-                      Leave this page if you need to. You can come back through Manage Booking and continue payment until the timer ends.
-                    </p>
+                    <p class="ui-label">Journey</p>
+                    <div class="mt-3 flex items-center gap-5">
+                      <div>
+                        <p class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">{booking.from_code}</p>
+                        <p class="text-[13px] text-[color:var(--color-text-body)]">{booking.from_city || 'Departure'}</p>
+                      </div>
+                      <div class="flex-1"><div class="soft-divider"></div></div>
+                      <div class="text-right">
+                        <p class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">{booking.to_code}</p>
+                        <p class="text-[13px] text-[color:var(--color-text-body)]">{booking.to_city || 'Arrival'}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div class="min-w-[120px] border border-status-blue rounded-lg px-4 py-3 bg-white text-center">
-                    <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium">Time left</p>
-                    <p class="text-brand-navy text-[24px] font-semibold mt-1">{holdTimeRemaining}</p>
+                  <span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">{bookingState || 'ACTIVE'}</span>
+                </div>
+
+                <div class="mt-8 grid gap-4 sm:grid-cols-3">
+                  <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-4">
+                    <p class="ui-label">Date</p>
+                    <p class="mt-2 flex items-center gap-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]"><Calendar size={15} /> {booking.booking_date || '-'}</p>
+                  </div>
+                  <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-4">
+                    <p class="ui-label">Booking</p>
+                    <p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{bookingState || '-'}</p>
+                  </div>
+                  <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-4">
+                    <p class="ui-label">Reference</p>
+                    <p class="mt-2 font-mono text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{reference}</p>
                   </div>
                 </div>
               </div>
-            {:else if showExpiredHold}
-              <div class="border border-red-200 rounded-lg p-4 bg-red-50">
-                <p class="text-[11px] text-red-600 uppercase tracking-widest font-medium">Reservation expired</p>
-                <p class="text-red-700 font-medium mt-1">
-                  This unpaid hold has expired, so the seats are no longer reserved.
-                </p>
-                <p class="text-[12px] text-red-700/80 mt-1">
-                  Please search again and create a new booking if you still want to travel.
-                </p>
-              </div>
-            {/if}
+            </div>
+          </Card>
 
-            {#if nextActions.length}
-              <div class="border border-border rounded-lg p-4">
-                <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium mb-2">Next actions</p>
-                <div class="flex flex-wrap gap-2">
-                  {#each nextActions as a, idx (idx)}
-                    <span class="status-badge bg-status-blue-bg text-status-blue-text">{a.label}</span>
-                  {/each}
+          {#if hasActiveHold}
+            <Card tone="default" class="px-6 py-6 sm:px-7">
+              <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p class="ui-label">Payment Window</p>
+                  <h3 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Your reservation is still active</h3>
+                  <p class="mt-2 max-w-[620px] text-[14px] leading-7 text-[color:var(--color-text-body)]">
+                    Seats are reserved until {new Date(reservationExpiresAt).toLocaleString()}. You can leave this page and return through Manage Booking before the timer ends.
+                  </p>
+                </div>
+                <div class="rounded-[18px] bg-[color:var(--color-surface-lowest)] px-5 py-4 text-center shadow-[0_18px_40px_rgba(26,28,26,0.05)]">
+                  <p class="ui-label">Time left</p>
+                  <p class="mt-2 text-[28px] font-bold text-[color:var(--color-brand-navy)]">{holdTimeRemaining}</p>
                 </div>
               </div>
-            {/if}
+            </Card>
+          {:else if showExpiredHold}
+            <Card tone="default" class="px-6 py-6 sm:px-7">
+              <p class="ui-label text-[color:var(--color-status-red-text)]">Reservation expired</p>
+              <h3 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">This unpaid hold is no longer active.</h3>
+              <p class="mt-2 max-w-[620px] text-[14px] leading-7 text-[color:var(--color-text-body)]">Please search again and create a new booking if you still want to travel.</p>
+            </Card>
+          {/if}
 
-            {#if Array.isArray(booking.passengers) && booking.passengers.length}
-              <div class="border border-border rounded-lg p-4">
-                <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium mb-2">Passengers</p>
-                <div class="space-y-2">
+          {#if nextActions.length}
+            <Card tone="highest" class="px-6 py-6 sm:px-7">
+              <p class="ui-label">Next actions</p>
+              <div class="mt-4 flex flex-wrap gap-2">
+                {#each nextActions as a, idx (idx)}
+                  <span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">{a.label}</span>
+                {/each}
+              </div>
+            </Card>
+          {/if}
+
+          {#if Array.isArray(booking.passengers) && booking.passengers.length}
+            <Card tone="default" class="px-6 py-6 sm:px-7">
+              <div class="space-y-4">
+                <div>
+                  <p class="ui-label">Passengers</p>
+                  <h3 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Traveler roster</h3>
+                </div>
+                <div class="grid gap-3">
                   {#each booking.passengers as p (p.id || p.passenger_id || p.pnr)}
-                    <div class="flex items-center justify-between gap-4 text-[13px]">
-                      <span class="text-brand-navy font-medium">{p.name || p.passenger_name || 'Traveler'}</span>
-                      <span class="text-text-muted font-medium uppercase">{p.passenger_type || ''}</span>
+                    <div class="flex items-center justify-between gap-4 rounded-[16px] bg-[color:var(--color-surface-lowest)] px-5 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+                      <div class="flex items-center gap-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><UserRound size={17} /></div>
+                        <span class="font-semibold text-[color:var(--color-brand-navy)]">{p.name || p.passenger_name || 'Traveler'}</span>
+                      </div>
+                      <span class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]">{p.passenger_type || 'Passenger'}</span>
                     </div>
                   {/each}
                 </div>
               </div>
-            {/if}
-          </div>
-        </Card>
+            </Card>
+          {/if}
+        </div>
 
         <aside class="space-y-6">
-          <Card padding="none" class="bg-white">
-            <div class="p-7 space-y-4">
+          <Card tone="highest" class="px-6 py-6 sm:px-7">
+            <div class="space-y-4">
               {#if hasActiveHold}
-                <h2 class="text-brand-navy font-medium text-[16px]">Resume payment</h2>
-                <p class="text-[12px] text-text-muted">
-                  Your reservation is still active. Continue to payment before the hold expires.
-                </p>
-                <Button variant="primary" href={`/my-bookings/${reference}/pay`} class="w-full">
-                  <CreditCard size={16} /> Continue payment
-                </Button>
+                <p class="ui-label">Resume payment</p>
+                <h3 class="text-[22px] font-bold text-[color:var(--color-brand-navy)]">Complete payment while the hold is active.</h3>
+                <p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">Continue to payment before the countdown ends to keep these seats.</p>
+                <Button variant="primary" href={`/my-bookings/${reference}/pay`} class="w-full"><CreditCard size={16} /> Continue payment</Button>
               {:else if paymentState === 'PAID' || ticketState === 'TICKETED'}
-                <h2 class="text-brand-navy font-medium text-[16px]">Documents</h2>
-                <p class="text-[12px] text-text-muted">
-                  Download your combined e-ticket and receipt.
-                </p>
-                <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="w-full">
-                  <Download size={16} /> View e-ticket (PDF)
-                </Button>
+                <p class="ui-label">Documents</p>
+                <h3 class="text-[22px] font-bold text-[color:var(--color-brand-navy)]">Your e-ticket is ready.</h3>
+                <p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">Download the combined e-ticket and receipt.</p>
+                <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="w-full"><Download size={16} /> View e-ticket PDF</Button>
               {:else}
-                <h2 class="text-brand-navy font-medium text-[16px]">Reservation status</h2>
-                <p class="text-[12px] text-text-muted">
-                  This booking does not currently have an active payment window.
-                </p>
-                <Button variant="secondary" href="/search" class="w-full">
-                  <Clock3 size={16} /> Search flights again
-                </Button>
+                <p class="ui-label">Reservation status</p>
+                <h3 class="text-[22px] font-bold text-[color:var(--color-brand-navy)]">No active payment window.</h3>
+                <p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">Search again to create a fresh booking if this reservation has lapsed.</p>
+                <Button variant="secondary" href="/search" class="w-full"><Clock3 size={16} /> Search flights again</Button>
               {/if}
             </div>
           </Card>
 
-          <Card padding="none" class="bg-white">
-            <div class="p-7 space-y-4">
-              <h2 class="text-brand-navy font-medium text-[16px]">Need access?</h2>
-              <p class="text-[12px] text-text-muted">
-                If you can’t open this booking, verify via OTP on the Manage page.
-              </p>
-              <Button variant="secondary" href="/manage" class="w-full">
-                Verify with OTP
-              </Button>
-            </div>
+          <Card tone="default" class="px-6 py-6 sm:px-7">
+            <p class="ui-label">Need access?</p>
+            <h3 class="mt-2 text-[22px] font-bold text-[color:var(--color-brand-navy)]">Verify with OTP</h3>
+            <p class="mt-2 text-[13px] leading-7 text-[color:var(--color-text-body)]">If this browser session cannot open the booking, go back to Manage and verify through the OTP flow.</p>
+            <div class="mt-4"><Button variant="secondary" href="/manage" class="w-full">Verify with OTP</Button></div>
           </Card>
         </aside>
       </div>
     {/if}
   </div>
 </main>
-
