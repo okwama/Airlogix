@@ -2,6 +2,38 @@
 
 ## Deferred From MVP v1
 
+### Account Hub Rollout Follow-Up
+
+Status: `in_progress`
+Priority: `high`
+Scope: `account hub v1.1`
+
+#### Implemented
+- Added traveler account hub at `app/src/routes/account/+page.svelte`
+- Added profile page with:
+  - profile edit
+  - profile photo upload
+  - change password UI
+  - delete account UI
+- Added loyalty page
+- Added notifications page
+- Added unread notification badge in navbar
+- Added authenticated cargo shipment history to account hub
+- Added conservative cargo user-link backfill migration:
+  - `api/migrations/20260404_backfill_cargo_user_links.sql`
+- Added logout cleanup for booking/cargo access session artifacts
+
+#### Next Tasks
+- Fix UTF-8/encoding artifacts on traveler booking pages
+- Optimize checked-in dashboard filter to avoid one request per booking
+- Add richer account summary:
+  - next trip hero
+  - stronger empty states
+  - better mobile polish
+- Decide whether guest cargo shipments should be claimable into account after booking
+
+---
+
 ### Check-in Luggage Finalization (V2)
 
 Status: `todo`

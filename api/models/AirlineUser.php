@@ -113,7 +113,7 @@ class AirlineUser {
         $update_fields = [];
         $params = [];
 
-        $allowed_fields = ['first_name', 'last_name', 'email', 'date_of_birth', 'nationality', 'passport_number', 'passport_expiry_date'];
+        $allowed_fields = ['first_name', 'last_name', 'email', 'date_of_birth', 'nationality', 'passport_number', 'passport_expiry_date', 'frequent_flyer_number'];
         
         foreach ($allowed_fields as $field) {
             if (isset($data[$field])) {

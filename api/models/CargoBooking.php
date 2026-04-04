@@ -128,6 +128,25 @@ class CargoBooking {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getByUserId(int $userId): array
+    {
+        $query = "SELECT cb.*,
+                         fs.flt as flight_number, fs.std as departure_time, fs.sta as arrival_time,
+                         d1.name as origin_city, d1.code as origin_code,
+                         d2.name as destination_city, d2.code as destination_code
+                  FROM " . $this->table_name . " cb
+                  JOIN flight_series fs ON cb.flight_series_id = fs.id
+                  JOIN destinations d1 ON fs.from_destination_id = d1.id
+                  JOIN destinations d2 ON fs.to_destination_id = d2.id
+                  WHERE cb.user_id = :user_id
+                  ORDER BY cb.booking_date DESC, cb.created_at DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
     public function updatePaymentByAWB(string $awb, string $paymentStatus, ?string $paymentMethod = null): bool
     {
         $fields = ['payment_status = :payment_status'];

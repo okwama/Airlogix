@@ -260,6 +260,11 @@ if (preg_match('#^/checkin/(\d+)$#', $path, $matches) && $method==='GET') { $che
 // Cargo Routes
 $cargoCtrl = new CargoController();
 if ($path === '/cargo' && $method==='POST') { $cargoCtrl->create(); exit; }
+if ($path === '/cargo' && $method==='GET') {
+    Auth::requireTravelerId($db);
+    $cargoCtrl->listMine();
+    exit;
+}
 if ($path === '/cargo/availability' && $method==='GET') { $cargoCtrl->availability(); exit; }
 if ($path === '/cargo/access/request' && $method==='POST') { $cargoCtrl->requestAccessCode(); exit; }
 if ($path === '/cargo/access/verify' && $method==='POST') { $cargoCtrl->verifyAccessCode(); exit; }

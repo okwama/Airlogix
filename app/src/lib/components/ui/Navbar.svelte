@@ -1,14 +1,37 @@
 <script>
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
   import CurrencySelector from '$lib/features/payment/CurrencySelector.svelte';
   import logo from '$lib/assets/logo.png';
   import { authStore } from '$lib/stores/authStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
+  import { authService } from '$lib/services/auth/authService';
+  import { accountService } from '$lib/services/account/accountService';
+
+  let unreadCount = $state(0);
+
+  async function loadUnreadCount() {
+    try {
+      if (!authStore.isAuthenticated) {
+        unreadCount = 0;
+        return;
+      }
+      const token = authService.getToken();
+      unreadCount = await accountService.fetchUnreadCount(token);
+    } catch {
+      unreadCount = 0;
+    }
+  }
 
   function logout() {
     authStore.logout();
     goto('/login');
   }
+
+  onMount(async () => {
+    await authStore.init();
+    await loadUnreadCount();
+  });
 </script>
 
 <nav class="h-[58px] bg-brand-navy flex items-center px-[28px] sticky top-0 z-100 w-full">
@@ -38,10 +61,15 @@
           Hi, {authStore.user?.first_name || 'traveler'}
         </span>
         <a
-          href="/manage"
-          class="bg-brand-blue text-white h-[36px] px-5 rounded-btn text-[13px] font-medium hover:bg-brand-mid transition-all active:scale-[0.98] hidden sm:inline-flex items-center justify-center"
+          href="/account"
+          class="relative bg-brand-blue text-white h-[36px] px-5 rounded-btn text-[13px] font-medium hover:bg-brand-mid transition-all active:scale-[0.98] hidden sm:inline-flex items-center justify-center"
         >
-          My trips
+          My account
+          {#if unreadCount > 0}
+            <span class="absolute -top-2 -right-2 min-w-[20px] h-[20px] px-1 rounded-full bg-white text-brand-navy text-[11px] font-semibold inline-flex items-center justify-center border border-brand-blue">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          {/if}
         </a>
         <button
           type="button"

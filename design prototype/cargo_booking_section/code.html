@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cargo Booking | MC Aviation Air</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#181b24",
+                    "inverse-on-surface": "#f1f1ed",
+                    "primary-fixed-dim": "#bcc2ff",
+                    "on-primary-fixed-variant": "#303c9a",
+                    "surface-dim": "#dadad6",
+                    "on-secondary-fixed": "#00105b",
+                    "tertiary-fixed": "#e0e2ee",
+                    "outline-variant": "#c6c5d4",
+                    "on-secondary": "#ffffff",
+                    "secondary": "#4858ab",
+                    "on-surface": "#1a1c1a",
+                    "background": "#faf9f5",
+                    "secondary-fixed": "#dee0ff",
+                    "primary-fixed": "#dfe0ff",
+                    "surface-container-high": "#e8e8e4",
+                    "on-tertiary-fixed-variant": "#434750",
+                    "on-background": "#1a1c1a",
+                    "on-tertiary": "#ffffff",
+                    "surface": "#faf9f5",
+                    "on-tertiary-container": "#9597a2",
+                    "surface-container-low": "#f4f4f0",
+                    "on-secondary-fixed-variant": "#2f3f92",
+                    "surface-container": "#eeeeea",
+                    "primary": "#000b60",
+                    "secondary-fixed-dim": "#bac3ff",
+                    "on-secondary-container": "#27378a",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#96a5ff",
+                    "outline": "#767683",
+                    "tertiary": "#181b23",
+                    "inverse-primary": "#bcc2ff",
+                    "surface-container-highest": "#e2e3df",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#faf9f5",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#c4c6d2",
+                    "primary-container": "#142283",
+                    "surface-tint": "#4955b3",
+                    "tertiary-container": "#2c3039",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#e2e3df",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#000c62",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#8390f2",
+                    "on-surface-variant": "#454652",
+                    "inverse-surface": "#2f312e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-nav {
+            background-color: rgba(250, 249, 245, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 glass-nav shadow-xl shadow-black/5">
+<div class="flex justify-between items-center px-8 h-20 w-full max-w-none">
+<div class="text-xl font-bold tracking-tighter text-[#000b60] dark:text-white font-headline">MC Aviation Air</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[#1a1c1a]/70 hover:text-[#000b60] transition-colors font-headline" href="#">Home</a>
+<a class="text-[#1a1c1a]/70 hover:text-[#000b60] transition-colors font-headline" href="#">Book</a>
+<a class="text-[#1a1c1a]/70 hover:text-[#000b60] transition-colors font-headline" href="#">Flight Status</a>
+<a class="text-[#000b60] font-bold border-b-2 border-[#000b60] pb-1 font-headline" href="#">Cargo</a>
+<a class="text-[#1a1c1a]/70 hover:text-[#000b60] transition-colors font-headline" href="#">Manage</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-[#f4f4f0] transition-all rounded-full">
+<span class="material-symbols-outlined text-[#000b60]" data-icon="person">person</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-24 px-8 max-w-7xl mx-auto">
+<!-- Hero Section -->
+<header class="mb-16">
+<h1 class="text-6xl font-extrabold tracking-tight text-primary mb-4">Cargo Logistics</h1>
+<p class="text-xl text-on-surface-variant max-w-2xl leading-relaxed">Global logistics handled with the precision of premium aviation. Secure your air freight with MC Aviation Air's specialized cargo fleet.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Booking Form -->
+<div class="lg:col-span-8">
+<div class="bg-surface-container-low rounded-xl p-10">
+<div class="space-y-12">
+<!-- Origin & Destination -->
+<section>
+<h2 class="text-2xl font-bold text-primary mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="flight_takeoff">flight_takeoff</span>
+                                Route Details
+                            </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-primary font-label">Origin Airport</label>
+<div class="relative">
+<input class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-4 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/10" placeholder="City or IATA Code" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60" data-icon="location_on">location_on</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-primary font-label">Destination Airport</label>
+<div class="relative">
+<input class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-4 text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/10" placeholder="City or IATA Code" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant/60" data-icon="landing">flight_land</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Cargo Type & Date -->
+<section>
+<h2 class="text-2xl font-bold text-primary mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+                                Shipment Information
+                            </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-primary font-label">Cargo Type</label>
+<select class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/10 appearance-none">
+<option>General Cargo</option>
+<option>Perishable Goods</option>
+<option>Hazardous Materials (HAZMAT)</option>
+<option>Fragile Electronics</option>
+<option>Pharmaceuticals</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-primary font-label">Desired Delivery Date</label>
+<div class="relative">
+<input class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/10" type="date"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Weight & Dimensions -->
+<section>
+<h2 class="text-2xl font-bold text-primary mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="straighten">straighten</span>
+                                Specs &amp; Weight
+                            </h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-primary font-label">Total Weight (kg)</label>
+<input class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/10" placeholder="0.00" type="number"/>
+</div>
+<div class="space-y-2 md:col-span-2">
+<label class="block text-sm font-semibold text-primary font-label">Dimensions (L × W × H cm)</label>
+<div class="flex gap-4">
+<input class="w-1/3 bg-surface-container-highest border-none rounded-lg px-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/10" placeholder="L" type="number"/>
+<input class="w-1/3 bg-surface-container-highest border-none rounded-lg px-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/10" placeholder="W" type="number"/>
+<input class="w-1/3 bg-surface-container-highest border-none rounded-lg px-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/10" placeholder="H" type="number"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Actions -->
+<div class="pt-8 flex flex-col sm:flex-row gap-4">
+<button class="flex-1 bg-primary text-on-primary py-5 rounded-lg font-bold text-lg hover:opacity-90 transition-all shadow-lg shadow-primary/20">
+                                Book Now
+                            </button>
+<button class="flex-1 bg-surface-container-highest text-primary py-5 rounded-lg font-bold text-lg hover:bg-surface-container-high transition-all">
+                                Get Instant Quote
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar / FAQ -->
+<aside class="lg:col-span-4 space-y-8">
+<!-- Visual Anchor -->
+<div class="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl relative group">
+<img alt="Air cargo loading" class="w-full h-full object-cover" data-alt="Modern high-tech air cargo interior with precision loading systems and soft architectural lighting in deep navy and silver tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrnl6IU28vTBb3Is1PlfAGhSzkb1lkda0tvyA2q3OypUSjBLOdaOSdrPRlqS9GCput2DwBkVSCqI5dukJBct0phGbPMJCh6ppKSnofKD2ZKxfZy0WUR-GZBuwHtyxlL7Zhcw84DUog1xu0iQwuTQCEUwOaIQwWE0tQGgYg1G8DzKPmClvEAoV0HnVGpK1ZkNc_0F4RmhiWTaT7XyKlB83csp4NZWlY4O3mQKJn5GN_-v_twIbH2eZwczEPROdvPOtL3Ouv3tWyEuU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex items-end p-8">
+<div>
+<p class="text-white/60 text-xs font-label uppercase tracking-widest mb-2">Fleet Highlight</p>
+<h3 class="text-white text-2xl font-bold leading-tight">Global Reach, Personal Touch.</h3>
+</div>
+</div>
+</div>
+<!-- FAQ Sidebar -->
+<div class="bg-surface-container rounded-xl p-8">
+<h3 class="text-xl font-bold text-primary mb-6">Cargo FAQ</h3>
+<div class="space-y-6">
+<div class="group">
+<h4 class="text-sm font-bold text-primary flex items-center justify-between cursor-pointer">
+                                What qualifies as HAZMAT?
+                                <span class="material-symbols-outlined text-sm group-hover:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</h4>
+<p class="text-sm text-on-surface-variant mt-2 hidden group-focus-within:block">Any substance or material that is capable of posing an unreasonable risk to health, safety, and property when transported in commerce.</p>
+</div>
+<div class="group">
+<h4 class="text-sm font-bold text-primary flex items-center justify-between cursor-pointer">
+                                Max weight per pallet?
+                                <span class="material-symbols-outlined text-sm group-hover:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</h4>
+<p class="text-sm text-on-surface-variant mt-2 hidden group-focus-within:block">Typically 1,588 kg for standard LD3 containers, but specific fleet configurations may vary.</p>
+</div>
+<div class="group">
+<h4 class="text-sm font-bold text-primary flex items-center justify-between cursor-pointer">
+                                Temperature control?
+                                <span class="material-symbols-outlined text-sm group-hover:rotate-180 transition-transform" data-icon="expand_more">expand_more</span>
+</h4>
+<p class="text-sm text-on-surface-variant mt-2 hidden group-focus-within:block">We offer Envirotainer solutions for pharmaceuticals and perishables maintaining -20°C to +25°C.</p>
+</div>
+</div>
+<div class="mt-8 pt-8 border-t border-outline-variant/30">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="support_agent">support_agent</span>
+</div>
+<div>
+<p class="text-xs font-label text-on-surface-variant">Need specialized help?</p>
+<p class="text-sm font-bold text-primary">Contact Cargo Desk</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Bento Grid Stats/Features -->
+<section class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+<div class="text-secondary mb-4">
+<span class="material-symbols-outlined text-4xl" data-icon="speed" style="font-variation-settings: 'FILL' 1;">speed</span>
+</div>
+<h3 class="text-lg font-bold text-primary mb-2">Priority Handling</h3>
+<p class="text-sm text-on-surface-variant">Guaranteed boarding on the first available flight for time-sensitive shipments.</p>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+<div class="text-secondary mb-4">
+<span class="material-symbols-outlined text-4xl" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<h3 class="text-lg font-bold text-primary mb-2">Secure Chain</h3>
+<p class="text-sm text-on-surface-variant">End-to-end surveillance and secure storage facilities at every global hub.</p>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm">
+<div class="text-secondary mb-4">
+<span class="material-symbols-outlined text-4xl" data-icon="eco" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+<h3 class="text-lg font-bold text-primary mb-2">Green Freight</h3>
+<p class="text-sm text-on-surface-variant">Carbon offset options and sustainable fuel usage for environmentally conscious shipping.</p>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#f4f4f0] dark:bg-slate-950 w-full py-12 px-8 mt-12">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:flex lg:justify-between gap-8 max-w-7xl mx-auto">
+<div class="space-y-4">
+<div class="font-bold text-[#000b60] dark:text-white text-lg font-headline">MC Aviation Air</div>
+<p class="text-sm text-[#1a1c1a]/60 dark:text-slate-500 max-w-xs font-body">Defining the new standard of premium air travel and global cargo logistics through excellence and warmth.</p>
+</div>
+<div class="flex flex-wrap gap-x-12 gap-y-4">
+<div class="flex flex-col gap-3">
+<span class="font-bold text-primary text-xs uppercase tracking-widest">Navigation</span>
+<a class="text-sm text-[#1a1c1a]/60 hover:text-[#4858ab] transition-colors font-label" href="#">Fleet</a>
+<a class="text-sm text-[#1a1c1a]/60 hover:text-[#4858ab] transition-colors font-label" href="#">Sustainability</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-bold text-primary text-xs uppercase tracking-widest">Legal</span>
+<a class="text-sm text-[#1a1c1a]/60 hover:text-[#4858ab] transition-colors font-label" href="#">Privacy Policy</a>
+<a class="text-sm text-[#1a1c1a]/60 hover:text-[#4858ab] transition-colors font-label" href="#">Terms of Service</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-bold text-primary text-xs uppercase tracking-widest">Connect</span>
+<a class="text-sm text-[#1a1c1a]/60 hover:text-[#4858ab] transition-colors font-label" href="#">Contact Us</a>
+<a class="text-sm text-[#1a1c1a]/60 hover:text-[#4858ab] transition-colors font-label" href="#">Support</a>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto mt-12 pt-8 border-t border-outline-variant/20 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-sm text-[#1a1c1a]/60 font-body">© 2024 MC Aviation Air. All rights reserved.</p>
+<div class="flex gap-6">
+<span class="material-symbols-outlined text-primary/40" data-icon="language">language</span>
+<span class="material-symbols-outlined text-primary/40" data-icon="near_me">near_me</span>
+<span class="material-symbols-outlined text-primary/40" data-icon="hub">hub</span>
+</div>
+</div>
+</footer>
+</body></html>

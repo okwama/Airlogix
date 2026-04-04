@@ -1,8 +1,10 @@
 <?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../models/CargoBooking.php';
+require_once __DIR__ . '/../models/AirlineUser.php';
 require_once __DIR__ . '/../utils/Response.php';
 require_once __DIR__ . '/../utils/Cache.php';
+require_once __DIR__ . '/../utils/Auth.php';
 
 class CargoController {
     private $cargoModel;
@@ -12,6 +14,18 @@ class CargoController {
     public function __construct() {
         $db = db();
         $this->cargoModel = new CargoBooking($db);
+    }
+
+    private function resolveAuthenticatedTravelerId(): ?int
+    {
+        $token = Auth::bearerToken();
+        if (!$token) {
+            return null;
+        }
+
+        $userModel = new AirlineUser(db());
+        $userId = $userModel->validateToken($token);
+        return $userId ? (int)$userId : null;
     }
 
     private function generateAWB() {
@@ -366,6 +380,7 @@ class CargoController {
         $data['hold_expires_at'] = null;
         $data['total_amount'] = $serverTotal;
         $data['currency'] = strtoupper(trim((string)($data['currency'] ?? 'USD')));
+        $data['user_id'] = $this->resolveAuthenticatedTravelerId();
 
         $result = $this->cargoModel->create($data);
 
@@ -386,6 +401,12 @@ class CargoController {
         } else {
             Response::fail(500, (string)($result['message'] ?? 'Failed to create cargo booking'), 'CARGO_BOOKING_CREATE_FAILED');
         }
+    }
+
+    public function listMine() {
+        $userId = Auth::requireTravelerId(db());
+        $rows = $this->cargoModel->getByUserId($userId);
+        Response::json(['status' => true, 'data' => $rows]);
     }
 
     public function get($reference) {

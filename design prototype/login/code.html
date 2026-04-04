@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#c4c6d2",
+                    "surface-container-low": "#f4f4f0",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#f1f1ed",
+                    "tertiary-fixed": "#e0e2ee",
+                    "surface-bright": "#faf9f5",
+                    "on-background": "#1a1c1a",
+                    "secondary-fixed-dim": "#bac3ff",
+                    "on-secondary-container": "#27378a",
+                    "on-tertiary-fixed-variant": "#434750",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#e8e8e4",
+                    "on-primary": "#ffffff",
+                    "tertiary": "#181b23",
+                    "inverse-primary": "#bcc2ff",
+                    "on-surface": "#1a1c1a",
+                    "primary-fixed-dim": "#bcc2ff",
+                    "on-tertiary-fixed": "#181b24",
+                    "outline-variant": "#c6c5d4",
+                    "on-surface-variant": "#454652",
+                    "secondary-container": "#96a5ff",
+                    "on-primary-fixed-variant": "#303c9a",
+                    "error": "#ba1a1a",
+                    "primary-container": "#142283",
+                    "on-tertiary-container": "#9597a2",
+                    "surface": "#faf9f5",
+                    "secondary": "#4858ab",
+                    "primary-fixed": "#dfe0ff",
+                    "secondary-fixed": "#dee0ff",
+                    "on-secondary-fixed": "#00105b",
+                    "on-secondary-fixed-variant": "#2f3f92",
+                    "error-container": "#ffdad6",
+                    "background": "#faf9f5",
+                    "surface-dim": "#dadad6",
+                    "surface-container-highest": "#e2e3df",
+                    "inverse-surface": "#2f312e",
+                    "on-primary-fixed": "#000c62",
+                    "on-primary-container": "#8390f2",
+                    "surface-container": "#eeeeea",
+                    "surface-variant": "#e2e3df",
+                    "tertiary-container": "#2c3039",
+                    "primary": "#000b60",
+                    "surface-tint": "#4955b3",
+                    "on-error": "#ffffff",
+                    "outline": "#767683"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Manrope"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(250, 249, 245, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen flex flex-col">
+<!-- TopNavBar (Shared Component) -->
+<!-- Suppression Logic: Navigation suppressed for focused transactional screen (Login) per hierarchy -->
+<header class="fixed top-0 w-full z-50 bg-[#faf9f5]/80 backdrop-blur-xl h-20 flex items-center">
+<div class="flex justify-between items-center max-w-[1440px] mx-auto px-12 w-full">
+<div class="text-2xl font-bold tracking-tighter text-[#000b60]">Horizon Elite</div>
+<nav class="hidden md:flex gap-8 items-center">
+<!-- Links visible but not active contextually -->
+<a class="text-[#4858ab]/70 font-['Manrope'] tracking-tight hover:text-[#000b60] transition-colors" href="#">Flights</a>
+<a class="text-[#4858ab]/70 font-['Manrope'] tracking-tight hover:text-[#000b60] transition-colors" href="#">Experience</a>
+<a class="text-[#4858ab]/70 font-['Manrope'] tracking-tight hover:text-[#000b60] transition-colors" href="#">Membership</a>
+<a class="text-[#4858ab]/70 font-['Manrope'] tracking-tight hover:text-[#000b60] transition-colors" href="#">Support</a>
+</nav>
+<div class="flex items-center gap-6">
+<button class="text-[#4858ab]/70 font-medium hover:text-[#000b60] transition-all scale-95 duration-200">Join</button>
+<button class="bg-[#000b60] text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-opacity-90 transition-all">Login</button>
+</div>
+</div>
+</header>
+<!-- Main Content: Login Form Canvas -->
+<main class="flex-grow flex items-center justify-center relative overflow-hidden pt-20">
+<!-- Background Imagery (Bespoke Editorial Element) -->
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover blur-[2px] brightness-[0.95]" data-alt="luxury private jet interior with warm ambient lighting and soft leather seats overlooking a sunset horizon through oval windows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALrERICjNhZyposOtdl4b5v_msNqT1HPNgSpQIOydVJCEr4GYhFukCD3zvnppSuhL-8HratvKAGgS2s9IOGqABLYIhDld1VJUqxs5sNsGQ5w_sxDi5s3PpacGpYsjMXQQ1CLRHH2iGs1Fg-ihfHuy3bxdymBEo59SKNpSN2sWvXp1nny_W_fOEzb_RjPQG5WHIs5KH9nopWmlKb9crB9THfo09mRaTCoJz3Xqpywozp44bWKuudDWZGv5igiRRITPaeuD63h4uk-I"/>
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/30 to-surface/40"></div>
+</div>
+<!-- Login Container (Asymmetric Placement Strategy) -->
+<div class="relative z-10 w-full max-w-md px-6 md:mr-[15%]">
+<div class="bg-surface-container-lowest/90 backdrop-blur-2xl rounded-lg p-10 shadow-[0_40px_80px_-15px_rgba(26,28,26,0.08)] border border-surface-container-highest/30">
+<div class="mb-10">
+<span class="font-label text-[10px] tracking-[0.2em] uppercase text-secondary mb-2 block">Exclusive Access</span>
+<h1 class="font-headline text-4xl font-extrabold tracking-tight text-primary leading-tight">Welcome back to MC Aviation.</h1>
+<p class="text-on-surface-variant font-body text-sm mt-3 leading-relaxed">Please authenticate your credentials to access the Horizon Elite private terminal.</p>
+</div>
+<form class="space-y-6">
+<div class="space-y-2">
+<label class="font-label text-xs font-semibold text-primary block ml-1" for="email">Corporate Email</label>
+<div class="relative">
+<input class="w-full bg-surface-container-high border-none rounded-lg px-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/10 focus:bg-primary-fixed transition-all placeholder:text-outline/60 text-sm font-body" id="email" placeholder="name@company.com" type="email"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline text-[20px]">alternate_email</span>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center px-1">
+<label class="font-label text-xs font-semibold text-primary block" for="password">Access Key</label>
+<a class="font-label text-[10px] uppercase tracking-widest text-secondary hover:text-primary transition-colors" href="#">Recover?</a>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-container-high border-none rounded-lg px-4 py-4 text-on-surface focus:ring-2 focus:ring-primary/10 focus:bg-primary-fixed transition-all placeholder:text-outline/60 text-sm font-body" id="password" placeholder="••••••••" type="password"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline text-[20px]">lock</span>
+</div>
+</div>
+<div class="flex items-center gap-3 px-1">
+<div class="relative flex items-center">
+<input class="w-5 h-5 rounded-md border-surface-container-highest bg-surface-container-high text-primary focus:ring-0 focus:ring-offset-0 transition-colors cursor-pointer" id="remember" type="checkbox"/>
+</div>
+<label class="font-body text-sm text-on-surface-variant select-none cursor-pointer" for="remember">Maintain active session for 30 days</label>
+</div>
+<div class="pt-4">
+<button class="w-full bg-primary text-on-primary py-5 rounded-lg font-headline font-bold text-sm tracking-widest uppercase hover:bg-primary-container transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2" type="submit">
+<span>Authorize Access</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</form>
+<div class="mt-10 pt-8 border-t border-surface-container-high flex flex-col gap-4">
+<p class="font-body text-[13px] text-on-surface-variant text-center">Interested in Horizon Elite Membership?</p>
+<button class="w-full bg-transparent border border-outline-variant/30 text-primary py-4 rounded-lg font-label font-semibold text-xs tracking-wide hover:bg-surface-container-high transition-all">Request Private Invite</button>
+</div>
+</div>
+</div>
+<!-- Floating Brand Element (Asymmetric Detail) -->
+<div class="absolute bottom-12 left-12 hidden lg:block">
+<div class="flex items-center gap-4 text-on-surface/40">
+<span class="font-label text-[10px] tracking-[0.3em] uppercase vertical-text transform -rotate-180" style="writing-mode: vertical-rl;">Global Standards</span>
+<div class="h-16 w-[1px] bg-outline-variant/30"></div>
+<div class="font-headline font-light text-xl tracking-tighter">MC Aviation Air</div>
+</div>
+</div>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full py-12 border-t border-[#e2e3df]/30 bg-[#faf9f5]">
+<div class="flex flex-col md:flex-row justify-between items-center px-12 max-w-[1440px] mx-auto gap-8">
+<div class="font-['Inter'] text-xs tracking-wide uppercase text-[#4858ab]/50">
+                © 2024 Horizon Elite Aviation. All rights reserved.
+            </div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="font-['Inter'] text-xs tracking-wide uppercase text-[#4858ab]/50 hover:text-[#000b60] transition-opacity duration-300" href="#">Privacy Policy</a>
+<a class="font-['Inter'] text-xs tracking-wide uppercase text-[#4858ab]/50 hover:text-[#000b60] transition-opacity duration-300" href="#">Terms of Service</a>
+<a class="font-['Inter'] text-xs tracking-wide uppercase text-[#4858ab]/50 hover:text-[#000b60] transition-opacity duration-300" href="#">Cookie Settings</a>
+<a class="font-['Inter'] text-xs tracking-wide uppercase text-[#4858ab]/50 hover:text-[#000b60] transition-opacity duration-300" href="#">Global Press</a>
+</div>
+</div>
+</footer>
+</body></html>

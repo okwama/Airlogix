@@ -52,8 +52,44 @@ function createAuthStore() {
     await login(payload.phone_number, payload.password);
   }
 
+  async function refreshProfile() {
+    const token = authService.getToken();
+    if (!token) {
+      state = { user: null, token: null, loading: false };
+      return null;
+    }
+
+    const profile = await authService.fetchProfile();
+    state = { ...state, token, user: profile, loading: false };
+    return profile;
+  }
+
+  function setUser(user: any | null) {
+    state = { ...state, user };
+  }
+
   function logout() {
     authService.logout();
+    try {
+      if (typeof sessionStorage !== 'undefined') {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (!key) continue;
+          if (
+            key.startsWith('booking_token:') ||
+            key.startsWith('booking:') ||
+            key.startsWith('cargo_token:') ||
+            key.startsWith('cargo_auth:')
+          ) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((key) => sessionStorage.removeItem(key));
+      }
+    } catch {
+      // ignore storage cleanup issues
+    }
     state = { user: null, token: null, loading: false };
   }
 
@@ -73,6 +109,8 @@ function createAuthStore() {
     init,
     login,
     register,
+    refreshProfile,
+    setUser,
     logout
   };
 }

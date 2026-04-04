@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Book Flights | MC Aviation Air</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "on-tertiary-fixed": "#181b24",
+                "inverse-on-surface": "#f1f1ed",
+                "primary-fixed-dim": "#bcc2ff",
+                "on-primary-fixed-variant": "#303c9a",
+                "surface-dim": "#dadad6",
+                "on-secondary-fixed": "#00105b",
+                "tertiary-fixed": "#e0e2ee",
+                "outline-variant": "#c6c5d4",
+                "on-secondary": "#ffffff",
+                "secondary": "#4858ab",
+                "on-surface": "#1a1c1a",
+                "background": "#faf9f5",
+                "secondary-fixed": "#dee0ff",
+                "primary-fixed": "#dfe0ff",
+                "surface-container-high": "#e8e8e4",
+                "on-tertiary-fixed-variant": "#434750",
+                "on-background": "#1a1c1a",
+                "on-tertiary": "#ffffff",
+                "surface": "#faf9f5",
+                "on-tertiary-container": "#9597a2",
+                "surface-container-low": "#f4f4f0",
+                "on-secondary-fixed-variant": "#2f3f92",
+                "surface-container": "#eeeeea",
+                "primary": "#000b60",
+                "secondary-fixed-dim": "#bac3ff",
+                "on-secondary-container": "#27378a",
+                "on-error": "#ffffff",
+                "secondary-container": "#96a5ff",
+                "outline": "#767683",
+                "tertiary": "#181b23",
+                "inverse-primary": "#bcc2ff",
+                "surface-container-highest": "#e2e3df",
+                "error": "#ba1a1a",
+                "surface-bright": "#faf9f5",
+                "on-error-container": "#93000a",
+                "tertiary-fixed-dim": "#c4c6d2",
+                "primary-container": "#142283",
+                "surface-tint": "#4955b3",
+                "tertiary-container": "#2c3039",
+                "error-container": "#ffdad6",
+                "surface-variant": "#e2e3df",
+                "surface-container-lowest": "#ffffff",
+                "on-primary-fixed": "#000c62",
+                "on-primary": "#ffffff",
+                "on-primary-container": "#8390f2",
+                "on-surface-variant": "#454652",
+                "inverse-surface": "#2f312e"
+              },
+              "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+              },
+              "fontFamily": {
+                "headline": ["Manrope"],
+                "body": ["Manrope"],
+                "label": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Manrope', sans-serif; background-color: #faf9f5; }
+        .glass-nav { backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-[#faf9f5]/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-xl shadow-black/5 dark:shadow-none flex justify-between items-center px-8 h-20 w-full max-w-none">
+<div class="text-xl font-bold tracking-tighter text-[#000b60] dark:text-white uppercase">MC Aviation Air</div>
+<nav class="hidden md:flex items-center space-x-8">
+<a class="text-[#1a1c1a]/70 dark:text-slate-400 hover:text-[#000b60] dark:hover:text-white transition-colors" href="#">Home</a>
+<a class="text-[#000b60] dark:text-white font-bold border-b-2 border-[#000b60] dark:border-blue-400 pb-1" href="#">Book</a>
+<a class="text-[#1a1c1a]/70 dark:text-slate-400 hover:text-[#000b60] dark:hover:text-white transition-colors" href="#">Flight Status</a>
+<a class="text-[#1a1c1a]/70 dark:text-slate-400 hover:text-[#000b60] dark:hover:text-white transition-colors" href="#">Cargo</a>
+<a class="text-[#1a1c1a]/70 dark:text-slate-400 hover:text-[#000b60] dark:hover:text-white transition-colors" href="#">Manage</a>
+</nav>
+<div class="flex items-center space-x-4">
+<button class="p-2 rounded-full hover:bg-[#f4f4f0] transition-all scale-95 active:opacity-80">
+<span class="material-symbols-outlined text-[#000b60]">person</span>
+</button>
+</div>
+</header>
+<main class="pt-32 pb-20 px-4 md:px-8 max-w-7xl mx-auto">
+<!-- Search Header / Selected Route -->
+<div class="mb-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<span class="font-label text-xs font-semibold tracking-widest text-secondary uppercase mb-2 block">Available Journeys</span>
+<h1 class="text-4xl md:text-5xl font-extrabold text-primary tracking-tight">Nairobi to Mombasa</h1>
+<p class="text-on-surface-variant mt-2 text-lg">Thursday, 12 December 2024 • 1 Passenger</p>
+</div>
+<button class="flex items-center gap-2 px-6 py-3 bg-surface-container-highest rounded-full text-sm font-semibold hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span>
+                    Modify Search
+                </button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Filters Sidebar -->
+<aside class="lg:col-span-3 space-y-8 bg-surface-container-low p-6 rounded-xl">
+<h3 class="text-lg font-bold text-primary">Filters</h3>
+<div class="space-y-4">
+<p class="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider">Departure Time</p>
+<div class="space-y-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium group-hover:text-primary transition-colors">Morning (05:00 - 12:00)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium group-hover:text-primary transition-colors">Afternoon (12:00 - 18:00)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm font-medium group-hover:text-primary transition-colors">Evening (18:00 - 23:00)</span>
+</label>
+</div>
+</div>
+<div class="space-y-4">
+<p class="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider">Price Range</p>
+<input class="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer accent-primary" type="range"/>
+<div class="flex justify-between text-xs font-bold text-on-surface">
+<span>$85</span>
+<span>$450</span>
+</div>
+</div>
+<div class="space-y-4 pt-4 border-t border-outline-variant/20">
+<p class="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider">Cabin Class</p>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 bg-primary text-on-primary rounded-full text-xs font-bold transition-all">Economy</button>
+<button class="px-4 py-2 bg-surface-container-highest text-on-surface rounded-full text-xs font-bold hover:bg-surface-container-high transition-all">Business</button>
+<button class="px-4 py-2 bg-surface-container-highest text-on-surface rounded-full text-xs font-bold hover:bg-surface-container-high transition-all">First</button>
+</div>
+</div>
+</aside>
+<!-- Results Main Area -->
+<div class="lg:col-span-6 space-y-6">
+<!-- Flight Card 1 -->
+<div class="group relative bg-surface-container-lowest rounded-xl p-6 shadow-xl shadow-black/5 hover:shadow-primary/5 transition-all duration-500 border-l-4 border-transparent hover:border-primary">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="flight_takeoff">flight_takeoff</span>
+</div>
+<div>
+<h4 class="font-bold text-primary">MC 204</h4>
+<span class="font-label text-[10px] bg-secondary-container/30 text-on-secondary-container px-2 py-0.5 rounded-full font-bold uppercase">Boeing 737-800</span>
+</div>
+</div>
+<div class="mt-2 md:mt-0">
+<span class="text-xs font-bold text-on-surface-variant bg-surface-container p-2 rounded-lg">Non-stop • 1h 05m</span>
+</div>
+</div>
+<div class="flex justify-between items-center gap-8 mb-8">
+<div class="text-center md:text-left">
+<div class="text-2xl font-bold tracking-tight text-on-surface">08:15</div>
+<div class="text-sm font-medium text-on-surface-variant">NBO</div>
+</div>
+<div class="flex-grow flex items-center gap-2">
+<div class="h-[1px] flex-grow bg-outline-variant/30 relative">
+<div class="absolute -top-1 left-1/2 -translate-x-1/2">
+<span class="material-symbols-outlined text-outline text-sm">flight</span>
+</div>
+</div>
+</div>
+<div class="text-center md:text-right">
+<div class="text-2xl font-bold tracking-tight text-on-surface">09:20</div>
+<div class="text-sm font-medium text-on-surface-variant">MBA</div>
+</div>
+</div>
+<div class="flex flex-row items-center justify-between pt-6 border-t border-outline-variant/10">
+<div>
+<span class="text-xs text-on-surface-variant font-medium block">Starting from</span>
+<span class="text-2xl font-extrabold text-primary">$120</span>
+</div>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold text-sm tracking-wide hover:opacity-90 active:scale-95 transition-all">
+                            Select
+                        </button>
+</div>
+</div>
+<!-- Flight Card 2 (Recommended) -->
+<div class="group relative bg-white rounded-xl p-6 shadow-2xl shadow-primary/10 border-2 border-primary transition-all duration-500">
+<div class="absolute -top-3 left-6 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+                        Best Value
+                    </div>
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="flight_takeoff">flight_takeoff</span>
+</div>
+<div>
+<h4 class="font-bold text-primary">MC 412</h4>
+<span class="font-label text-[10px] bg-secondary-container/30 text-on-secondary-container px-2 py-0.5 rounded-full font-bold uppercase">Airbus A320neo</span>
+</div>
+</div>
+<div class="mt-2 md:mt-0">
+<span class="text-xs font-bold text-on-surface-variant bg-surface-container p-2 rounded-lg">Non-stop • 1h 00m</span>
+</div>
+</div>
+<div class="flex justify-between items-center gap-8 mb-8">
+<div class="text-center md:text-left">
+<div class="text-2xl font-bold tracking-tight text-on-surface">11:45</div>
+<div class="text-sm font-medium text-on-surface-variant">NBO</div>
+</div>
+<div class="flex-grow flex items-center gap-2">
+<div class="h-[1px] flex-grow bg-primary/20 relative">
+<div class="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white px-2">
+<span class="material-symbols-outlined text-primary text-lg" data-weight="fill">stars</span>
+</div>
+</div>
+</div>
+<div class="text-center md:text-right">
+<div class="text-2xl font-bold tracking-tight text-on-surface">12:45</div>
+<div class="text-sm font-medium text-on-surface-variant">MBA</div>
+</div>
+</div>
+<div class="flex flex-row items-center justify-between pt-6 border-t border-outline-variant/10">
+<div>
+<span class="text-xs text-on-surface-variant font-medium block">Starting from</span>
+<span class="text-2xl font-extrabold text-primary">$145</span>
+</div>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold text-sm tracking-wide hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20">
+                            Select
+                        </button>
+</div>
+</div>
+<!-- Flight Card 3 -->
+<div class="group relative bg-surface-container-lowest rounded-xl p-6 shadow-xl shadow-black/5 hover:shadow-primary/5 transition-all duration-500 border-l-4 border-transparent hover:border-primary">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="flight_takeoff">flight_takeoff</span>
+</div>
+<div>
+<h4 class="font-bold text-primary">MC 781</h4>
+<span class="font-label text-[10px] bg-secondary-container/30 text-on-secondary-container px-2 py-0.5 rounded-full font-bold uppercase">Embraer E190</span>
+</div>
+</div>
+<div class="mt-2 md:mt-0">
+<span class="text-xs font-bold text-on-surface-variant bg-surface-container p-2 rounded-lg">Non-stop • 1h 10m</span>
+</div>
+</div>
+<div class="flex justify-between items-center gap-8 mb-8">
+<div class="text-center md:text-left">
+<div class="text-2xl font-bold tracking-tight text-on-surface">16:30</div>
+<div class="text-sm font-medium text-on-surface-variant">NBO</div>
+</div>
+<div class="flex-grow flex items-center gap-2">
+<div class="h-[1px] flex-grow bg-outline-variant/30 relative">
+<div class="absolute -top-1 left-1/2 -translate-x-1/2">
+<span class="material-symbols-outlined text-outline text-sm">flight</span>
+</div>
+</div>
+</div>
+<div class="text-center md:text-right">
+<div class="text-2xl font-bold tracking-tight text-on-surface">17:40</div>
+<div class="text-sm font-medium text-on-surface-variant">MBA</div>
+</div>
+</div>
+<div class="flex flex-row items-center justify-between pt-6 border-t border-outline-variant/10">
+<div>
+<span class="text-xs text-on-surface-variant font-medium block">Starting from</span>
+<span class="text-2xl font-extrabold text-primary">$98</span>
+</div>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-bold text-sm tracking-wide hover:opacity-90 active:scale-95 transition-all">
+                            Select
+                        </button>
+</div>
+</div>
+</div>
+<!-- Booking Summary -->
+<aside class="lg:col-span-3 sticky top-28">
+<div class="bg-primary rounded-xl p-6 text-on-primary shadow-2xl shadow-primary/20">
+<h3 class="text-lg font-bold mb-6 tracking-tight">Booking Summary</h3>
+<div class="space-y-6">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined opacity-60">flight_takeoff</span>
+<div>
+<p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Departure</p>
+<p class="text-sm font-bold">Nairobi (NBO) to Mombasa (MBA)</p>
+<p class="text-xs opacity-80 mt-1">Thu, 12 Dec • 08:15 — 09:20</p>
+</div>
+</div>
+<div class="h-[1px] bg-white/10"></div>
+<div class="space-y-3">
+<div class="flex justify-between text-sm">
+<span class="opacity-70">1x Adult (Economy)</span>
+<span class="font-bold">$120.00</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="opacity-70">Taxes &amp; Fees</span>
+<span class="font-bold">$24.50</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="opacity-70">Carbon Offset</span>
+<span class="font-bold text-secondary-container">Included</span>
+</div>
+</div>
+<div class="pt-6 border-t border-white/20">
+<div class="flex justify-between items-baseline">
+<span class="text-sm opacity-70">Total Amount</span>
+<span class="text-3xl font-extrabold">$144.50</span>
+</div>
+</div>
+<button class="w-full bg-white text-primary py-4 rounded-lg font-bold text-sm tracking-widest uppercase hover:bg-secondary-fixed transition-colors active:scale-95">
+                            Continue to Details
+                        </button>
+<p class="text-[10px] text-center opacity-50 font-label">Price includes all mandatory taxes and carrier charges.</p>
+</div>
+</div>
+<!-- Loyalty / Promo Card -->
+<div class="mt-4 bg-surface-container p-6 rounded-xl border border-outline-variant/10">
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-primary">redeem</span>
+<h4 class="text-sm font-bold text-primary uppercase tracking-tighter">MC Rewards</h4>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed mb-4">
+                        Login to earn <span class="font-bold text-primary">1,200 points</span> on this trip and enjoy priority boarding.
+                    </p>
+<button class="text-xs font-bold text-primary underline underline-offset-4 hover:text-secondary transition-colors">Sign In / Join Now</button>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#f4f4f0] dark:bg-slate-950 w-full py-12 px-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:flex lg:justify-between gap-8 max-w-7xl mx-auto">
+<div class="space-y-4">
+<div class="font-bold text-[#000b60] dark:text-white uppercase tracking-tighter">MC Aviation Air</div>
+<p class="text-sm text-[#1a1c1a]/60 max-w-xs font-['Manrope']">Elevating the African sky with precision, luxury, and warmth. Experience the modern way to fly.</p>
+</div>
+<div class="grid grid-cols-2 gap-x-12 gap-y-2">
+<a class="text-[#1a1c1a]/60 dark:text-slate-500 text-sm hover:text-[#4858ab] transition-colors" href="#">Privacy Policy</a>
+<a class="text-[#1a1c1a]/60 dark:text-slate-500 text-sm hover:text-[#4858ab] transition-colors" href="#">Terms of Service</a>
+<a class="text-[#1a1c1a]/60 dark:text-slate-500 text-sm hover:text-[#4858ab] transition-colors" href="#">Contact Us</a>
+<a class="text-[#1a1c1a]/60 dark:text-slate-500 text-sm hover:text-[#4858ab] transition-colors" href="#">Fleet</a>
+<a class="text-[#1a1c1a]/60 dark:text-slate-500 text-sm hover:text-[#4858ab] transition-colors" href="#">Sustainability</a>
+</div>
+<div class="flex flex-col items-start lg:items-end space-y-4">
+<div class="flex space-x-4">
+<span class="material-symbols-outlined text-primary cursor-pointer hover:opacity-70" data-icon="language">language</span>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:opacity-70" data-icon="share">share</span>
+</div>
+<p class="text-[#1a1c1a]/60 dark:text-slate-500 text-sm font-['Manrope']">© 2024 MC Aviation Air. All rights reserved.</p>
+</div>
+</div>
+</footer>
+</body></html>
