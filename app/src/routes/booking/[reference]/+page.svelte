@@ -217,29 +217,29 @@
             </div>
           {/if}
 
-          <Card tone="highest" class="px-6 py-7 sm:px-7 sm:py-8">
-            <div class="space-y-8">
+          <Card tone="highest" class="px-6 py-6 sm:px-7 sm:py-7">
+            <div class="space-y-7">
               <div>
                 <p class="ui-label">Booking Review</p>
-                <h2 class="mt-2 text-[28px] font-bold text-[color:var(--color-brand-navy)]">Review before payment</h2>
+                <h2 class="mt-2 text-[26px] font-bold text-[color:var(--color-brand-navy)]">Review before payment</h2>
               </div>
 
-              <div class="grid gap-4 sm:grid-cols-2">
-                <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-5 py-4">
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
                   <p class="ui-label">Route</p>
-                  <p class="mt-2 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</p>
+                  <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</p>
                 </div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-5 py-4">
+                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
                   <p class="ui-label">Flight</p>
-                  <p class="mt-2 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.flight_number || '--'}</p>
+                  <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.flight_number || '--'}</p>
                 </div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-5 py-4">
+                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
                   <p class="ui-label">Departure</p>
-                  <p class="mt-2 text-[16px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.departure_time || '--'}</p>
+                  <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.departure_time || '--'}</p>
                 </div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-5 py-4">
+                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
                   <p class="ui-label">Passengers</p>
-                  <p class="mt-2 text-[16px] font-semibold text-[color:var(--color-brand-navy)]">{adultCount} Adult{adultCount > 1 ? 's' : ''}{childCount > 0 ? `, ${childCount} Child${childCount > 1 ? 'ren' : ''}` : ''}</p>
+                  <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">{adultCount} Adult{adultCount > 1 ? 's' : ''}{childCount > 0 ? `, ${childCount} Child${childCount > 1 ? 'ren' : ''}` : ''}</p>
                 </div>
               </div>
 
@@ -247,7 +247,7 @@
                 <p class="ui-label">Traveler Details</p>
                 <div class="space-y-3">
                   {#each bookingStore.passengers as p, i}
-                    <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-5 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
+                    <div class="rounded-[15px] bg-[color:var(--color-surface-lowest)] px-4 py-3.5 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
                       <p class="font-semibold text-[color:var(--color-brand-navy)]">{i + 1}. {p.first_name} {p.last_name}</p>
                       <p class="mt-1 text-[12px] uppercase tracking-[0.14em] text-[color:var(--color-text-muted)]">{p.passenger_type}</p>
                     </div>
@@ -257,7 +257,7 @@
 
               <div class="space-y-3">
                 <p class="ui-label">Luggage Selection</p>
-                <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-5 text-[14px] text-[color:var(--color-text-body)]">
+                <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-4 text-[14px] text-[color:var(--color-text-body)]">
                   <p>Checked bags: <strong class="text-[color:var(--color-brand-navy)]">{luggageData.checkedBags}</strong></p>
                   <p class="mt-2">Special items: <strong class="text-[color:var(--color-brand-navy)]">{luggageData.specialItems}</strong></p>
                   <p class="mt-2">Optional luggage charges are finalized at check-in review.</p>

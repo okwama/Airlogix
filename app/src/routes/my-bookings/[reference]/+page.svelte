@@ -89,7 +89,7 @@
 
 <main class="page-shell pb-20 pt-8 sm:pt-10">
   <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
+    <header class="rounded-[28px] bg-[color:var(--color-surface-lowest)] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
       <div class="flex flex-wrap items-start justify-between gap-6">
         <div class="max-w-[780px] space-y-3">
           <p class="ui-label">Booking Detail</p>
@@ -127,7 +127,7 @@
         <div class="space-y-8">
           <Card tone="highest" class="overflow-hidden p-0">
             <div class="grid gap-0 md:grid-cols-[0.92fr_1.3fr]">
-              <div class="min-h-[260px] bg-[linear-gradient(160deg,#000b60,#223596)] p-7 text-white sm:p-8">
+              <div class="min-h-[260px] bg-[color:var(--color-brand-navy)] p-7 text-white sm:p-8">
                 <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/65">Flight {booking.flight_number || 'Scheduled'}</p>
                 <div class="mt-6 space-y-3">
                   <h2 class="text-[34px] font-bold tracking-[-0.03em] text-white">{booking.from_code} to {booking.to_code}</h2>

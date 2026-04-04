@@ -89,7 +89,7 @@
 
 <main class="page-shell pb-20 pt-8 sm:pt-10">
   <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
+    <header class="rounded-[28px] bg-[color:var(--color-surface-lowest)] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
       <div class="flex flex-wrap items-start justify-between gap-6">
         <div class="max-w-[760px] space-y-3">
           <p class="ui-label">Resume Payment</p>
