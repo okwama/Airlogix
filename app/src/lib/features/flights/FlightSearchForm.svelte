@@ -1,6 +1,7 @@
 <script>
   import { goto } from '$app/navigation';
-  import { Loader2, Search, Users } from 'lucide-svelte';
+  // @ts-ignore
+  import { Loader2, Search, Users, Info } from 'lucide-svelte';
   import { clickOutside } from '../../utils/clickOutside';
   import { slide } from 'svelte/transition';
 
@@ -12,7 +13,17 @@
   let date = $state('2026-04-10');
   let adults = $state(1);
   let children = $state(0);
+  let infants = $state(0);
+  let cabinClassId = $state(1);
   let isSearching = $state(false);
+
+  const cabinClasses = [
+    { id: 1, name: 'Economy' },
+    { id: 2, name: 'Premium Econ' },
+    { id: 3, name: 'Business' },
+    { id: 4, name: 'First Class' }
+  ];
+  let cabinClassName = $derived(cabinClasses.find(c => c.id === cabinClassId)?.name || 'Economy');
 
   let fromSearch = $state('');
   let toSearch = $state('');
@@ -67,14 +78,16 @@
 
   async function handleSearch() {
     isSearching = true;
-    const totalGuests = adults + children;
+    const totalGuests = adults + children + infants;
     const params = new URLSearchParams({ 
       from, 
       to, 
       date, 
       guests: totalGuests.toString(), 
       adults: adults.toString(),
-      children: children.toString()
+      children: children.toString(),
+      infants: infants.toString(),
+      cabin_class: cabinClassId.toString()
     });
     await goto(`/search?${params.toString()}`);
     isSearching = false;
@@ -115,13 +128,13 @@
               type="text" 
               bind:value={fromSearch} 
               placeholder="Search city or airport..." 
-              class="w-full bg-transparent text-[13px] font-medium text-brand-navy outline-none"
+              class="w-full bg-transparent text-[13px] font-medium text-brand-navy outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded-md"
             />
           </div>
           <div class="max-h-[220px] overflow-y-auto sm:max-h-[240px]">
             {#each filteredFrom as d}
               <button 
-                class="w-full text-left px-4 py-3 hover:bg-brand-navy hover:text-white transition-colors border-b-[0.5px] border-border last:border-0"
+                class="w-full text-left px-4 py-3 hover:bg-brand-navy hover:text-white focus-visible:bg-brand-navy focus-visible:text-white outline-none transition-colors border-b-[0.5px] border-border last:border-0"
                 onclick={() => selectFrom(d)}
               >
                 <div class="flex justify-between items-center">
@@ -159,13 +172,13 @@
               type="text" 
               bind:value={toSearch} 
               placeholder="Search city or airport..." 
-              class="w-full bg-transparent text-[13px] font-medium text-brand-navy outline-none"
+              class="w-full bg-transparent text-[13px] font-medium text-brand-navy outline-none focus-visible:ring-2 focus-visible:ring-brand-blue rounded-md"
             />
           </div>
           <div class="max-h-[220px] overflow-y-auto sm:max-h-[240px]">
             {#each filteredTo as d}
               <button 
-                class="w-full text-left px-4 py-3 hover:bg-brand-navy hover:text-white transition-colors border-b-[0.5px] border-border last:border-0"
+                class="w-full text-left px-4 py-3 hover:bg-brand-navy hover:text-white focus-visible:bg-brand-navy focus-visible:text-white outline-none transition-colors border-b-[0.5px] border-border last:border-0"
                 onclick={() => selectTo(d)}
               >
                 <div class="flex justify-between items-center">
@@ -188,35 +201,39 @@
 
     <!-- PASSENGERS Field -->
     <div class="flex flex-col relative" use:clickOutside={() => showPassengerDropdown = false}>
-      <span class="ui-label mb-1">Passengers</span>
+      <span class="ui-label mb-1">Travelers & Class</span>
       <button 
         class="input-field w-full rounded-[12px] bg-[color:var(--color-surface-high)] px-4 flex min-h-[56px] items-center justify-between group transition-all {showPassengerDropdown ? 'border-brand-blue' : ''}"
         onclick={() => showPassengerDropdown = !showPassengerDropdown}
       >
         <span class="text-[13px] font-medium text-brand-navy truncate">
-          {adults} Adult{adults > 1 ? 's' : ''}{children > 0 ? `, ${children} Child${children > 1 ? 'ren' : ''}` : ''}
+          {adults} Adult{adults > 1 ? 's' : ''}{children > 0 ? `, ${children} Child` : ''}{infants > 0 ? `, ${infants} Inf` : ''}, {cabinClassId === 1 ? 'Economy' : 'Premium'}
         </span>
         <Users size={14} class="text-text-muted group-hover:text-brand-blue" />
       </button>
 
       {#if showPassengerDropdown}
-        <div class="absolute top-[calc(100%+6px)] left-0 right-0 w-auto bg-white border-[0.5px] border-border rounded-[12px] z-[80] shadow-xl p-4 sm:left-auto sm:right-0 sm:w-[240px]" transition:slide={{ duration: 150 }}>
-          <div class="flex flex-col gap-6">
+        <div class="absolute top-[calc(100%+6px)] left-0 right-0 w-auto bg-white border-[0.5px] border-border rounded-[12px] z-[80] shadow-xl p-5 sm:left-auto sm:right-0 sm:w-[320px]" transition:slide={{ duration: 150 }}>
+          
+          <h4 class="text-[16px] font-medium text-brand-navy mb-3">Passengers</h4>
+          <div class="h-[1px] w-full bg-border/60 mb-5"></div>
+
+          <div class="flex flex-col gap-5">
             <!-- Adults -->
             <div class="flex items-center justify-between">
               <div class="flex flex-col">
-                <span class="text-[13px] font-medium text-brand-navy">Adults</span>
-                <span class="text-[10px] text-text-muted uppercase">Age 12+</span>
+                <span class="text-[14px] text-brand-navy">Adults</span>
+                <span class="text-[11px] text-text-muted">12+ years</span>
               </div>
               <div class="flex items-center gap-3">
                 <button 
-                  class="w-7 h-7 flex items-center justify-center rounded-full border-[0.5px] border-border hover:border-brand-blue text-brand-navy disabled:opacity-20"
+                  class="w-8 h-8 flex items-center justify-center rounded-[8px] border-[1px] border-border hover:border-brand-blue text-brand-navy disabled:opacity-20 transition-colors"
                   onclick={() => adults = Math.max(1, adults - 1)}
                   disabled={adults <= 1}
                 >-</button>
-                <span class="text-[13px] font-medium min-w-[12px] text-center">{adults}</span>
+                <span class="text-[14px] font-medium min-w-[12px] text-center">{adults}</span>
                 <button 
-                  class="w-7 h-7 flex items-center justify-center rounded-full border-[0.5px] border-border hover:border-brand-blue text-brand-navy"
+                  class="w-8 h-8 flex items-center justify-center rounded-[8px] border-[1px] border-border hover:border-brand-blue text-brand-navy transition-colors"
                   onclick={() => adults++}
                 >+</button>
               </div>
@@ -224,27 +241,88 @@
             
             <!-- Children -->
             <div class="flex items-center justify-between">
-              <div class="flex flex-col">
-                <span class="text-[13px] font-medium text-brand-navy">Children</span>
-                <span class="text-[10px] text-text-muted uppercase">Age 2-11</span>
+              <div class="flex items-center gap-2">
+                <div class="flex flex-col">
+                  <span class="text-[14px] text-brand-navy">Child</span>
+                  <span class="text-[11px] text-text-muted">2-11 years</span>
+                </div>
+                <Info size={16} class="text-[#5b51d8] fill-[#5b51d8]/10" />
               </div>
               <div class="flex items-center gap-3">
                 <button 
-                  class="w-7 h-7 flex items-center justify-center rounded-full border-[0.5px] border-border hover:border-brand-blue text-brand-navy disabled:opacity-20"
+                  class="w-8 h-8 flex items-center justify-center rounded-[8px] border-[1px] border-border hover:border-brand-blue text-brand-navy disabled:opacity-20 transition-colors"
                   onclick={() => children = Math.max(0, children - 1)}
                   disabled={children <= 0}
                 >-</button>
-                <span class="text-[13px] font-medium min-w-[12px] text-center">{children}</span>
+                <span class="text-[14px] font-medium min-w-[12px] text-center">{children}</span>
                 <button 
-                  class="w-7 h-7 flex items-center justify-center rounded-full border-[0.5px] border-border hover:border-brand-blue text-brand-navy"
+                  class="w-8 h-8 flex items-center justify-center rounded-[8px] border-[1px] border-border hover:border-brand-blue text-brand-navy transition-colors"
                   onclick={() => children++}
                 >+</button>
               </div>
             </div>
+
+            <!-- Infant -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="flex flex-col">
+                  <span class="text-[14px] text-brand-navy">Infant</span>
+                  <span class="text-[11px] text-text-muted">Under 2 years</span>
+                </div>
+                <Info size={16} class="text-[#5b51d8] fill-[#5b51d8]/10" />
+              </div>
+              <div class="flex items-center gap-3">
+                <button 
+                  class="w-8 h-8 flex items-center justify-center rounded-[8px] border-[1px] border-border hover:border-brand-blue text-brand-navy disabled:opacity-20 transition-colors"
+                  onclick={() => infants = Math.max(0, infants - 1)}
+                  disabled={infants <= 0}
+                >-</button>
+                <span class="text-[14px] font-medium min-w-[12px] text-center">{infants}</span>
+                <button 
+                  class="w-8 h-8 flex items-center justify-center rounded-[8px] border-[1px] border-border hover:border-brand-blue text-brand-navy transition-colors"
+                  onclick={() => infants++}
+                >+</button>
+              </div>
+            </div>
           </div>
-          <div class="mt-6 pt-4 border-t-[0.5px] border-border flex justify-end text-[11px] font-medium text-brand-blue">
-            DONE
+
+          <h4 class="text-[16px] font-medium text-brand-navy mt-8 mb-3">Class</h4>
+          <div class="h-[1px] w-full bg-border/60 mb-4"></div>
+
+          <div class="flex flex-col gap-2">
+            <!-- Economy -->
+            <button 
+              class="flex items-center justify-between py-2 text-left w-full group"
+              onclick={() => cabinClassId = 1}
+            >
+              <span class="text-[14px] text-brand-navy {cabinClassId === 1 ? 'font-medium' : ''}">Economy</span>
+              <div class="w-[22px] h-[22px] rounded-full flex items-center justify-center border transition-colors {cabinClassId === 1 ? 'bg-[#3b3b98] border-[#3b3b98]' : 'border-gray-400 group-hover:border-[#3b3b98]'}">
+                {#if cabinClassId === 1}
+                  <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                {/if}
+              </div>
+            </button>
+
+            <!-- Premium -->
+            <button 
+              class="flex items-center justify-between py-2 text-left w-full group"
+              onclick={() => cabinClassId = 3}
+            >
+              <span class="text-[14px] text-brand-navy {cabinClassId === 3 ? 'font-medium' : ''}">Premium (Business/First)</span>
+              <div class="w-[22px] h-[22px] rounded-full flex items-center justify-center border transition-colors {cabinClassId === 3 ? 'bg-[#3b3b98] border-[#3b3b98]' : 'border-gray-400 group-hover:border-[#3b3b98]'}">
+                {#if cabinClassId === 3}
+                  <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                {/if}
+              </div>
+            </button>
           </div>
+
+          <button 
+            class="w-full mt-7 bg-brand-navy hover:bg-brand-navy/90 text-white rounded-[12px] py-3.5 text-[15px] font-bold transition-colors shadow-sm"
+            onclick={() => showPassengerDropdown = false}
+          >
+            Confirm
+          </button>
         </div>
       {/if}
     </div>

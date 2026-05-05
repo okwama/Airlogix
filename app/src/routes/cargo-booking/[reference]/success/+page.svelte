@@ -50,7 +50,7 @@
       <div class="flex flex-col items-center text-center gap-5">
         <div class="flex h-16 w-16 items-center justify-center rounded-full bg-white/12"><CheckCircle2 size={34} class="text-white" /></div>
         <div class="space-y-3">
-          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Cargo confirmed</p>
+          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Cargo confirmed</p>
           <h1 class="text-[38px] font-bold tracking-[-0.03em] text-white">Your AWB is ready.</h1>
           <p class="mx-auto max-w-[520px] text-[14px] leading-7 text-white/72">Your shipment is registered in our system. Print the label below and attach it to each piece before drop-off.</p>
         </div>

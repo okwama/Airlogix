@@ -196,7 +196,7 @@
             <Icon size={18} />
           </div>
           <div>
-            <p class={`font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] ${selectedMethod === method.key ? 'text-white/62' : 'text-[color:var(--color-text-muted)]'}`}>Method</p>
+            <p class={`font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] ${selectedMethod === method.key ? 'text-white/80' : 'text-[color:var(--color-text-muted)]'}`}>Method</p>
             <p class="mt-1 text-[14px] font-semibold">{method.label}</p>
           </div>
         </div>

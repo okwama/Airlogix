@@ -21,6 +21,8 @@
   const adultCount = $derived(bookingStore.adultCount || 1);
   const childCount = $derived(bookingStore.childCount || 0);
   const passengerCount = $derived(adultCount + childCount);
+  const cabinClasses: Record<number, string> = { 1: 'Economy', 2: 'Premium Economy', 3: 'Business', 4: 'First Class' };
+  const cabinClassName = $derived(cabinClasses[bookingStore.cabinClassId] || 'Economy');
 
   const adultFare = $derived(Number(booking?.adult_fare ?? booking?.base_fare ?? 0));
   const childFare = $derived(Number(booking?.child_fare ?? booking?.adult_fare ?? booking?.base_fare ?? 0));
@@ -89,6 +91,7 @@
     try {
       const response = await bookingService.createBooking({
         flight_series_id: Number(booking.id),
+        cabin_class_id: bookingStore.cabinClassId,
         passengers: bookingStore.passengers,
         payment_method: 'pending',
         total_amount: payableTotal,
@@ -133,7 +136,7 @@
     <header class="rounded-[28px] bg-[color:var(--color-brand-navy)] px-6 py-5 text-white shadow-[0_24px_64px_rgba(0,11,96,0.11)] sm:px-8 sm:py-6 md:px-9">
       <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
         <div class="space-y-3">
-          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Flight Booking Wizard</p>
+          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Flight Booking Wizard</p>
           <h1 class="max-w-[760px] text-[clamp(1.95rem,3.5vw,3rem)] font-extrabold leading-[0.99] tracking-[-0.04em] text-white">Complete your journey with calm, step-by-step clarity.</h1>
           <p class="max-w-[560px] text-[13px] leading-6 text-white/72 sm:text-[14px]">
             Enter traveler details, note luggage preferences, then review and pay to secure your seats before the hold expires.
@@ -144,7 +147,7 @@
         </div>
 
         <div class="rounded-[22px] bg-white/10 px-5 py-4.5 backdrop-blur-sm">
-          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Booking Ref</p>
+          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Booking Ref</p>
           <p class="mt-2 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference || 'PENDING'}</p>
           <div class="mt-4 flex flex-wrap items-center gap-3 text-[12px] text-white/74">
             <span>{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</span>
@@ -165,7 +168,7 @@
               <Icon size={17} />
             </div>
             <div>
-              <p class={`font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] ${state === 'active' ? 'text-white/62' : 'text-[color:var(--color-text-muted)]'}`}>Step {index + 1}</p>
+              <p class={`font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] ${state === 'active' ? 'text-white/80' : 'text-[color:var(--color-text-muted)]'}`}>Step {index + 1}</p>
               <p class="mt-1 text-[14px] font-semibold">{item.label}</p>
             </div>
           </div>
@@ -241,6 +244,10 @@
                   <p class="ui-label">Passengers</p>
                   <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">{adultCount} Adult{adultCount > 1 ? 's' : ''}{childCount > 0 ? `, ${childCount} Child${childCount > 1 ? 'ren' : ''}` : ''}</p>
                 </div>
+                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
+                  <p class="ui-label">Cabin Class</p>
+                  <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">{cabinClassName}</p>
+                </div>
               </div>
 
               <div class="space-y-3">
@@ -286,7 +293,7 @@
       <aside class="space-y-5 lg:sticky lg:top-20">
         <Card tone="highest" class="overflow-hidden p-0">
           <div class="bg-[color:var(--color-brand-navy)] px-6 py-6 text-white sm:px-7">
-            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Order Summary</p>
+            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Order Summary</p>
             <div class="mt-4 flex items-start gap-4">
               <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/12 text-white">
                 <Plane size={18} />

@@ -52,7 +52,7 @@
 </script>
 
 <nav class="sticky top-0 z-[100] px-3 pt-3 sm:px-5 sm:pt-4">
-  <div class="glass-nav mx-auto flex h-[74px] w-full max-w-[1380px] items-center justify-between rounded-[22px] px-5 sm:px-7">
+  <div class="glass-nav mx-auto flex h-[74px] w-full items-center justify-between rounded-[22px] px-5 sm:px-7">
     <a href="/" class="flex items-center gap-3 text-[color:var(--color-brand-navy)]">
       <img src={logo} alt={appConfig.name} class="h-10 w-auto object-contain" />
       <span class="hidden text-[18px] font-bold tracking-[-0.03em] md:inline">{appConfig.name}</span>

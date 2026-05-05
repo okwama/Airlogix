@@ -44,7 +44,7 @@
         <div class="relative overflow-hidden rounded-[26px] bg-[color:var(--color-brand-navy)] px-7 py-8 text-white shadow-[0_28px_70px_rgba(0,11,96,0.12)] sm:px-8 sm:py-9">
           <div class="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-white/8 blur-3xl"></div>
           <div class="relative space-y-6">
-            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Fleet Highlight</p>
+            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Fleet Highlight</p>
             <div class="space-y-3">
               <h3 class="text-[30px] font-bold tracking-[-0.03em] text-white">Global reach, personal touch.</h3>
               <p class="text-[14px] leading-7 text-white/72">

@@ -3,6 +3,7 @@
   import Navbar from '$lib/components/ui/Navbar.svelte';
   import Footer from '$lib/components/ui/Footer.svelte';
   import CookieConsent from '$lib/components/ui/CookieConsent.svelte';
+  import GlobalLoading from '$lib/components/ui/GlobalLoading.svelte';
   import { onMount } from 'svelte';
   import { authStore } from '$lib/stores/authStore.svelte';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
@@ -60,6 +61,7 @@
 </svelte:head>
 
 <div class="app-layout">
+  <GlobalLoading />
   <Navbar />
   {#if !isOnline}
     <div class="offline-banner" role="status" aria-live="polite">

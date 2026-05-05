@@ -25,6 +25,7 @@ function createBookingStore() {
   let status = $state<BookingStatus>('Pending');
   let adultCount = $state(1);
   let childCount = $state(0);
+  let cabinClassId = $state(1);
 
   const STORAGE_KEY = 'mc_booking_session';
 
@@ -36,7 +37,8 @@ function createBookingStore() {
         passengers,
         status,
         adultCount,
-        childCount
+        childCount,
+        cabinClassId
       }));
     }
   }
@@ -53,6 +55,7 @@ function createBookingStore() {
           status = data.status || 'Pending';
           adultCount = data.adultCount || 1;
           childCount = data.childCount || 0;
+          cabinClassId = data.cabinClassId || 1;
         } catch (e) {
           console.error('Failed to load booking session', e);
         }
@@ -70,6 +73,9 @@ function createBookingStore() {
     get status() { return status; },
     get adultCount() { return adultCount; },
     get childCount() { return childCount; },
+    set childCount(val) { childCount = val; save(); },
+    get cabinClassId() { return cabinClassId; },
+    set cabinClassId(val) { cabinClassId = val; save(); },
     get totalPassengerCount() { return adultCount + childCount; },
 
     // Keeping for backward compatibility but using the new breakdown

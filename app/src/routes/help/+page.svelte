@@ -28,7 +28,7 @@
 <main class="bg-surface min-h-[calc(100vh-58px)] pb-16">
   <section class="bg-brand-navy py-14">
     <div class="container mx-auto px-7 max-w-[1240px] text-center">
-      <p class="text-white/60 text-[12px] uppercase tracking-[0.2em] mb-4">Support</p>
+      <p class="text-white/80 text-[12px] uppercase tracking-[0.2em] mb-4">Support</p>
       <h1 class="text-white text-[38px] leading-tight mb-4">Help Center</h1>
       <p class="text-white/75 text-[15px] max-w-[760px] mx-auto">
         Quick answers to the most common booking, payment, and travel questions.

@@ -12,6 +12,7 @@ export interface Passenger {
 
 export interface BookingPayload {
   flight_series_id: number;
+  cabin_class_id?: number;
   passengers: Passenger[];
   payment_method?: string;
   total_amount?: number;

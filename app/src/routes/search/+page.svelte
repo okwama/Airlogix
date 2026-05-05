@@ -4,12 +4,19 @@
   import { Plane, ChevronLeft, SlidersHorizontal, Info } from 'lucide-svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import { appConfig } from '$lib/config/appConfig';
+  import { bookingStore } from '$lib/stores/bookingStore.svelte';
 
   let { data } = $props();
 
   const searchQuery = $derived(data.searchQuery);
   const flights = $derived(data.flights);
   const isNavigating = $derived(Boolean($navigating));
+
+  $effect(() => {
+    if (searchQuery.cabin_class_id) {
+      bookingStore.cabinClassId = searchQuery.cabin_class_id;
+    }
+  });
 
   const formattedDate = $derived(new Date(searchQuery.date).toLocaleDateString('en-GB', {
     day: 'numeric',

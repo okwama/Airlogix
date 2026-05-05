@@ -2,7 +2,9 @@
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import { appConfig } from '$lib/config/appConfig';
+  // @ts-ignore
   import { CheckCircle2, Download, Home, Mail, Plane, ReceiptText } from 'lucide-svelte';
+  // @ts-ignore
   import { confetti } from '@neoconfetti/svelte';
   import { onMount } from 'svelte';
 
@@ -94,13 +96,13 @@
     <header class="rounded-[28px] bg-[color:var(--color-brand-navy)] px-6 py-6 text-white shadow-[0_24px_64px_rgba(0,11,96,0.1)] sm:px-8 sm:py-7">
       <div class="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
         <div class="space-y-3">
-          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Booking Status</p>
+          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Booking Status</p>
           <h1 class="max-w-[640px] text-[clamp(1.9rem,3.6vw,3rem)] font-extrabold leading-[0.98] tracking-[-0.04em] text-white">{heading}</h1>
           <p class="max-w-[580px] text-[13px] leading-6 text-white/74 sm:text-[14px]">{subtitle}</p>
         </div>
 
         <div class="rounded-[22px] bg-white/10 px-5 py-5 backdrop-blur-sm">
-          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Reference</p>
+          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Reference</p>
           <p class="mt-2 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference}</p>
           <div class="mt-4 flex flex-wrap items-center gap-3 text-[12px] text-white/72">
             <span>{booking?.from_code || '---'} to {booking?.to_code || '---'}</span>
@@ -192,7 +194,7 @@
       <aside class="space-y-5 lg:sticky lg:top-20">
         <Card tone="highest" class="overflow-hidden p-0">
           <div class="bg-[color:var(--color-brand-navy)] px-6 py-6 text-white sm:px-7">
-            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Booking Reference</p>
+            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Booking Reference</p>
             <p class="mt-3 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference}</p>
           </div>
 

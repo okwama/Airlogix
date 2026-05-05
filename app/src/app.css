@@ -16,7 +16,7 @@
   --color-border: rgba(69, 70, 82, 0.14);
   --color-text-body: #454652;
   --color-text-heading: #1a1c1a;
-  --color-text-muted: #767683;
+  --color-text-muted: #52525b;
 
   --color-status-green-bg: #e8f3ea;
   --color-status-green-text: #27543b;
@@ -92,13 +92,13 @@
   }
 
   button {
-    @apply cursor-pointer transition-all duration-200 outline-none;
+    @apply cursor-pointer transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:ring-offset-2;
   }
 
   input,
   select,
   textarea {
-    @apply outline-none;
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-1 rounded-md;
   }
 
   ::selection {

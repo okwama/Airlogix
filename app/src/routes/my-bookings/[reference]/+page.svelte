@@ -5,6 +5,7 @@
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import { appConfig } from '$lib/config/appConfig';
+  // @ts-ignore
   import { Calendar, Clock3, CreditCard, Download, Plane, RefreshCw, ShieldAlert, UserRound } from 'lucide-svelte';
 
   const reference = $derived(String(page.params.reference || '').toUpperCase());
@@ -135,11 +136,11 @@
                 </div>
                 <div class="mt-10 grid grid-cols-2 gap-4 text-[13px]">
                   <div>
-                    <p class="font-['Inter'] text-[11px] uppercase tracking-[0.18em] text-white/50">Payment</p>
+                    <p class="font-['Inter'] text-[11px] uppercase tracking-[0.18em] text-white/75">Payment</p>
                     <p class="mt-1 font-semibold text-white">{paymentState || '-'}</p>
                   </div>
                   <div>
-                    <p class="font-['Inter'] text-[11px] uppercase tracking-[0.18em] text-white/50">Ticket</p>
+                    <p class="font-['Inter'] text-[11px] uppercase tracking-[0.18em] text-white/75">Ticket</p>
                     <p class="mt-1 font-semibold text-white">{ticketState || '-'}</p>
                   </div>
                 </div>
