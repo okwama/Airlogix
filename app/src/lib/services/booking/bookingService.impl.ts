@@ -1,7 +1,7 @@
 import { asServiceError, classifyError, extractErrorMeta, ServiceError } from './bookingService.errors';
 import type { BookingPayload } from './bookingService.types';
 
-export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/airlogix';
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
 
 function getAccessHeaders(reference: string): Record<string, string> {
   const headers: Record<string, string> = {
@@ -446,7 +446,8 @@ async function initiateStripePayment(bookingReference: string, amount: number, e
         booking_reference: bookingReference,
         amount,
         email,
-        currency: 'USD'
+        currency: 'USD',
+        channel: 'web'
       })
     });
     const result = await response.json();

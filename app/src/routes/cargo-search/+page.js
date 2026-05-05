@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/airlogix';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
 const ENABLE_MOCKS = import.meta.env.VITE_ENABLE_MOCKS === 'true';
 import { appConfig } from '$lib/config/appConfig';
 
