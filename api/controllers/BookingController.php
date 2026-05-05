@@ -5,14 +5,19 @@ require_once __DIR__ . '/../models/Passenger.php';
 require_once __DIR__ . '/../models/BookingPassenger.php';
 require_once __DIR__ . '/../models/AirlineUser.php'; // For token validation
 require_once __DIR__ . '/../models/Loyalty.php';
+require_once __DIR__ . '/../models/Setting.php';
 require_once __DIR__ . '/../utils/Response.php';
 require_once __DIR__ . '/../utils/Cache.php';
 require_once __DIR__ . '/../utils/Observability.php';
 
 class BookingController {
+    /** @var Booking */
     private $bookingModel;
+    /** @var Passenger */
     private $passengerModel;
+    /** @var BookingPassenger */
     private $bookingPassengerModel;
+    /** @var AirlineUser */
     private $userModel;
 
     public function __construct() {
@@ -149,6 +154,7 @@ class BookingController {
         // Securely fetch fares from DB to ensure integrity
         require_once __DIR__ . '/../models/Flight.php';
         $flightModel = new Flight(db());
+        $settingModel = new Setting(db());
         $flight = $flightModel->getById($data['flight_series_id']);
         
         if (!$flight) {
@@ -185,6 +191,13 @@ class BookingController {
         $farePerPassenger = $expectedTotal / count($passengers);
         $numPassengers = count($passengers);
 
+        // Fetch dynamic tax rate or fallback to 10%
+        $taxRateStr = $settingModel->getByKey('default_tax_rate') ?? '10';
+        $taxRateMultiplier = (float)$taxRateStr / 100;
+        
+        $baseFare = round($expectedTotal / (1 + $taxRateMultiplier), 2);
+        $taxesAmount = round($expectedTotal - $baseFare, 2);
+
         // Start transaction
         $db = db();
         $db->beginTransaction();
@@ -208,6 +221,8 @@ class BookingController {
                 'number_of_passengers' => $numPassengers,
                 'fare_per_passenger' => $farePerPassenger,
                 // Persist the server-computed canonical total, not arbitrary client value
+                'base_fare' => $baseFare,
+                'taxes_amount' => $taxesAmount,
                 'total_amount' => $expectedTotal,
                 'payment_method' => $data['payment_method'] ?? 'pending',
                 'reservation_expires_at' => $this->bookingModel->reservationExpiresAt(),

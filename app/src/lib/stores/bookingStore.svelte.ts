@@ -1,5 +1,5 @@
 import type { Passenger } from '../services/booking/bookingService';
-import { bookingService } from '$lib/services/booking/bookingService';
+import { browser } from '$app/environment';
 
 export interface Flight {
   id?: string;
@@ -26,6 +26,43 @@ function createBookingStore() {
   let adultCount = $state(1);
   let childCount = $state(0);
 
+  const STORAGE_KEY = 'mc_booking_session';
+
+  function save() {
+    if (browser) {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        selectedFlight,
+        reference,
+        passengers,
+        status,
+        adultCount,
+        childCount
+      }));
+    }
+  }
+
+  function load() {
+    if (browser) {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          selectedFlight = data.selectedFlight || null;
+          reference = data.reference || '';
+          passengers = data.passengers || [];
+          status = data.status || 'Pending';
+          adultCount = data.adultCount || 1;
+          childCount = data.childCount || 0;
+        } catch (e) {
+          console.error('Failed to load booking session', e);
+        }
+      }
+    }
+  }
+
+  // Load session from storage initially
+  load();
+
   return {
     get selectedFlight() { return selectedFlight; },
     get reference() { return reference; },
@@ -47,14 +84,17 @@ function createBookingStore() {
       let res = '';
       for (let i = 0; i < 6; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
       reference = `MC-${res}`;
+      save();
     },
 
     setPassengers(p: Passenger[]) {
       passengers = p;
+      save();
     },
 
     setStatus(s: BookingStatus) {
       status = s;
+      save();
     },
 
     reset() {
@@ -64,6 +104,9 @@ function createBookingStore() {
       status = 'Pending';
       adultCount = 1;
       childCount = 0;
+      if (browser) {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
     }
   };
 }

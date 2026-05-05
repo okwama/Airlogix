@@ -22,6 +22,7 @@ class Flight {
                   WHERE (d1.name LIKE :from1 OR d1.code LIKE :from2 OR d1.destination LIKE :from3)
                   AND (d2.name LIKE :to1 OR d2.code LIKE :to2 OR d2.destination LIKE :to3)
                   AND :date BETWEEN fs.start_date AND fs.end_date
+                  AND :date >= CURDATE()
                   AND fs.adult_fare IS NOT NULL
                   AND fs.adult_fare > 0";
 
@@ -78,11 +79,12 @@ class Flight {
                   WHERE fs.from_destination_id IN ($fromPlaceholders)
                   AND fs.to_destination_id IN ($toPlaceholders)
                   AND ? BETWEEN fs.start_date AND fs.end_date
+                  AND ? >= CURDATE()
                   AND fs.adult_fare IS NOT NULL
                   AND fs.adult_fare > 0";
 
         // Prepare parameters before try block
-        $params = array_merge($fromIds, $toIds, [$date]);
+        $params = array_merge($fromIds, $toIds, [$date, $date]);
         
         try {
             $stmt = $this->conn->prepare($query);
@@ -288,6 +290,9 @@ class Flight {
         
         if ($date) {
             $query .= " AND :date BETWEEN fs.start_date AND fs.end_date";
+            // Optional: for general status searches, they might want past flights, but for booking they don't.
+            // searchStatus is likely used in admin/status pages so we leave >= CURDATE() out, or add it conditionally.
+            // The request was specifically about "when searching for a flight if a flight is in the past it should not be found".
             $params[':date'] = $date;
         } else {
             $query .= " AND CURDATE() BETWEEN fs.start_date AND fs.end_date";

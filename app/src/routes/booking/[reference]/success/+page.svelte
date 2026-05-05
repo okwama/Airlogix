@@ -103,7 +103,7 @@
           <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">Reference</p>
           <p class="mt-2 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference}</p>
           <div class="mt-4 flex flex-wrap items-center gap-3 text-[12px] text-white/72">
-            <span>{booking?.origin_iata || '---'} to {booking?.destination_iata || '---'}</span>
+            <span>{booking?.from_code || '---'} to {booking?.to_code || '---'}</span>
             <span class="h-1.5 w-1.5 rounded-full bg-white/36"></span>
             <span>{booking?.flight_number || 'Flight details pending'}</span>
           </div>
@@ -135,7 +135,7 @@
                 </div>
                 <div>
                   <p class="ui-label">Journey</p>
-                  <p class="mt-1 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '---'} to {booking?.destination_iata || '---'}</p>
+                  <p class="mt-1 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.from_code || '---'} to {booking?.to_code || '---'}</p>
                 </div>
               </div>
             </div>
@@ -199,7 +199,7 @@
           <div class="space-y-4 bg-[color:var(--color-surface-lowest)] px-6 py-6 sm:px-7">
             <div>
               <p class="ui-label">Route</p>
-              <p class="mt-2 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '---'} to {booking?.destination_iata || '---'}</p>
+              <p class="mt-2 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.from_code || '---'} to {booking?.to_code || '---'}</p>
             </div>
 
             <div class="soft-divider"></div>
