@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { fade, scale } from 'svelte/transition';
+  import { onMount, onDestroy } from 'svelte';
   import { X } from 'lucide-svelte';
+  import { fade, scale } from 'svelte/transition';
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
+  const MAPS_KEY   = import.meta.env.VITE_GOOGLE_MAPS_KEY;
+  const BASE_URL   = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
 
   interface Destination {
     iata_code: string;
@@ -12,253 +13,347 @@
     latitude: string;
     longitude: string;
     image_url: string;
-    x: number;
-    y: number;
   }
 
-  interface Route {
-    from: string;
-    to: string;
-  }
+  interface Route { from: string; to: string; }
+
+  let mapEl: HTMLDivElement;
+  
+  let gmap: google.maps.Map | null = null;
+  let arcs: google.maps.Polyline[] = [];
+  let markers: google.maps.marker.AdvancedMarkerElement[] = [];
 
   let destinations = $state<Destination[]>([]);
-  let routes = $state<Route[]>([]);
-  let hub = $state<string>('NBO');
+  let routes       = $state<Route[]>([]);
+  let hub          = $state<string>('NBO');
   let selectedDestination = $state<Destination | null>(null);
-  let isLoaded = $state<boolean>(false);
+  let isLoaded     = $state<boolean>(false);
+  let activeRegion = $state<string>('All');
 
-  // SVG dimensions from world.svg viewBox
-  const MAP_WIDTH = 2000;
-  const MAP_HEIGHT = 857;
+  const regions = ['All', 'East Africa', 'Southern Africa', 'Middle East', 'West Africa'];
 
-  // Simple projection function (Equirectangular with slight adjustments for typical SVG maps)
-  function projectCoords(lat: number, lng: number) {
-    // These calibration values might need tweaking depending on the exact SVG projection used by simplemaps
-    const x = (lng + 180) * (MAP_WIDTH / 360);
-    // Miller/Mercator maps stretch the Y axis at poles. For simplicity we use linear, but add a slight offset.
-    const y = (90 - lat) * (MAP_HEIGHT / 180);
-    
-    // Fine-tune offset based on typical simplemaps
-    return { 
-      x: x, 
-      y: y + 50 // manual adjustment offset
+  const iataRegionMap: Record<string, string> = {
+    NBO: 'East Africa', MBA: 'East Africa', DAR: 'East Africa',
+    EBB: 'East Africa', KGL: 'East Africa', ADD: 'East Africa', EAL: 'East Africa',
+    JNB: 'Southern Africa', CPT: 'Southern Africa', HRE: 'Southern Africa',
+    LUN: 'Southern Africa', BLZ: 'Southern Africa',
+    DXB: 'Middle East', DOH: 'Middle East', AUH: 'Middle East',
+    CAI: 'Middle East', AMM: 'Middle East',
+    LOS: 'West Africa', ABJ: 'West Africa', ACC: 'West Africa', DKR: 'West Africa',
+  };
+
+  function getRegion(iata: string) { return iataRegionMap[iata] ?? 'Other'; }
+
+  let visibleDestinations = $derived(
+    activeRegion === 'All'
+      ? destinations
+      : destinations.filter(d => d.iata_code === hub || getRegion(d.iata_code) === activeRegion)
+  );
+  let visibleRoutes = $derived(
+    activeRegion === 'All'
+      ? routes
+      : routes.filter(r => getRegion(r.to) === activeRegion)
+  );
+
+  // ─── Google Maps loader ───────────────────────────────────────────────────
+  function loadGoogleMapsScript(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if ((window as any).google?.maps) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=marker`;
+      s.async = true;
+      s.defer = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Google Maps failed to load'));
+      document.head.appendChild(s);
+    });
+  }
+
+  // ─── Map initialisation ────────────────────────────────────────────────────
+  function initMap() {
+    gmap = new google.maps.Map(mapEl, {
+      center: { lat: 0, lng: 25 },   // centred on Africa
+      zoom: 4,
+      mapId: 'airlogix_network',     // required for Advanced Markers
+      mapTypeId: 'roadmap',
+      disableDefaultUI: false,
+      zoomControl: true,
+      streetViewControl: false,
+      mapTypeControl: false,
+      fullscreenControl: true,
+      styles: [
+        // Subtle desaturated style so flight paths pop
+        { featureType: 'all', stylers: [{ saturation: -30 }, { lightness: 5 }] },
+        { featureType: 'water', stylers: [{ color: '#c8d8e8' }] },
+        { featureType: 'landscape', stylers: [{ color: '#f0f4f8' }] },
+        { featureType: 'road', stylers: [{ visibility: 'simplified' }, { lightness: 40 }] },
+        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+        { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+        { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#aabbcc' }, { weight: 1 }] },
+      ],
+    });
+  }
+
+  // ─── Draw everything ───────────────────────────────────────────────────────
+  function clearOverlays() {
+    arcs.forEach(a => a.setMap(null));
+    markers.forEach(m => { m.map = null; });
+    arcs = [];
+    markers = [];
+  }
+
+  function geodesicMidpoint(lat1: number, lng1: number, lat2: number, lng2: number, bendFactor = 0.35) {
+    const midLat = (lat1 + lat2) / 2;
+    const midLng = (lng1 + lng2) / 2;
+    // Offset mid-point perpendicularly to create a curve
+    const dLat = lat2 - lat1;
+    const dLng = lng2 - lng1;
+    return {
+      lat: midLat - dLng * bendFactor,
+      lng: midLng + dLat * bendFactor,
     };
   }
 
+  function buildArcPath(from: Destination, to: Destination): google.maps.LatLngLiteral[] {
+    const p1 = { lat: parseFloat(from.latitude), lng: parseFloat(from.longitude) };
+    const p2 = { lat: parseFloat(to.latitude),   lng: parseFloat(to.longitude)   };
+    const mid = geodesicMidpoint(p1.lat, p1.lng, p2.lat, p2.lng);
+    // Interpolate a smooth quadratic Bézier with 40 steps
+    const steps = 40;
+    const path: google.maps.LatLngLiteral[] = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      path.push({
+        lat: (1-t)*(1-t)*p1.lat + 2*(1-t)*t*mid.lat + t*t*p2.lat,
+        lng: (1-t)*(1-t)*p1.lng + 2*(1-t)*t*mid.lng + t*t*p2.lng,
+      });
+    }
+    return path;
+  }
+
+  function drawOverlays(dests: Destination[], rts: Route[]) {
+    if (!gmap) return;
+    clearOverlays();
+
+    const destMap = Object.fromEntries(dests.map(d => [d.iata_code, d]));
+
+    // Flight arcs
+    rts.forEach(r => {
+      const from = destMap[r.from];
+      const to   = destMap[r.to];
+      if (!from || !to) return;
+      const line = new google.maps.Polyline({
+        path: buildArcPath(from, to),
+        geodesic: false,
+        strokeColor: '#000b60',
+        strokeOpacity: 0.7,
+        strokeWeight: 2,
+        map: gmap!,
+      });
+      arcs.push(line);
+    });
+
+    // Markers
+    dests.forEach(dest => {
+      const isHub = dest.iata_code === hub;
+      const lat = parseFloat(dest.latitude);
+      const lng = parseFloat(dest.longitude);
+
+      const pin = document.createElement('div');
+      pin.style.cssText = `
+        display:flex; flex-direction:column; align-items:center; cursor:pointer;
+        font-family: system-ui, sans-serif;
+      `;
+
+      const dot = document.createElement('div');
+      dot.style.cssText = `
+        width: ${isHub ? '18px' : '12px'};
+        height: ${isHub ? '18px' : '12px'};
+        border-radius: 50%;
+        background: ${isHub ? '#8e244d' : '#000b60'};
+        border: 2.5px solid white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      `;
+
+      const label = document.createElement('div');
+      label.textContent = isHub ? `${dest.city} ✈` : dest.city;
+      label.style.cssText = `
+        margin-top: 4px;
+        font-size: ${isHub ? '12px' : '11px'};
+        font-weight: ${isHub ? '700' : '600'};
+        color: ${isHub ? '#8e244d' : '#000b60'};
+        background: rgba(255,255,255,0.85);
+        padding: 1px 5px;
+        border-radius: 4px;
+        white-space: nowrap;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      `;
+
+      pin.appendChild(dot);
+      pin.appendChild(label);
+
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        position: { lat, lng },
+        map: gmap!,
+        content: pin,
+        title: dest.city,
+      });
+
+      if (!isHub) {
+        pin.addEventListener('click', () => {
+          selectedDestination = dest;
+        });
+      }
+
+      markers.push(marker);
+    });
+  }
+
+  // ─── Reactive redraw when filter changes ───────────────────────────────────
+  $effect(() => {
+    if (gmap) drawOverlays(visibleDestinations, visibleRoutes);
+  });
+
+  // ─── Data fetching ─────────────────────────────────────────────────────────
   onMount(async () => {
     try {
       const res = await fetch(`${BASE_URL}/network/map-data`);
       if (res.ok) {
         const json = await res.json();
         if (json.status) {
-          // Add projected coordinates
-          destinations = json.data.destinations.map((d: any) => ({
-            ...d,
-            ...projectCoords(parseFloat(d.latitude), parseFloat(d.longitude))
-          }));
-          routes = json.data.routes;
-          hub = json.data.hub;
-        }
-      } else {
-        throw new Error('API returned ' + res.status);
-      }
+          destinations = json.data.destinations;
+          routes       = json.data.routes;
+          hub          = json.data.hub;
+        } else throw new Error('API status false');
+      } else throw new Error('HTTP ' + res.status);
     } catch (e) {
-      console.warn("Failed to load live map data, using mock data.", e);
-      // Fallback mock data so we can see the map before API is deployed to production
-      const mockDests = [
-        { iata_code: 'NBO', city: 'Nairobi', country_id: '1', latitude: '-1.3192', longitude: '36.9258', image_url: '' },
-        { iata_code: 'MBA', city: 'Mombasa', country_id: '1', latitude: '-4.0351', longitude: '39.5942', image_url: 'https://images.unsplash.com/photo-1549474923-28ebf4b005e8' },
-        { iata_code: 'DAR', city: 'Dar es Salaam', country_id: '3', latitude: '-6.8781', longitude: '39.2026', image_url: 'https://images.unsplash.com/photo-1626297395775-6e426cb7fb12' },
-        { iata_code: 'EBB', city: 'Entebbe', country_id: '4', latitude: '0.0424', longitude: '32.4435', image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23' },
-        { iata_code: 'KGL', city: 'Kigali', country_id: '5', latitude: '-1.9686', longitude: '30.1395', image_url: 'https://images.unsplash.com/photo-1585827552668-d06eaeb43a50' },
-        { iata_code: 'DXB', city: 'Dubai', country_id: 'AE', latitude: '25.2532', longitude: '55.3657', image_url: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c' },
-        { iata_code: 'JNB', city: 'Johannesburg', country_id: 'ZA', latitude: '-26.1392', longitude: '28.2460', image_url: 'https://images.unsplash.com/photo-1576485290814-1c72aa4bbb8e' }
+      console.warn('Using mock map data', e);
+      destinations = [
+        { iata_code:'NBO', city:'Nairobi',        country_id:'KE', latitude:'-1.3192',  longitude:'36.9258', image_url:'' },
+        { iata_code:'MBA', city:'Mombasa',         country_id:'KE', latitude:'-4.0351',  longitude:'39.5942', image_url:'https://images.unsplash.com/photo-1549474923-28ebf4b005e8?w=600&q=80' },
+        { iata_code:'DAR', city:'Dar es Salaam',   country_id:'TZ', latitude:'-6.8781',  longitude:'39.2026', image_url:'https://images.unsplash.com/photo-1626297395775-6e426cb7fb12?w=600&q=80' },
+        { iata_code:'EBB', city:'Entebbe',         country_id:'UG', latitude:'0.0424',   longitude:'32.4435', image_url:'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&q=80' },
+        { iata_code:'KGL', city:'Kigali',          country_id:'RW', latitude:'-1.9686',  longitude:'30.1395', image_url:'https://images.unsplash.com/photo-1585827552668-d06eaeb43a50?w=600&q=80' },
+        { iata_code:'JNB', city:'Johannesburg',    country_id:'ZA', latitude:'-26.1392', longitude:'28.2460', image_url:'https://images.unsplash.com/photo-1576485290814-1c72aa4bbb8e?w=600&q=80' },
+        { iata_code:'DXB', city:'Dubai',           country_id:'AE', latitude:'25.2532',  longitude:'55.3657', image_url:'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80' },
       ];
-      
-      destinations = mockDests.map((d: any) => ({
-        ...d,
-        ...projectCoords(parseFloat(d.latitude), parseFloat(d.longitude))
-      }));
-      
-      routes = mockDests.filter(d => d.iata_code !== 'NBO').map(d => ({ from: 'NBO', to: d.iata_code }));
+      routes = destinations.filter(d => d.iata_code !== 'NBO').map(d => ({ from:'NBO', to:d.iata_code }));
       hub = 'NBO';
+    }
+
+    // Load Google Maps then init
+    try {
+      await loadGoogleMapsScript();
+      initMap();
+    } catch(e) {
+      console.error('Google Maps load error', e);
     } finally {
       isLoaded = true;
     }
   });
 
-  // Calculate SVG arc path for flights
-  function createArcPath(fromIata: string, toIata: string) {
-    const from = destinations.find(d => d.iata_code === fromIata);
-    const to = destinations.find(d => d.iata_code === toIata);
-    
-    if (!from || !to) return '';
-
-    const dx = to.x - from.x;
-    const dy = to.y - from.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    // Sweep flag: 1 to arc outward/upward, 0 to arc inward/downward
-    const sweepFlag = dx > 0 ? 1 : 0; 
-    
-    // Adjust curve radius based on distance
-    const r = distance * 1.5; 
-
-    return `M ${from.x} ${from.y} A ${r} ${r} 0 0 ${sweepFlag} ${to.x} ${to.y}`;
-  }
-
-  function handleDotClick(dest: Destination) {
-    if (dest.iata_code === hub) return;
-    selectedDestination = dest;
-  }
+  onDestroy(() => clearOverlays());
 </script>
 
 <div class="w-full py-16 bg-[#f4f7fa] overflow-hidden relative">
   <div class="max-w-[1380px] mx-auto px-4 sm:px-6">
-    <h2 class="text-3xl font-light text-brand-navy mb-8 pl-4">Our network is growing</h2>
-    
-    <div class="relative w-full bg-[#e4e9f0] rounded-[24px] overflow-hidden shadow-sm" style="padding-top: 42.85%;">
-      <!-- 42.85% is 857/2000 for aspect ratio -->
-      
-      {#if isLoaded}
-        <div class="absolute inset-0 w-full h-full">
-          <!-- The Base SVG Map (styled via CSS filter or embedded) -->
-          <!-- We use an img tag pointing to the static svg, but we want it as a clean background -->
-          <img src="/world.svg" alt="World Map" class="absolute inset-0 w-full h-full object-contain opacity-80" />
-          
-          <!-- Interactive Overlay -->
-          <svg viewBox="0 0 2000 857" class="absolute inset-0 w-full h-full drop-shadow-md">
-            
-            <!-- Flight Paths -->
-            {#each routes as route}
-              <path 
-                d={createArcPath(route.from, route.to)} 
-                fill="none" 
-                stroke="#8e244d" 
-                stroke-width="1.5" 
-                stroke-linecap="round"
-                class="opacity-60 transition-all duration-300 hover:stroke-brand-blue hover:opacity-100 hover:stroke-[3px]"
-              />
-            {/each}
 
-            <!-- Destination Dots -->
-            {#each destinations as dest}
-              <g 
-                class="cursor-pointer group" 
-                onclick={() => handleDotClick(dest)}
-                role="button"
-                tabindex="0"
-                onkeypress={(e) => e.key === 'Enter' && handleDotClick(dest)}
-              >
-                <!-- Outer glow/pulse -->
-                <circle 
-                  cx={dest.x} 
-                  cy={dest.y} 
-                  r={dest.iata_code === hub ? 12 : 8} 
-                  fill={dest.iata_code === hub ? '#8e244d' : '#ffffff'} 
-                  opacity="0.3"
-                  class="group-hover:opacity-60 transition-opacity"
-                />
-                <!-- Inner solid dot -->
-                <circle 
-                  cx={dest.x} 
-                  cy={dest.y} 
-                  r={dest.iata_code === hub ? 6 : 4} 
-                  fill={dest.iata_code === hub ? '#8e244d' : '#5b51d8'} 
-                  stroke="#ffffff"
-                  stroke-width="1.5"
-                />
-                
-                {#if dest.iata_code === hub}
-                  <text 
-                    x={dest.x + 15} 
-                    y={dest.y + 4} 
-                    fill="#8e244d" 
-                    font-size="14" 
-                    font-weight="bold"
-                    class="drop-shadow-sm"
-                  >
-                    {dest.city} (Hub)
-                  </text>
-                {:else}
-                  <text 
-                    x={dest.x + 10} 
-                    y={dest.y + 4} 
-                    fill="#333" 
-                    font-size="11" 
-                    font-weight="500"
-                    opacity="0"
-                    class="group-hover:opacity-100 transition-opacity"
-                  >
-                    {dest.city}
-                  </text>
-                {/if}
-              </g>
-            {/each}
-          </svg>
+    <!-- Header + region filters -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pl-1">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-[#8e244d] mb-1">Live Network</p>
+        <h2 class="text-3xl font-light text-brand-navy">Our network is growing</h2>
+      </div>
+      <div class="flex flex-wrap gap-2 pr-2">
+        {#each regions as region}
+          <button
+            class="px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200"
+            class:bg-[#000b60]={activeRegion === region}
+            class:text-white={activeRegion === region}
+            class:border-[#000b60]={activeRegion === region}
+            class:bg-white={activeRegion !== region}
+            class:text-[#000b60]={activeRegion !== region}
+            class:border-[#cbd5e1]={activeRegion !== region}
+            onclick={() => { activeRegion = region; selectedDestination = null; }}
+          >
+            {region}
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    <!-- Map container -->
+    <div class="relative w-full rounded-[24px] overflow-hidden shadow-md" style="height: 520px;">
+      <div bind:this={mapEl} class="w-full h-full"></div>
+
+      <!-- Loading skeleton -->
+      {#if !isLoaded}
+        <div class="absolute inset-0 bg-[#dce3ec] flex items-center justify-center">
+          <div class="text-brand-navy/40 text-sm animate-pulse">Loading map…</div>
         </div>
       {/if}
 
-      <!-- Popup Modal -->
+      <!-- Destination popup card -->
       {#if selectedDestination}
-        <div 
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-[16px] shadow-2xl overflow-hidden w-[340px] z-50 flex flex-col"
+        <div
+          class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-[18px] shadow-2xl overflow-hidden z-50 flex w-[360px]"
           in:scale={{ duration: 200, start: 0.95 }}
           out:fade={{ duration: 150 }}
         >
-          <div class="relative h-[160px] bg-slate-200">
+          <!-- Destination image -->
+          <div class="w-[130px] shrink-0 bg-slate-200 relative">
             {#if selectedDestination.image_url}
               <img src={selectedDestination.image_url} alt={selectedDestination.city} class="w-full h-full object-cover" />
+            {:else}
+              <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#000b60]/10 to-[#8e244d]/10">
+                <span class="text-3xl font-bold text-[#000b60]/30">{selectedDestination.iata_code}</span>
+              </div>
             {/if}
-            <button 
-              class="absolute top-3 right-3 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center backdrop-blur-sm transition-colors text-brand-navy"
-              onclick={() => selectedDestination = null}
-            >
-              <X size={18} />
-            </button>
           </div>
-          
-          <div class="p-5 flex flex-col items-center">
-            <h3 class="text-xl font-semibold text-brand-navy">{selectedDestination.city}</h3>
-            <p class="text-sm text-text-muted mb-4">{selectedDestination.country_id}</p>
-            
-            <div class="flex items-center justify-between w-full mb-6">
-              <div class="flex flex-col text-center">
-                <span class="text-2xl font-bold text-brand-navy">{hub}</span>
-                <span class="text-xs text-text-muted">Nairobi</span>
-              </div>
-              <div class="flex-1 px-4 flex flex-col items-center">
-                <div class="h-[1px] w-full bg-border relative">
-                  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-text-muted">
-                    ✈
-                  </div>
+
+          <!-- Info -->
+          <div class="flex-1 p-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between">
+                <div>
+                  <h3 class="text-base font-bold text-[#000b60] leading-tight">{selectedDestination.city}</h3>
+                  <p class="text-xs text-gray-400 mt-0.5">{getRegion(selectedDestination.iata_code)}</p>
                 </div>
-                <span class="text-[10px] text-text-muted mt-2">Direct</span>
+                <button
+                  class="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors"
+                  onclick={() => selectedDestination = null}
+                >
+                  <X size={14} />
+                </button>
               </div>
-              <div class="flex flex-col text-center">
-                <span class="text-2xl font-bold text-brand-navy">{selectedDestination.iata_code}</span>
-                <span class="text-xs text-text-muted">{selectedDestination.city}</span>
+
+              <div class="flex items-center gap-1.5 mt-3 text-xs text-gray-500">
+                <span class="font-semibold text-[#000b60]">{hub}</span>
+                <span class="text-gray-300 text-base">–</span>
+                <span class="font-semibold text-[#000b60]">{selectedDestination.iata_code}</span>
               </div>
             </div>
-            
-            <a 
+
+            <a
               href={`/search?from=${hub}&to=${selectedDestination.iata_code}`}
-              class="w-full bg-[#8e244d] hover:bg-[#721c3d] text-white rounded-full py-3 text-center text-sm font-semibold transition-colors"
+              class="mt-3 block w-full bg-[#000b60] hover:bg-[#000940] text-white text-center text-xs font-semibold py-2.5 rounded-full transition-colors"
             >
-              Book now
+              Book this route →
             </a>
           </div>
         </div>
-        
-        <!-- Backdrop click to close -->
+
+        <!-- Click-outside backdrop (invisible) -->
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <div 
-          class="absolute inset-0 bg-brand-navy/10 backdrop-blur-[1px] z-40"
+        <div
+          class="absolute inset-0 z-40"
           onclick={() => selectedDestination = null}
-          transition:fade={{ duration: 150 }}
+          transition:fade={{ duration: 100 }}
         ></div>
+        <!-- The card is placed above the backdrop via z-50 -->
       {/if}
     </div>
+
   </div>
 </div>
