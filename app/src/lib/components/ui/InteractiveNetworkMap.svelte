@@ -3,8 +3,9 @@
   import { X } from 'lucide-svelte';
   import { fade, scale } from 'svelte/transition';
 
-  const MAPS_KEY   = import.meta.env.VITE_GOOGLE_MAPS_KEY;
-  const BASE_URL   = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
+  const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY;
+  const MAPS_ID  = import.meta.env.VITE_GOOGLE_MAPS_ID;
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
 
   interface Destination {
     iata_code: string;
@@ -18,8 +19,7 @@
   interface Route { from: string; to: string; }
 
   let mapEl: HTMLDivElement;
-  
-  let gmap: google.maps.Map | null = null;
+  let gmap = $state<google.maps.Map | null>(null);
   let arcs: google.maps.Polyline[] = [];
   let markers: google.maps.marker.AdvancedMarkerElement[] = [];
 
@@ -72,9 +72,9 @@
   // ─── Map initialisation ────────────────────────────────────────────────────
   function initMap() {
     gmap = new google.maps.Map(mapEl, {
-      center: { lat: 0, lng: 25 },   // centred on Africa
+      center: { lat: 0, lng: 25 },
       zoom: 4,
-      mapId: 'airlogix_network',     // required for Advanced Markers
+      mapId: MAPS_ID,
       mapTypeId: 'roadmap',
       disableDefaultUI: false,
       zoomControl: true,
@@ -153,61 +153,64 @@
       arcs.push(line);
     });
 
-    // Markers
-    dests.forEach(dest => {
-      const isHub = dest.iata_code === hub;
-      const lat = parseFloat(dest.latitude);
-      const lng = parseFloat(dest.longitude);
+      // Markers — AdvancedMarkerElement with custom HTML pins
+      dests.forEach(dest => {
+        const isHub = dest.iata_code === hub;
+        const lat   = parseFloat(dest.latitude);
+        const lng   = parseFloat(dest.longitude);
 
-      const pin = document.createElement('div');
-      pin.style.cssText = `
-        display:flex; flex-direction:column; align-items:center; cursor:pointer;
-        font-family: system-ui, sans-serif;
-      `;
+        // Build custom HTML pin element
+        const pin = document.createElement('div');
+        pin.style.cssText = 'display:flex;flex-direction:column;align-items:center;cursor:pointer;';
 
-      const dot = document.createElement('div');
-      dot.style.cssText = `
-        width: ${isHub ? '18px' : '12px'};
-        height: ${isHub ? '18px' : '12px'};
-        border-radius: 50%;
-        background: ${isHub ? '#8e244d' : '#000b60'};
-        border: 2.5px solid white;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      `;
+        const dot = document.createElement('div');
+        dot.style.cssText = `
+          width:${isHub ? '20px' : '13px'};
+          height:${isHub ? '20px' : '13px'};
+          border-radius:50%;
+          background:${isHub ? '#8e244d' : '#000b60'};
+          border:2.5px solid white;
+          box-shadow:0 2px 8px rgba(0,0,0,0.35);
+          transition:transform 0.2s;
+        `;
+        dot.onmouseenter = () => { dot.style.transform = 'scale(1.3)'; };
+        dot.onmouseleave = () => { dot.style.transform = 'scale(1)'; };
 
-      const label = document.createElement('div');
-      label.textContent = isHub ? `${dest.city} ✈` : dest.city;
-      label.style.cssText = `
-        margin-top: 4px;
-        font-size: ${isHub ? '12px' : '11px'};
-        font-weight: ${isHub ? '700' : '600'};
-        color: ${isHub ? '#8e244d' : '#000b60'};
-        background: rgba(255,255,255,0.85);
-        padding: 1px 5px;
-        border-radius: 4px;
-        white-space: nowrap;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-      `;
+        const lbl = document.createElement('div');
+        lbl.textContent = isHub ? `${dest.city} ✈` : dest.city;
+        lbl.style.cssText = `
+          margin-top:4px;
+          font-size:${isHub ? '12px' : '11px'};
+          font-weight:${isHub ? '700' : '600'};
+          color:${isHub ? '#8e244d' : '#000b60'};
+          background:rgba(255,255,255,0.9);
+          padding:1px 6px;
+          border-radius:4px;
+          white-space:nowrap;
+          box-shadow:0 1px 4px rgba(0,0,0,0.15);
+          pointer-events:none;
+        `;
 
-      pin.appendChild(dot);
-      pin.appendChild(label);
+        pin.appendChild(dot);
+        pin.appendChild(lbl);
 
-      const marker = new google.maps.marker.AdvancedMarkerElement({
-        position: { lat, lng },
-        map: gmap!,
-        content: pin,
-        title: dest.city,
-      });
-
-      if (!isHub) {
-        pin.addEventListener('click', () => {
-          selectedDestination = dest;
+        const marker = new google.maps.marker.AdvancedMarkerElement({
+          position: { lat, lng },
+          map: gmap!,
+          content: pin,
+          title: dest.city,
+          zIndex: isHub ? 10 : 5,
         });
-      }
 
-      markers.push(marker);
-    });
-  }
+        if (!isHub) {
+          marker.addListener('click', () => {
+            selectedDestination = dest;
+          });
+        }
+
+        markers.push(marker);
+      });
+    }
 
   // ─── Reactive redraw when filter changes ───────────────────────────────────
   $effect(() => {
@@ -241,10 +244,12 @@
       hub = 'NBO';
     }
 
-    // Load Google Maps then init
+    // Load Google Maps then init and draw
     try {
       await loadGoogleMapsScript();
       initMap();
+      // Draw immediately — $effect already ran when gmap was null
+      drawOverlays(visibleDestinations, visibleRoutes);
     } catch(e) {
       console.error('Google Maps load error', e);
     } finally {
