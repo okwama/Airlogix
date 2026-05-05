@@ -1,6 +1,7 @@
 <script>
   import FlightSearchForm from '$lib/features/flights/FlightSearchForm.svelte';
   import CargoSearchForm from '$lib/features/cargo/CargoSearchForm.svelte';
+  import InteractiveNetworkMap from '$lib/components/ui/InteractiveNetworkMap.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import { Sparkles, Clock, Handshake, Plane, Package, ShieldCheck, TimerReset, Wifi, ArrowRight } from 'lucide-svelte';
   import { appConfig } from '$lib/config/appConfig';
@@ -198,4 +199,8 @@
       </Card>
     </div>
   </section>
+
+  <!-- Interactive Network Map Section -->
+  <InteractiveNetworkMap />
+
 </main>

@@ -4,7 +4,7 @@
 .DS_Store
 Thumbs.db
 __MACOSX/
-
+api
 api/.env
 api/error_log
 api/admin/error_log
