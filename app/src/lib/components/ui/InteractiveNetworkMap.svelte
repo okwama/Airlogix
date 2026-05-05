@@ -3,18 +3,36 @@
   import { fade, scale } from 'svelte/transition';
   import { X } from 'lucide-svelte';
 
-  let destinations = $state([]);
-  let routes = $state([]);
-  let hub = $state('NBO');
-  let selectedDestination = $state(null);
-  let isLoaded = $state(false);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
+
+  interface Destination {
+    iata_code: string;
+    city: string;
+    country_id: string;
+    latitude: string;
+    longitude: string;
+    image_url: string;
+    x: number;
+    y: number;
+  }
+
+  interface Route {
+    from: string;
+    to: string;
+  }
+
+  let destinations = $state<Destination[]>([]);
+  let routes = $state<Route[]>([]);
+  let hub = $state<string>('NBO');
+  let selectedDestination = $state<Destination | null>(null);
+  let isLoaded = $state<boolean>(false);
 
   // SVG dimensions from world.svg viewBox
   const MAP_WIDTH = 2000;
   const MAP_HEIGHT = 857;
 
   // Simple projection function (Equirectangular with slight adjustments for typical SVG maps)
-  function projectCoords(lat, lng) {
+  function projectCoords(lat: number, lng: number) {
     // These calibration values might need tweaking depending on the exact SVG projection used by simplemaps
     const x = (lng + 180) * (MAP_WIDTH / 360);
     // Miller/Mercator maps stretch the Y axis at poles. For simplicity we use linear, but add a slight offset.
@@ -29,28 +47,48 @@
 
   onMount(async () => {
     try {
-      const res = await fetch('/api/network/map-data');
+      const res = await fetch(`${BASE_URL}/network/map-data`);
       if (res.ok) {
         const json = await res.json();
         if (json.status) {
           // Add projected coordinates
-          destinations = json.data.destinations.map(d => ({
+          destinations = json.data.destinations.map((d: any) => ({
             ...d,
             ...projectCoords(parseFloat(d.latitude), parseFloat(d.longitude))
           }));
           routes = json.data.routes;
           hub = json.data.hub;
         }
+      } else {
+        throw new Error('API returned ' + res.status);
       }
     } catch (e) {
-      console.error("Failed to load map data", e);
+      console.warn("Failed to load live map data, using mock data.", e);
+      // Fallback mock data so we can see the map before API is deployed to production
+      const mockDests = [
+        { iata_code: 'NBO', city: 'Nairobi', country_id: '1', latitude: '-1.3192', longitude: '36.9258', image_url: '' },
+        { iata_code: 'MBA', city: 'Mombasa', country_id: '1', latitude: '-4.0351', longitude: '39.5942', image_url: 'https://images.unsplash.com/photo-1549474923-28ebf4b005e8' },
+        { iata_code: 'DAR', city: 'Dar es Salaam', country_id: '3', latitude: '-6.8781', longitude: '39.2026', image_url: 'https://images.unsplash.com/photo-1626297395775-6e426cb7fb12' },
+        { iata_code: 'EBB', city: 'Entebbe', country_id: '4', latitude: '0.0424', longitude: '32.4435', image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23' },
+        { iata_code: 'KGL', city: 'Kigali', country_id: '5', latitude: '-1.9686', longitude: '30.1395', image_url: 'https://images.unsplash.com/photo-1585827552668-d06eaeb43a50' },
+        { iata_code: 'DXB', city: 'Dubai', country_id: 'AE', latitude: '25.2532', longitude: '55.3657', image_url: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c' },
+        { iata_code: 'JNB', city: 'Johannesburg', country_id: 'ZA', latitude: '-26.1392', longitude: '28.2460', image_url: 'https://images.unsplash.com/photo-1576485290814-1c72aa4bbb8e' }
+      ];
+      
+      destinations = mockDests.map((d: any) => ({
+        ...d,
+        ...projectCoords(parseFloat(d.latitude), parseFloat(d.longitude))
+      }));
+      
+      routes = mockDests.filter(d => d.iata_code !== 'NBO').map(d => ({ from: 'NBO', to: d.iata_code }));
+      hub = 'NBO';
     } finally {
       isLoaded = true;
     }
   });
 
   // Calculate SVG arc path for flights
-  function createArcPath(fromIata, toIata) {
+  function createArcPath(fromIata: string, toIata: string) {
     const from = destinations.find(d => d.iata_code === fromIata);
     const to = destinations.find(d => d.iata_code === toIata);
     
@@ -69,7 +107,7 @@
     return `M ${from.x} ${from.y} A ${r} ${r} 0 0 ${sweepFlag} ${to.x} ${to.y}`;
   }
 
-  function handleDotClick(dest) {
+  function handleDotClick(dest: Destination) {
     if (dest.iata_code === hub) return;
     selectedDestination = dest;
   }
