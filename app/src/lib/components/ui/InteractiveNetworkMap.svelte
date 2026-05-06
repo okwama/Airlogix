@@ -21,7 +21,9 @@
   let mapEl: HTMLDivElement;
   let gmap = $state<google.maps.Map | null>(null);
   let arcs: google.maps.Polyline[] = [];
-  let markers: google.maps.marker.AdvancedMarkerElement[] = [];
+  let markers: google.maps.Marker[] = [];
+  let planeMarkers: google.maps.Marker[] = [];
+  let planeTimers: ReturnType<typeof setInterval>[] = [];
 
   let destinations = $state<Destination[]>([]);
   let routes       = $state<Route[]>([]);
@@ -74,22 +76,27 @@
     gmap = new google.maps.Map(mapEl, {
       center: { lat: 0, lng: 25 },
       zoom: 4,
-      mapId: MAPS_ID,
+      // No mapId — allows the styles array below to apply
       mapTypeId: 'roadmap',
       disableDefaultUI: false,
       zoomControl: true,
       streetViewControl: false,
       mapTypeControl: false,
       fullscreenControl: true,
+      gestureHandling: 'cooperative',
       styles: [
-        // Subtle desaturated style so flight paths pop
-        { featureType: 'all', stylers: [{ saturation: -30 }, { lightness: 5 }] },
-        { featureType: 'water', stylers: [{ color: '#c8d8e8' }] },
-        { featureType: 'landscape', stylers: [{ color: '#f0f4f8' }] },
-        { featureType: 'road', stylers: [{ visibility: 'simplified' }, { lightness: 40 }] },
-        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-        { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-        { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#aabbcc' }, { weight: 1 }] },
+        // Clean grey atlas look
+        { elementType: 'geometry',            stylers: [{ color: '#f0f0f0' }] },
+        { elementType: 'labels',              stylers: [{ visibility: 'off' }] },
+        { featureType: 'water',               stylers: [{ color: '#d4e4ef' }] },
+        { featureType: 'landscape',           stylers: [{ color: '#ebebeb' }] },
+        { featureType: 'road',                stylers: [{ visibility: 'off'  }] },
+        { featureType: 'poi',                 stylers: [{ visibility: 'off'  }] },
+        { featureType: 'transit',             stylers: [{ visibility: 'off'  }] },
+        { featureType: 'administrative.country', elementType: 'geometry.stroke',
+          stylers: [{ color: '#b0b8c4' }, { weight: 1 }] },
+        { featureType: 'administrative.province', elementType: 'geometry.stroke',
+          stylers: [{ visibility: 'off' }] },
       ],
     });
   }
@@ -97,9 +104,55 @@
   // ─── Draw everything ───────────────────────────────────────────────────────
   function clearOverlays() {
     arcs.forEach(a => a.setMap(null));
-    markers.forEach(m => { m.map = null; });
-    arcs = [];
-    markers = [];
+    markers.forEach(m => m.setMap(null));
+    planeMarkers.forEach(p => p.setMap(null));
+    planeTimers.forEach(t => clearInterval(t));
+    arcs = []; markers = []; planeMarkers = []; planeTimers = [];
+  }
+
+  // ─── SVG dot+label icon (matches reference image style) ───────────────────
+  function makeDotIcon(isHub: boolean, city: string): google.maps.Icon {
+    const fill   = isHub ? '#8e244d' : '#000b60';
+    const r      = isHub ? 9 : 5;
+    const label  = isHub ? `${city} (Hub)` : city;
+    const tw     = label.length * (isHub ? 7 : 6.2);
+    const w      = r * 2 + 10 + tw;
+    const h      = 24;
+    const cy     = h / 2;
+    const svg = [
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">`,
+      `<circle cx="${r}" cy="${cy}" r="${r}" fill="${fill}" stroke="white" stroke-width="2.5"/>`,
+      `<text x="${r*2+6}" y="${cy+4}" font-family="system-ui,sans-serif"`,
+      ` font-size="${isHub ? 12 : 11}" font-weight="${isHub ? 700 : 600}" fill="${fill}">${label}</text>`,
+      '</svg>'
+    ].join('');
+    return {
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+      anchor: new google.maps.Point(r, cy),
+      scaledSize: new google.maps.Size(w, h),
+    };
+  }
+
+  // ─── Plane icon SVG ────────────────────────────────────────────────────────
+  function makePlaneIcon(heading: number): google.maps.Icon {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+      style="transform:rotate(${heading}deg)">
+      <path fill="#8e244d" d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/>
+    </svg>`;
+    return {
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+      anchor: new google.maps.Point(10, 10),
+      scaledSize: new google.maps.Size(20, 20),
+    };
+  }
+
+  function bearingBetween(p1: google.maps.LatLngLiteral, p2: google.maps.LatLngLiteral) {
+    const dLng = (p2.lng - p1.lng) * Math.PI / 180;
+    const lat1 = p1.lat * Math.PI / 180;
+    const lat2 = p2.lat * Math.PI / 180;
+    const y = Math.sin(dLng) * Math.cos(lat2);
+    const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLng);
+    return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
   }
 
   function geodesicMidpoint(lat1: number, lng1: number, lat2: number, lng2: number, bendFactor = 0.35) {
@@ -137,80 +190,68 @@
 
     const destMap = Object.fromEntries(dests.map(d => [d.iata_code, d]));
 
-    // Flight arcs
-    rts.forEach(r => {
+    // ── Flight arcs (maroon, curved) ──────────────────────────────────────────
+    rts.forEach((r, idx) => {
       const from = destMap[r.from];
       const to   = destMap[r.to];
       if (!from || !to) return;
+
+      const path = buildArcPath(from, to);
+
       const line = new google.maps.Polyline({
-        path: buildArcPath(from, to),
+        path,
         geodesic: false,
-        strokeColor: '#000b60',
-        strokeOpacity: 0.7,
-        strokeWeight: 2,
+        strokeColor: '#8e244d',
+        strokeOpacity: 0.75,
+        strokeWeight: 1.5,
         map: gmap!,
       });
       arcs.push(line);
+
+      // ── Animated plane along each arc ─────────────────────────────────────
+      const planeMk = new google.maps.Marker({
+        position: path[0],
+        map: gmap!,
+        icon: makePlaneIcon(0),
+        zIndex: 20,
+      });
+      planeMarkers.push(planeMk);
+
+      const STEPS = path.length;
+      let step = (idx * Math.floor(STEPS / rts.length)) % STEPS; // stagger start
+      const timer = setInterval(() => {
+        step = (step + 1) % STEPS;
+        const pos  = path[step];
+        const next = path[(step + 1) % STEPS];
+        planeMk.setPosition(pos);
+        planeMk.setIcon(makePlaneIcon(bearingBetween(pos, next)));
+      }, 60);
+      planeTimers.push(timer);
     });
 
-      // Markers — AdvancedMarkerElement with custom HTML pins
-      dests.forEach(dest => {
-        const isHub = dest.iata_code === hub;
-        const lat   = parseFloat(dest.latitude);
-        const lng   = parseFloat(dest.longitude);
+    // ── Destination markers (SVG dot + label) ─────────────────────────────────
+    dests.forEach(dest => {
+      const isHub = dest.iata_code === hub;
+      const lat   = parseFloat(dest.latitude);
+      const lng   = parseFloat(dest.longitude);
 
-        // Build custom HTML pin element
-        const pin = document.createElement('div');
-        pin.style.cssText = 'display:flex;flex-direction:column;align-items:center;cursor:pointer;';
-
-        const dot = document.createElement('div');
-        dot.style.cssText = `
-          width:${isHub ? '20px' : '13px'};
-          height:${isHub ? '20px' : '13px'};
-          border-radius:50%;
-          background:${isHub ? '#8e244d' : '#000b60'};
-          border:2.5px solid white;
-          box-shadow:0 2px 8px rgba(0,0,0,0.35);
-          transition:transform 0.2s;
-        `;
-        dot.onmouseenter = () => { dot.style.transform = 'scale(1.3)'; };
-        dot.onmouseleave = () => { dot.style.transform = 'scale(1)'; };
-
-        const lbl = document.createElement('div');
-        lbl.textContent = isHub ? `${dest.city} ✈` : dest.city;
-        lbl.style.cssText = `
-          margin-top:4px;
-          font-size:${isHub ? '12px' : '11px'};
-          font-weight:${isHub ? '700' : '600'};
-          color:${isHub ? '#8e244d' : '#000b60'};
-          background:rgba(255,255,255,0.9);
-          padding:1px 6px;
-          border-radius:4px;
-          white-space:nowrap;
-          box-shadow:0 1px 4px rgba(0,0,0,0.15);
-          pointer-events:none;
-        `;
-
-        pin.appendChild(dot);
-        pin.appendChild(lbl);
-
-        const marker = new google.maps.marker.AdvancedMarkerElement({
-          position: { lat, lng },
-          map: gmap!,
-          content: pin,
-          title: dest.city,
-          zIndex: isHub ? 10 : 5,
-        });
-
-        if (!isHub) {
-          marker.addListener('click', () => {
-            selectedDestination = dest;
-          });
-        }
-
-        markers.push(marker);
+      const marker = new google.maps.Marker({
+        position: { lat, lng },
+        map: gmap!,
+        icon: makeDotIcon(isHub, dest.city),
+        zIndex: isHub ? 15 : 10,
+        title: dest.city,
       });
-    }
+
+      if (!isHub) {
+        marker.addListener('click', () => {
+          selectedDestination = dest;
+        });
+      }
+
+      markers.push(marker);
+    });
+  }
 
   // ─── Reactive redraw when filter changes ───────────────────────────────────
   $effect(() => {
