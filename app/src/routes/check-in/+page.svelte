@@ -89,9 +89,9 @@
     <div class="space-y-8">
       <header class="space-y-4">
         <p class="ui-label">Express Departure</p>
-        <h1 class="hero-display">Check in online before you reach the airport.</h1>
-        <p class="max-w-[620px] text-[16px] leading-8 text-[color:var(--color-text-body)]">
-          Keep the current OTP-backed access flow, but present check-in with the same premium calm as account, cargo, and manage.
+        <h1 class="hero-display">Check in before you reach the airport.</h1>
+        <p class="max-w-[560px] text-[15px] leading-7 text-[color:var(--color-text-body)]">
+          Complete your online check-in up to 24 hours before departure and skip the queues.
         </p>
       </header>
 

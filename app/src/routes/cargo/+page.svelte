@@ -14,9 +14,9 @@
   <div class="page-width space-y-16">
     <header class="max-w-[860px] space-y-4 pt-4 sm:pt-8">
       <p class="ui-label">Cargo Logistics</p>
-      <h1 class="hero-display">Global air freight handled with editorial calm and operational precision.</h1>
-      <p class="max-w-[720px] text-[16px] leading-8 text-[color:var(--color-text-body)] sm:text-[18px]">
-        Secure your shipments through MC Aviation Air with the same confidence, timing discipline, and premium handling standards that define our passenger network.
+      <h1 class="hero-display">Ship freight across Africa and beyond.</h1>
+      <p class="max-w-[620px] text-[16px] leading-7 text-[color:var(--color-text-body)]">
+        Book, track and manage air cargo with the same reliability as our passenger network.
       </p>
     </header>
 

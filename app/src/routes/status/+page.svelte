@@ -23,11 +23,11 @@
 <main class="page-shell pb-20 pt-8 sm:pt-10">
   <div class="page-width space-y-10">
     <header class="rounded-[28px] bg-[color:var(--color-surface-lowest)] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
-      <div class="max-w-[820px] space-y-3">
+      <div class="max-w-[640px] space-y-3">
         <p class="ui-label">Flight Status</p>
-        <h1 class="hero-display">Track a flight with the same calm clarity as the rest of the journey.</h1>
-        <p class="max-w-[720px] text-[15px] text-[color:var(--color-text-body)] sm:text-[17px]">
-          Search by flight number or by route and date. The flow stays operationally simple, but the presentation now matches the wider editorial system.
+        <h1 class="hero-display">Track your flight status in real time.</h1>
+        <p class="text-[15px] text-[color:var(--color-text-body)]">
+          Search by flight number or route to get live departure, arrival, and delay information.
         </p>
       </div>
     </header>

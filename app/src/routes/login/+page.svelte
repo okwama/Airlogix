@@ -43,9 +43,9 @@
   <div class="page-width grid gap-8 lg:grid-cols-[0.9fr_0.8fr] lg:items-center">
     <div class="max-w-[560px] space-y-4">
       <p class="ui-label">Welcome back</p>
-      <h1 class="hero-display">Return to your account with the same calm precision as the flight itself.</h1>
-      <p class="max-w-[520px] text-[16px] leading-8 text-[color:var(--color-text-body)]">
-        Sign in to manage bookings, monitor loyalty, review notifications, and keep your travel profile current.
+      <h1 class="hero-display">Log in to your account.</h1>
+      <p class="max-w-[440px] text-[15px] leading-7 text-[color:var(--color-text-body)]">
+        Manage your bookings, loyalty points and travel profile in one place.
       </p>
     </div>
 

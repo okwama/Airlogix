@@ -24,8 +24,10 @@
   <div class="page-width grid gap-8 lg:grid-cols-[0.95fr_0.85fr] lg:items-center">
     <div class="space-y-4">
       <p class="ui-label">Cargo Tracking</p>
-      <h1 class="hero-display">Open shipment milestones with a single AWB.</h1>
-      <p class="max-w-[560px] text-[16px] leading-8 text-[color:var(--color-text-body)]">Enter the waybill number to view public cargo progress, then unlock full label data through the OTP flow when needed.</p>
+      <h1 class="hero-display">Track your cargo shipment.</h1>
+      <p class="max-w-[440px] text-[15px] leading-7 text-[color:var(--color-text-body)]">
+        Enter your Air Waybill (AWB) number to view live shipment progress and milestones.
+      </p>
     </div>
 
     <Card tone="highest" class="px-6 py-7 sm:px-8 sm:py-9">

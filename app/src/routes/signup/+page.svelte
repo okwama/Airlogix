@@ -57,9 +57,9 @@
   <div class="page-width grid gap-8 lg:grid-cols-[0.9fr_0.9fr] lg:items-center">
     <div class="max-w-[560px] space-y-4">
       <p class="ui-label">Create account</p>
-      <h1 class="hero-display">Join once and keep your trips, cargo, loyalty, and profile in one premium control center.</h1>
-      <p class="max-w-[520px] text-[16px] leading-8 text-[color:var(--color-text-body)]">
-        Registration gives you a cleaner account experience without changing the guest flows that already work.
+      <h1 class="hero-display">Create your free account.</h1>
+      <p class="max-w-[440px] text-[15px] leading-7 text-[color:var(--color-text-body)]">
+        Book flights, track shipments and manage your entire journey in one place.
       </p>
     </div>
 

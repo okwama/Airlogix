@@ -5,8 +5,8 @@
   import { appConfig } from '$lib/config/appConfig';
 </script>
 
-<footer class="page-shell mt-20 pb-8 pt-4">
-  <div class="w-full editorial-panel overflow-hidden px-6 py-10 sm:px-8 lg:px-10">
+<footer class="w-full bg-[color:var(--color-surface-low)] mt-20 border-t border-[color:var(--color-border)]">
+  <div class="page-shell page-width py-12">
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
       <div class="space-y-4">
         <a href="/" class="inline-flex items-center gap-3">
