@@ -14,7 +14,7 @@
           <span class="text-[18px] font-bold tracking-[-0.03em] text-[color:var(--color-brand-navy)]">{appConfig.name}</span>
         </a>
         <p class="max-w-[360px] text-[14px] text-[color:var(--color-text-body)]">
-          {appConfig.description}
+          {appConfig.description}F
         </p>
         <p class="ui-label">Modern concierge travel, cargo, and account services.</p>
       </div>

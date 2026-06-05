@@ -117,7 +117,7 @@
     <div class="label-header">
       <div class="flex items-center justify-between">
         <div>
-          <span class="label-airline">MC AVIATION</span>
+          <span class="label-airline">Royal</span>
           <span class="label-type">AIR WAYBILL</span>
         </div>
         <div class="label-commodity">
@@ -191,7 +191,7 @@
     <!-- Footer -->
     <div class="label-footer">
       <span>mcaviation.aero &mdash; Scan to track shipment</span>
-      <span>NOT NEGOTIABLE &mdash; ISSUED BY MC AVIATION</span>
+      <span>NOT NEGOTIABLE &mdash; ISSUED BY Royal</span>
     </div>
   </div>
 </div>

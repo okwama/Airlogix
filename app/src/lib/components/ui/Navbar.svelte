@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { page } from '$app/state';
+  import { Menu, X } from 'lucide-svelte';
   import CurrencySelector from '$lib/features/payment/CurrencySelector.svelte';
   import logo from '$lib/assets/logo.png';
   import { authStore } from '$lib/stores/authStore.svelte';
@@ -10,6 +11,7 @@
   import { accountService } from '$lib/services/account/accountService';
 
   let unreadCount = $state(0);
+  let isMobileMenuOpen = $state(false);
 
   const links = [
     { href: '/', label: 'Book', key: 'book' },
@@ -44,6 +46,10 @@
     authStore.logout();
     goto('/login');
   }
+  
+  function closeMobileMenu() {
+    isMobileMenuOpen = false;
+  }
 
   onMount(async () => {
     await authStore.init();
@@ -53,7 +59,7 @@
 
 <nav class="sticky top-0 z-[100] px-3 pt-3 sm:px-5 sm:pt-4">
   <div class="glass-nav mx-auto flex h-[74px] w-full items-center justify-between rounded-[22px] px-5 sm:px-7">
-    <a href="/" class="flex items-center gap-3 text-[color:var(--color-brand-navy)]">
+    <a href="/" class="flex items-center gap-3 text-[color:var(--color-brand-navy)]" onclick={closeMobileMenu}>
       <img src={logo} alt={appConfig.name} class="h-10 w-auto object-contain" />
       <span class="hidden text-[18px] font-bold tracking-[-0.03em] md:inline">{appConfig.name}</span>
     </a>
@@ -86,6 +92,7 @@
         <a
           href="/account"
           class="relative inline-flex min-h-[42px] items-center justify-center rounded-[999px] bg-[color:var(--color-brand-navy)] px-4 text-[13px] font-semibold text-white shadow-[0_18px_38px_rgba(0,11,96,0.16)] hover:-translate-y-0.5"
+          onclick={closeMobileMenu}
         >
           My account
           {#if unreadCount > 0}
@@ -111,10 +118,78 @@
         <a
           href="/signup"
           class="inline-flex min-h-[42px] items-center justify-center rounded-[999px] bg-[color:var(--color-brand-navy)] px-4 text-[13px] font-semibold text-white shadow-[0_18px_38px_rgba(0,11,96,0.16)] hover:-translate-y-0.5"
+          onclick={closeMobileMenu}
         >
           Sign up
         </a>
       {/if}
+
+      <!-- Mobile Menu Button -->
+      <button
+        type="button"
+        class="inline-flex items-center justify-center p-1 text-[color:var(--color-brand-navy)] md:hidden"
+        onclick={() => isMobileMenuOpen = !isMobileMenuOpen}
+        aria-label="Toggle mobile menu"
+      >
+        {#if isMobileMenuOpen}
+          <X size={26} />
+        {:else}
+          <Menu size={26} />
+        {/if}
+      </button>
     </div>
   </div>
+
+  <!-- Mobile Menu Dropdown -->
+  {#if isMobileMenuOpen}
+    <div class="absolute inset-x-0 top-[90px] mx-3 rounded-[22px] bg-[color:var(--color-surface-lowest)] p-5 shadow-[0_24px_64px_rgba(0,11,96,0.14)] md:hidden border border-[color:var(--color-border)] z-[90]">
+      <div class="flex flex-col gap-5">
+        <div class="flex flex-col gap-4">
+          {#each links as link}
+            <a
+              href={link.href}
+              class={`text-[16px] font-semibold tracking-[-0.01em] ${isActive(link.href) ? 'text-[color:var(--color-brand-navy)]' : 'text-[color:var(--color-text-body)]'}`}
+              onclick={closeMobileMenu}
+            >
+              {link.label}
+            </a>
+          {/each}
+        </div>
+        
+        <div class="h-[1px] w-full bg-[color:var(--color-border)]/50"></div>
+        
+        <div class="flex items-center justify-between sm:hidden">
+          <span class="text-[14px] font-medium text-[color:var(--color-text-body)]">Currency</span>
+          <CurrencySelector />
+        </div>
+        
+        {#if !authStore.isAuthenticated}
+          <div class="h-[1px] w-full bg-[color:var(--color-border)]/50 sm:hidden"></div>
+          <div class="flex flex-col gap-3 sm:hidden">
+            <a
+              href="/login"
+              class="inline-flex min-h-[46px] w-full items-center justify-center rounded-[12px] bg-[color:var(--color-surface-low)] px-4 text-[14px] font-semibold text-[color:var(--color-brand-navy)]"
+              onclick={closeMobileMenu}
+            >
+              Log in
+            </a>
+          </div>
+        {:else}
+          <div class="h-[1px] w-full bg-[color:var(--color-border)]/50 sm:hidden"></div>
+          <div class="flex items-center justify-between sm:hidden">
+             <span class="text-[14px] text-[color:var(--color-text-body)]">
+               Hi, {authStore.user?.first_name || 'traveler'}
+             </span>
+             <button
+               type="button"
+               onclick={() => { logout(); closeMobileMenu(); }}
+               class="text-[14px] font-medium text-[color:var(--color-status-red-text)]"
+             >
+               Logout
+             </button>
+          </div>
+        {/if}
+      </div>
+    </div>
+  {/if}
 </nav>

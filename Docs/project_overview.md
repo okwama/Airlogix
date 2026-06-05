@@ -1,13 +1,13 @@
-# Mc Aviation Airline — Project Overview
+# Royal Airline — Project Overview
 
 > **Status:** Initiating Svelte Web Platform implementation based on Phase 4 progress.
 > **Last updated:** 2026-03-31
 
 ---
 
-## 1. What Mc Aviation Is
+## 1. What Royal Is
 
-A **modern web-based airline booking and self-service platform** for **Mc Aviation Airline**, targeting passengers across East, Central, and Southern Africa.
+A **modern web-based airline booking and self-service platform** for **Royal Airline**, targeting passengers across East, Central, and Southern Africa.
 
 - **Platform:** Svelte (Vite) → Responsive Web (Desktop + Mobile)
 - **Region:** Key hubs (Nairobi, Dar es Salaam, Entebbe, etc.)
@@ -17,7 +17,7 @@ A **modern web-based airline booking and self-service platform** for **Mc Aviati
 
 ---
 
-## 2. Brand & Design System (Mc Aviation Blue)
+## 2. Brand & Design System (Royal Blue)
 
 | Token | Value |
 |---|---|
@@ -67,7 +67,7 @@ A **modern web-based airline booking and self-service platform** for **Mc Aviati
 - [ ] Scaffolding: Layout components (Navbar, Footer, MainLayout)
 
 #### Phase 2 — Core UI Components
-- [ ] Build reusable UI library based on Mc Aviation design system
+- [ ] Build reusable UI library based on Royal design system
 - [ ] Implement Hero section with integrated SearchBar
 
 #### Phase 3 — Flight Search & Results

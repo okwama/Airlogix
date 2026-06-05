@@ -1,6 +1,6 @@
 const env = import.meta.env;
 
-const appName = env.VITE_APP_NAME || 'Mc Aviation';
+const appName = env.VITE_APP_NAME || 'Royal';
 
 export const appConfig = {
   name: appName,

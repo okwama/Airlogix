@@ -27,7 +27,7 @@
             <div class="flex flex-wrap items-start justify-between gap-5">
               <div class="space-y-2">
                 <p class="ui-label">Cargo Booking</p>
-                <h2 class="text-[34px] font-bold text-[color:var(--color-brand-navy)]">Ship with MC Aviation Air</h2>
+                <h2 class="text-[34px] font-bold text-[color:var(--color-brand-navy)]">Ship with Royal Air</h2>
                 <p class="max-w-[560px] text-[14px] text-[color:var(--color-text-body)]">
                   Begin with a quote, move into booking, and track the shipment afterward without leaving the current cargo flow.
                 </p>

@@ -248,7 +248,13 @@ class Booking {
                   AND payment_status != 'paid'";
 
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute([':id' => $bookingId]);
+        $result = $stmt->execute([':id' => $bookingId]);
+        
+        if ($result && $stmt->rowCount() > 0) {
+            $this->logStatusHistory($bookingId, 2, 0, 'Reservation expired automatically', null, 'system');
+        }
+        
+        return $result;
     }
 
     public function expireStaleReservations(): int
@@ -318,6 +324,45 @@ class Booking {
         $stmt->execute();
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Maps TINYINT status or existing varchar status to a friendly string
+     */
+    private function mapStatusToString($status): string
+    {
+        $map = [
+            0 => 'Pending',
+            1 => 'Confirmed',
+            2 => 'Cancelled',
+            3 => 'Partial'
+        ];
+        if (is_numeric($status) && isset($map[(int)$status])) {
+            return $map[(int)$status];
+        }
+        return (string)$status;
+    }
+
+    public function logStatusHistory(int $bookingId, $toStatus, $fromStatus = null, string $reason = null, int $userId = null, string $userType = 'system'): bool
+    {
+        try {
+            $query = "INSERT INTO booking_status_history 
+                      (booking_id, from_status, to_status, changed_by_type, changed_by_id, reason) 
+                      VALUES (:booking_id, :from_status, :to_status, :changed_by_type, :changed_by_id, :reason)";
+            
+            $stmt = $this->conn->prepare($query);
+            return $stmt->execute([
+                ':booking_id' => $bookingId,
+                ':from_status' => $fromStatus !== null ? $this->mapStatusToString($fromStatus) : null,
+                ':to_status' => $this->mapStatusToString($toStatus),
+                ':changed_by_type' => $userType,
+                ':changed_by_id' => $userId,
+                ':reason' => $reason
+            ]);
+        } catch (\Throwable $e) {
+            error_log("Failed to log booking status history: " . $e->getMessage());
+            return false;
+        }
     }
 }
 ?>
