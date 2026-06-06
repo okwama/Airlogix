@@ -13,7 +13,7 @@
   let unreadCount = $state(0);
   let isMobileMenuOpen = $state(false);
 
-  const links = [
+  const guestLinks = [
     { href: '/', label: 'Book', key: 'book' },
     { href: '/check-in', label: 'Check-in', key: 'checkin' },
     { href: '/status', label: 'Flight status', key: 'status' },
@@ -21,10 +21,21 @@
     { href: '/manage', label: 'Manage booking', key: 'manage' }
   ];
 
+  const authLinks = [
+    { href: '/', label: 'Book', key: 'book' },
+    { href: '/check-in', label: 'Check-in', key: 'checkin' },
+    { href: '/status', label: 'Flight status', key: 'status' },
+    { href: '/cargo', label: 'Cargo', key: 'cargo' },
+    { href: '/account', label: 'My bookings', key: 'mytrips' }
+  ];
+
+  const links = $derived(authStore.isAuthenticated ? authLinks : guestLinks);
+
   function isActive(href: string) {
     const path = page.url.pathname;
     if (href === '/') return path === '/';
     if (href === '/manage') return path.startsWith('/manage') || path.startsWith('/my-bookings');
+    if (href === '/account') return path.startsWith('/account') || path.startsWith('/my-bookings');
     if (href === '/cargo') return path.startsWith('/cargo');
     return path.startsWith(href);
   }

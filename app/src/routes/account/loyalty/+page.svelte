@@ -7,12 +7,14 @@
   import { authStore } from '$lib/stores/authStore.svelte';
   import { authService } from '$lib/services/auth/authService';
   import { accountService } from '$lib/services/account/accountService';
+  import AccountTabs from '$lib/components/ui/AccountTabs.svelte';
   import { Award, Star } from 'lucide-svelte';
 
   let loading = $state(true);
   let error = $state('');
   let loyalty = $state<any | null>(null);
   let history = $state<any[]>([]);
+  let unreadCount = $state(0);
 
   async function loadLoyalty() {
     loading = true;
@@ -26,13 +28,15 @@
       }
 
       const token = authService.getToken();
-      const [info, rows] = await Promise.all([
+      const [info, rows, unread] = await Promise.all([
         accountService.fetchLoyaltyInfo(token),
-        accountService.fetchLoyaltyHistory(token)
+        accountService.fetchLoyaltyHistory(token),
+        accountService.fetchUnreadCount(token).catch(() => 0)
       ]);
 
       loyalty = info;
       history = Array.isArray(rows) ? rows : [];
+      unreadCount = Number(unread || 0);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load loyalty data.';
     } finally {
@@ -61,6 +65,8 @@
         <Button variant="secondary" href="/account">Back to account</Button>
       </div>
     </header>
+
+    <AccountTabs unreadCount={unreadCount} />
 
     {#if error}
       <div class="bg-red-50 text-red-600 text-[13px] p-4 rounded-md border border-red-100">{error}</div>

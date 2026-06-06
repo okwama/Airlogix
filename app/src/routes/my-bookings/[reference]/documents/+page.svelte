@@ -2,6 +2,7 @@
   import { page } from '$app/state';
   import { onMount, onDestroy } from 'svelte';
   import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
+  import { authStore } from '$lib/stores/authStore.svelte';
   import { currencyStore } from '$lib/stores/currencyStore.svelte';
   import { appConfig } from '$lib/config/appConfig';
   import Button from '$lib/components/ui/Button.svelte';
@@ -60,7 +61,10 @@
     a.click();
   }
 
-  onMount(loadPdf);
+  onMount(async () => {
+    await authStore.init();
+    await loadPdf();
+  });
 
   onDestroy(() => {
     if (pdfUrl) URL.revokeObjectURL(pdfUrl);
@@ -91,10 +95,16 @@
       <Card tone="default" class="flex min-h-[60vh] items-center justify-center px-6 py-10">
         <div class="max-w-md space-y-4 text-center">
           <p class="text-[14px] text-[color:var(--color-status-red-text)]">{error}</p>
-          <p class="text-[12px] text-[color:var(--color-text-body)]">If you used OTP, verify on Manage first so this browser session can access the booking.</p>
+          {#if !authStore.isAuthenticated}
+            <p class="text-[12px] text-[color:var(--color-text-body)]">If you used OTP, verify on Manage first so this browser session can access the booking.</p>
+          {/if}
           <div class="flex flex-wrap justify-center gap-2">
             <Button variant="primary" onclick={loadPdf}>Try again</Button>
-            <Button variant="secondary" href="/manage">Manage booking</Button>
+            {#if authStore.isAuthenticated}
+              <Button variant="secondary" href="/account">My account</Button>
+            {:else}
+              <Button variant="secondary" href="/manage">Manage booking</Button>
+            {/if}
           </div>
         </div>
       </Card>

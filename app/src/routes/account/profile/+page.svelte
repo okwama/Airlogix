@@ -8,6 +8,7 @@
   import { authStore } from '$lib/stores/authStore.svelte';
   import { authService } from '$lib/services/auth/authService';
   import { accountService } from '$lib/services/account/accountService';
+  import AccountTabs from '$lib/components/ui/AccountTabs.svelte';
   import { Calendar, Globe, IdCard, Mail, Phone, UserRound } from 'lucide-svelte';
 
   let loading = $state(true);
@@ -17,6 +18,7 @@
   let deletingAccount = $state(false);
   let error = $state('');
   let success = $state('');
+  let unreadCount = $state(0);
 
   let firstName = $state('');
   let lastName = $state('');
@@ -54,9 +56,13 @@
       }
 
       const token = authService.getToken();
-      const profile = await accountService.fetchProfile(token);
+      const [profile, unread] = await Promise.all([
+        accountService.fetchProfile(token),
+        accountService.fetchUnreadCount(token).catch(() => 0)
+      ]);
       authStore.setUser(profile);
       syncFromUser(profile);
+      unreadCount = Number(unread || 0);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load profile.';
     } finally {
@@ -196,6 +202,8 @@
         <Button variant="secondary" href="/account">Back to account</Button>
       </div>
     </header>
+
+    <AccountTabs unreadCount={unreadCount} />
 
     {#if error}
       <div class="bg-red-50 text-red-600 text-[13px] p-4 rounded-md border border-red-100">{error}</div>

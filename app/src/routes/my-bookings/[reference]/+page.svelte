@@ -2,6 +2,7 @@
   import { page } from '$app/state';
   import { onMount } from 'svelte';
   import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
+  import { authStore } from '$lib/stores/authStore.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import { appConfig } from '$lib/config/appConfig';
@@ -26,7 +27,9 @@
     } catch (e) {
       if (e instanceof ServiceError) {
         if (e.type === 'AUTH_EXPIRED') {
-          error = 'Your access session expired. Verify this booking again through Manage Booking OTP.';
+          error = authStore.isAuthenticated
+            ? 'Unable to open this booking. It may belong to a different account.'
+            : 'Your access session expired. Verify this booking again through Manage Booking OTP.';
         } else if (e.type === 'HOLD_EXPIRED') {
           error = 'This reservation hold has expired. Please search and create a new booking.';
         } else if (e.type === 'NOT_FOUND') {
@@ -47,7 +50,10 @@
     }
   }
 
-  onMount(loadBooking);
+  onMount(async () => {
+    await authStore.init();
+    await loadBooking();
+  });
   onMount(() => {
     timer = setInterval(() => {
       nowMs = Date.now();
@@ -101,7 +107,11 @@
         </div>
         <div class="flex gap-3">
           <Button variant="secondary" onclick={loadBooking} disabled={loading}><RefreshCw size={16} /> Refresh</Button>
-          <Button variant="primary" href="/manage">Back to manage</Button>
+          {#if authStore.isAuthenticated}
+            <Button variant="primary" href="/account">My account</Button>
+          {:else}
+            <Button variant="primary" href="/manage">Back to manage</Button>
+          {/if}
         </div>
       </div>
     </header>
@@ -113,7 +123,9 @@
           <div class="space-y-1">
             <p class="font-semibold">We could not open this booking.</p>
             <p>{error}</p>
-            <p>If this booking is not linked to your account, use the OTP flow on <a class="underline" href="/manage">Manage</a>.</p>
+            {#if !authStore.isAuthenticated}
+              <p>If this booking is not linked to your account, use the OTP flow on <a class="underline" href="/manage">Manage</a>.</p>
+            {/if}
           </div>
         </div>
       </div>
@@ -263,12 +275,21 @@
             </div>
           </Card>
 
-          <Card tone="default" class="px-6 py-6 sm:px-7">
-            <p class="ui-label">Need access?</p>
-            <h3 class="mt-2 text-[22px] font-bold text-[color:var(--color-brand-navy)]">Verify with OTP</h3>
-            <p class="mt-2 text-[13px] leading-7 text-[color:var(--color-text-body)]">If this browser session cannot open the booking, go back to Manage and verify through the OTP flow.</p>
-            <div class="mt-4"><Button variant="secondary" href="/manage" class="w-full">Verify with OTP</Button></div>
-          </Card>
+          {#if !authStore.isAuthenticated}
+            <Card tone="default" class="px-6 py-6 sm:px-7">
+              <p class="ui-label">Need access?</p>
+              <h3 class="mt-2 text-[22px] font-bold text-[color:var(--color-brand-navy)]">Verify with OTP</h3>
+              <p class="mt-2 text-[13px] leading-7 text-[color:var(--color-text-body)]">If this browser session cannot open the booking, go back to Manage and verify through the OTP flow.</p>
+              <div class="mt-4"><Button variant="secondary" href="/manage" class="w-full">Verify with OTP</Button></div>
+            </Card>
+          {:else}
+            <Card tone="default" class="px-6 py-6 sm:px-7">
+              <p class="ui-label">Account</p>
+              <h3 class="mt-2 text-[22px] font-bold text-[color:var(--color-brand-navy)]">Back to your trips</h3>
+              <p class="mt-2 text-[13px] leading-7 text-[color:var(--color-text-body)]">Return to your account dashboard to view all upcoming and past trips.</p>
+              <div class="mt-4"><Button variant="secondary" href="/account" class="w-full">My account</Button></div>
+            </Card>
+          {/if}
         </aside>
       </div>
     {/if}

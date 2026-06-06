@@ -7,12 +7,14 @@
   import { authStore } from '$lib/stores/authStore.svelte';
   import { authService } from '$lib/services/auth/authService';
   import { accountService } from '$lib/services/account/accountService';
+  import AccountTabs from '$lib/components/ui/AccountTabs.svelte';
   import { Bell, RefreshCw } from 'lucide-svelte';
 
   let loading = $state(true);
   let markingAll = $state(false);
   let error = $state('');
   let notifications = $state<any[]>([]);
+  let unreadCount = $state(0);
 
   async function loadNotifications() {
     loading = true;
@@ -26,7 +28,12 @@
       }
 
       const token = authService.getToken();
-      notifications = await accountService.fetchNotifications(token, 50);
+      const [rows, unread] = await Promise.all([
+        accountService.fetchNotifications(token, 50),
+        accountService.fetchUnreadCount(token).catch(() => 0)
+      ]);
+      notifications = rows;
+      unreadCount = Number(unread || 0);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load notifications.';
     } finally {
@@ -41,6 +48,7 @@
       const token = authService.getToken();
       await accountService.markAllNotificationsRead(token);
       notifications = notifications.map((item) => ({ ...item, is_read: 1 }));
+      unreadCount = 0;
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to update notifications.';
     } finally {
@@ -53,6 +61,7 @@
       const token = authService.getToken();
       await accountService.markNotificationRead(id, token);
       notifications = notifications.map((item) => item.id === id ? { ...item, is_read: 1 } : item);
+      unreadCount = Math.max(0, unreadCount - 1);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to mark notification as read.';
     }
@@ -85,6 +94,8 @@
         </Button>
       </div>
     </header>
+
+    <AccountTabs unreadCount={unreadCount} />
 
     {#if error}
       <div class="bg-red-50 text-red-600 text-[13px] p-4 rounded-md border border-red-100">{error}</div>

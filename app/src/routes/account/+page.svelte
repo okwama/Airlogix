@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { appConfig } from '$lib/config/appConfig';
@@ -8,6 +8,7 @@
   import { authService } from '$lib/services/auth/authService';
   import { bookingService, ServiceError } from '$lib/services/booking/bookingService';
   import { accountService } from '$lib/services/account/accountService';
+  import AccountTabs from '$lib/components/ui/AccountTabs.svelte';
   import {
     Bell,
     Box,
@@ -104,6 +105,8 @@
         </p>
       </div>
     </header>
+
+    <AccountTabs unreadCount={unreadCount} />
 
     {#if error}
       <div class="rounded-[18px] bg-[color:var(--color-status-red-bg)] px-5 py-4 text-[13px] text-[color:var(--color-status-red-text)] shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
