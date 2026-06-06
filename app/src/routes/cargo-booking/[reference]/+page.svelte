@@ -26,24 +26,17 @@
 
 <main class="page-shell pb-20 pt-8 sm:pt-10">
   <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[color:var(--color-surface-lowest)] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
-      <div class="space-y-5">
-        <div class="flex max-w-[520px] items-center justify-between gap-4">
-          <div class="flex flex-col items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-brand-navy)] text-[12px] font-semibold text-white">1</div>
-            <span class="ui-label !text-[color:var(--color-brand-navy)]">Waybill details</span>
-          </div>
-          <div class="h-px flex-1 bg-[color:var(--color-border)]"></div>
-          <div class="flex flex-col items-center gap-3 opacity-45">
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-surface-high)] text-[12px] font-semibold text-[color:var(--color-text-body)]">2</div>
-            <span class="ui-label">Confirmation</span>
-          </div>
-        </div>
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between rounded-[12px] bg-[color:var(--color-surface-lowest)] px-4 py-3 shadow-sm gap-4 border border-[color:var(--color-border)]">
+      <div class="flex items-center gap-3">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--color-brand-navy)] text-[10px] font-bold text-white">1</div>
         <div>
-          <p class="ui-label">Cargo Booking</p>
-          <h1 class="hero-display">Secure cargo space from {origin} to {destination}.</h1>
-          <p class="mt-3 text-[15px] text-[color:var(--color-text-body)] sm:text-[17px]">Flight {flightNumber} on {date}. Complete shipper and consignee details to generate the AWB immediately after confirmation.</p>
+          <h1 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Cargo Booking</h1>
+          <p class="text-[10px] text-[color:var(--color-text-body)]">Flight {flightNumber} • {origin} to {destination} • {date}</p>
         </div>
+      </div>
+      <div class="flex items-center gap-3 opacity-50">
+        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--color-surface-high)] text-[10px] font-bold text-[color:var(--color-text-body)]">2</div>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Confirmation</span>
       </div>
     </header>
 
@@ -52,36 +45,36 @@
         <AWBForm {flightSeriesId} {flightNumber} {origin} {destination} weightKg={weight} pieces={piecesParam} {commodity} {totalAmount} bookingDate={date} />
       </main>
 
-      <aside class="space-y-6 lg:sticky lg:top-[96px]">
-        <Card tone="highest" class="px-6 py-7 sm:px-7">
-          <div class="space-y-6">
+      <aside class="space-y-4 lg:sticky lg:top-[96px]">
+        <Card tone="highest" class="px-4 py-4 rounded-[12px] shadow-sm">
+          <div class="space-y-4">
             <div>
-              <p class="ui-label">Booking summary</p>
-              <h2 class="mt-2 text-[26px] font-bold text-[color:var(--color-brand-navy)]">Shipment overview</h2>
+              <p class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">Shipment overview</p>
+              <p class="text-[10px] text-[color:var(--color-text-body)]">Booking summary</p>
             </div>
-            <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-4">
-              <div class="flex items-start gap-4">
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Package size={18} /></div>
+            <div class="rounded-[8px] bg-[color:var(--color-surface-low)] border border-[color:var(--color-border)] px-3 py-2">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Package size={14} /></div>
                 <div>
-                  <p class="font-semibold text-[color:var(--color-brand-navy)]">{origin} to {destination}</p>
-                  <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">Ready {date}</p>
+                  <p class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">{origin} to {destination}</p>
+                  <p class="text-[10px] text-[color:var(--color-text-body)]">Ready {date}</p>
                 </div>
               </div>
             </div>
-            <div class="space-y-3 text-[13px]">
-              <div class="flex items-center justify-between gap-4"><span class="text-[color:var(--color-text-body)]">Commodity</span><span class="font-semibold capitalize text-[color:var(--color-brand-navy)]">{commodity}</span></div>
-              <div class="flex items-center justify-between gap-4"><span class="text-[color:var(--color-text-body)]">Gross weight</span><span class="font-semibold text-[color:var(--color-brand-navy)]">{weight} kg</span></div>
-              <div class="flex items-center justify-between gap-4"><span class="text-[color:var(--color-text-body)]">Rate per kg</span><span class="font-semibold text-[color:var(--color-brand-navy)]">{currencyStore.format(ratePerKg)}</span></div>
-              <div class="soft-divider my-3"></div>
-              <div class="flex items-center justify-between gap-4"><span class="font-semibold text-[color:var(--color-brand-navy)]">Total charge</span><span class="text-[24px] font-bold text-[color:var(--color-brand-navy)]">{currencyStore.format(totalAmount)}</span></div>
+            <div class="space-y-2 text-[11px]">
+              <div class="flex items-center justify-between"><span class="text-[color:var(--color-text-body)]">Commodity</span><span class="font-bold capitalize text-[color:var(--color-brand-navy)]">{commodity}</span></div>
+              <div class="flex items-center justify-between"><span class="text-[color:var(--color-text-body)]">Gross weight</span><span class="font-bold text-[color:var(--color-brand-navy)]">{weight} kg</span></div>
+              <div class="flex items-center justify-between"><span class="text-[color:var(--color-text-body)]">Rate per kg</span><span class="font-bold text-[color:var(--color-brand-navy)]">{currencyStore.format(ratePerKg)}</span></div>
+              <div class="border-t border-[color:var(--color-border)] pt-2 mt-2"></div>
+              <div class="flex items-center justify-between"><span class="font-bold text-[color:var(--color-brand-navy)]">Total charge</span><span class="text-[16px] font-extrabold text-[color:var(--color-brand-navy)]">{currencyStore.format(totalAmount)}</span></div>
             </div>
           </div>
         </Card>
 
-        <Card tone="default" class="px-6 py-6 sm:px-7">
-          <div class="space-y-4">
-            <div class="rounded-[16px] bg-emerald-50 px-4 py-4 text-[12px] leading-7 text-emerald-800"><div class="flex gap-3"><CheckCircle2 size={16} class="mt-0.5" /><p><strong>Instant AWB:</strong> the Air Waybill is generated immediately upon confirmation.</p></div></div>
-            <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 text-[12px] leading-7 text-[color:var(--color-text-body)]"><div class="flex gap-3"><Lock size={16} class="mt-0.5 text-[color:var(--color-brand-blue)]" /><p>By confirming, you agree to {appConfig.name} Cargo Terms of Carriage.</p></div></div>
+        <Card tone="default" class="px-4 py-3 rounded-[12px] shadow-sm">
+          <div class="space-y-2">
+            <div class="rounded-[8px] bg-emerald-50 px-3 py-2 text-[10px] leading-snug text-emerald-800"><div class="flex gap-2"><CheckCircle2 size={12} class="mt-0.5 shrink-0" /><p><strong>Instant AWB:</strong> generated immediately upon confirmation.</p></div></div>
+            <div class="rounded-[8px] bg-[color:var(--color-surface-lowest)] px-3 py-2 text-[10px] leading-snug text-[color:var(--color-text-body)] border border-[color:var(--color-border)]"><div class="flex gap-2"><Lock size={12} class="mt-0.5 shrink-0 text-[color:var(--color-brand-blue)]" /><p>By confirming, you agree to {appConfig.name} Cargo Terms of Carriage.</p></div></div>
           </div>
         </Card>
       </aside>

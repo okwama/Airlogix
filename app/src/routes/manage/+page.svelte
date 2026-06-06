@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
   import { page } from '$app/state';
   import { Hash, User, ArrowRight, HelpCircle, Package, ShieldCheck, ReceiptText } from 'lucide-svelte';
   import Button from '$lib/components/ui/Button.svelte';
@@ -107,76 +107,70 @@
 
 <main class="page-shell pb-20 pt-6 sm:pt-8">
   <div class="page-width space-y-8">
-    <header class="rounded-[24px] bg-[color:var(--color-surface-lowest)] px-5 py-5 shadow-[0_20px_54px_rgba(26,28,26,0.05)] sm:px-7 sm:py-6 md:px-8">
-      <div class="max-w-[760px] space-y-2">
-        <p class="ui-label">Manage Booking</p>
-        <h1 class="text-[clamp(2rem,3.4vw,2.8rem)] font-extrabold leading-[1] tracking-[-0.035em] text-[color:var(--color-text-heading)]">Manage Booking</h1>
-        <p class="max-w-[640px] text-[14px] text-[color:var(--color-text-body)] sm:text-[15px]">Retrieve a trip, continue payment, verify guest access, or track cargo by AWB.</p>
+    <header class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-5 py-5 shadow-sm border border-[color:var(--color-border)]">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Manage</p>
+        <h1 class="mt-1 text-[22px] font-bold leading-tight text-[color:var(--color-text-heading)]">Manage Booking</h1>
+        <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">Retrieve a trip, continue payment, verify guest access, or track cargo by AWB.</p>
       </div>
     </header>
 
     {#if authStore.isAuthenticated}
-      <Card tone="default" class="px-5 py-6 sm:px-6 sm:py-7 lg:px-8">
-        <div class="flex flex-wrap items-start justify-between gap-5">
-          <div class="space-y-2">
-            <p class="ui-label flex items-center gap-2"><ShieldCheck size={14} /> Signed-in traveler</p>
-            <h2 class="text-[28px] font-bold text-[color:var(--color-brand-navy)]">Your trips and cargo history live in My account</h2>
-            <p class="max-w-[720px] text-[14px] text-[color:var(--color-text-body)]">Use Account for upcoming bookings, saved cargo shipments, loyalty, and notifications. This page stays focused on guest lookup, OTP recovery, and AWB tracking.</p>
+      <Card tone="default" class="px-5 py-4 rounded-[12px] shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-1.5 text-[color:var(--color-text-body)] mb-1">
+              <ShieldCheck size={14} class="text-[color:var(--color-brand-blue)]" />
+              <span class="text-[10px] font-bold uppercase tracking-wider">Signed-in traveler</span>
+            </div>
+            <h2 class="text-[16px] font-bold text-[color:var(--color-brand-navy)]">Your trips are in My account</h2>
+            <p class="text-[11px] text-[color:var(--color-text-body)] mt-1 max-w-[500px]">Use Account for your own bookings. This page is for guest lookup, OTP recovery, and AWB tracking.</p>
           </div>
-
-          <div class="flex flex-wrap gap-3">
-            <Button variant="primary" href="/account">Open My account</Button>
-            <Button variant="secondary" href="/cargo">Book cargo</Button>
+          <div class="flex items-center gap-2 shrink-0">
+            <Button variant="primary" href="/account" class="h-8 text-[11px] px-3">My account</Button>
+            <Button variant="secondary" href="/cargo" class="h-8 text-[11px] px-3">Book cargo</Button>
           </div>
         </div>
       </Card>
     {/if}
 
-    <section class="grid gap-8 xl:grid-cols-[0.7fr_1.3fr] xl:items-start">
-      <div class="space-y-6">
-        <Card tone="ghost" class="px-6 py-6">
-          <div class="space-y-5">
-            <div class="flex gap-4">
-              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><ReceiptText size={18} /></div>
+    <section class="grid gap-4 lg:grid-cols-[260px_1fr] lg:items-start">
+      <div class="space-y-4">
+        <Card tone="ghost" class="px-4 py-4 rounded-[12px]">
+          <div class="space-y-4">
+            <div class="flex gap-3">
+              <div class="mt-0.5 text-[color:var(--color-brand-blue)]"><ReceiptText size={16} /></div>
               <div>
-                <h3 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">Recover a booking</h3>
-                <p class="mt-1 text-[13px] leading-7 text-[color:var(--color-text-body)]">Use a booking reference and email to reopen an itinerary, continue payment, or download documents.</p>
+                <h3 class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">Recover booking</h3>
+                <p class="mt-0.5 text-[10px] leading-snug text-[color:var(--color-text-body)]">Use reference and email to reopen itinerary or continue payment.</p>
               </div>
             </div>
-            <div class="flex gap-4">
-              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Package size={18} /></div>
+            <div class="flex gap-3">
+              <div class="mt-0.5 text-[color:var(--color-brand-blue)]"><Package size={16} /></div>
               <div>
-                <h3 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">Track cargo by AWB</h3>
-                <p class="mt-1 text-[13px] leading-7 text-[color:var(--color-text-body)]">Enter an airway bill number to open shipment tracking and verify full details if needed.</p>
-              </div>
-            </div>
-            <div class="flex gap-4">
-              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><HelpCircle size={18} /></div>
-              <div>
-                <h3 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">Use operational tools</h3>
-                <p class="mt-1 text-[13px] leading-7 text-[color:var(--color-text-body)]">This page is intentionally utility-first, so the lookup paths start quickly without duplicating your signed-in dashboard.</p>
+                <h3 class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">Track cargo</h3>
+                <p class="mt-0.5 text-[10px] leading-snug text-[color:var(--color-text-body)]">Enter AWB to open shipment tracking.</p>
               </div>
             </div>
           </div>
         </Card>
       </div>
 
-      <div class="grid gap-8 lg:grid-cols-2">
-        <Card tone="highest" class="px-6 py-7 sm:px-7">
-          <div class="space-y-7">
-            <div class="space-y-2 text-center lg:text-left">
-              <p class="ui-label">Passenger Booking</p>
-              <h2 class="text-[28px] font-bold text-[color:var(--color-brand-navy)]">Find your booking</h2>
-              <p class="text-[13px] text-[color:var(--color-text-body)]">Access your itinerary, continue payment, or download documents.</p>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <Card tone="highest" class="px-5 py-5 rounded-[12px] shadow-sm border border-[color:var(--color-border)]">
+          <div class="space-y-5">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Passenger Booking</p>
+              <h2 class="text-[16px] font-bold text-[color:var(--color-brand-navy)]">Find your booking</h2>
             </div>
 
             {#if error}
-              <div class="rounded-[16px] bg-[color:var(--color-status-red-bg)] px-4 py-4 text-[13px] text-[color:var(--color-status-red-text)]">
+              <div class="rounded-[8px] bg-[color:var(--color-status-red-bg)] px-3 py-2 text-[11px] text-[color:var(--color-status-red-text)]">
                 {error}
               </div>
             {/if}
 
-            <div class="space-y-6">
+            <div class="space-y-4">
               <Input
                 id="reference"
                 label="Booking Reference (PNR)"
@@ -207,7 +201,7 @@
               {/if}
 
               <Button
-                class="w-full text-[15px]"
+                class="w-full h-9 text-[12px]"
                 variant="primary"
                 onclick={stage === 'request' ? handleRequestCode : handleVerifyCode}
                 disabled={loading}
@@ -216,26 +210,21 @@
                   Processing...
                 {:else}
                   {stage === 'request' ? 'Send access code' : 'Verify and continue'}
-                  <ArrowRight size={18} />
+                  <ArrowRight size={14} class="ml-1.5" />
                 {/if}
               </Button>
-
-              <p class="text-center text-[12px] text-[color:var(--color-text-muted)] lg:text-left">
-                Reserved seats but left the payment page? Use your PNR and booking email here to continue payment before the hold expires.
-              </p>
             </div>
           </div>
         </Card>
 
-        <Card tone="default" class="px-6 py-7 sm:px-7">
-          <div class="space-y-7">
-            <div class="space-y-2 text-center lg:text-left">
-              <p class="ui-label">Cargo Tracking</p>
-              <h2 class="text-[28px] font-bold text-[color:var(--color-brand-navy)]">Track cargo shipment</h2>
-              <p class="text-[13px] text-[color:var(--color-text-body)]">Enter your AWB to view cargo status and milestones.</p>
+        <Card tone="default" class="px-5 py-5 rounded-[12px] shadow-sm border border-[color:var(--color-border)]">
+          <div class="space-y-5">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Cargo Tracking</p>
+              <h2 class="text-[16px] font-bold text-[color:var(--color-brand-navy)]">Track cargo shipment</h2>
             </div>
 
-            <div class="space-y-6">
+            <div class="space-y-4">
               <Input
                 id="cargoAwb"
                 label="AWB Number"
@@ -244,13 +233,13 @@
                 bind:value={cargoAwb}
               />
 
-              <Button class="w-full text-[15px]" variant="primary" onclick={handleCargoLookup}>
-                Open cargo tracking
-                <ArrowRight size={18} />
+              <Button class="w-full h-9 text-[12px]" variant="primary" onclick={handleCargoLookup}>
+                Open tracking
+                <ArrowRight size={14} class="ml-1.5" />
               </Button>
-
-              <p class="text-center text-[12px] text-[color:var(--color-text-muted)] lg:text-left">
-                Need full shipment details? Open tracking and verify with the OTP sent to shipper or consignee email.
+              
+              <p class="text-[10px] leading-snug text-[color:var(--color-text-muted)]">
+                Open tracking and verify with OTP to see full details.
               </p>
             </div>
           </div>

@@ -10,74 +10,64 @@
   <title>{appConfig.name} Cargo | Premium Logistics Solutions</title>
 </svelte:head>
 
-<main class="page-shell pb-20 pt-8 sm:pt-10">
-  <div class="page-width space-y-16">
-    <header class="max-w-[860px] space-y-4 pt-4 sm:pt-8">
-      <p class="ui-label">Cargo Logistics</p>
-      <h1 class="hero-display">Ship freight across Africa and beyond.</h1>
-      <p class="max-w-[620px] text-[16px] leading-7 text-[color:var(--color-text-body)]">
-        Book, track and manage air cargo with the same reliability as our passenger network.
-      </p>
+<main class="page-shell pb-12 pt-4">
+  <div class="page-width space-y-6">
+    <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Cargo Logistics</p>
+        <h1 class="text-[22px] font-bold text-[color:var(--color-brand-navy)] leading-tight">Ship freight across Africa and beyond.</h1>
+        <p class="text-[12px] text-[color:var(--color-text-body)] mt-1">Book, track and manage air cargo with the same reliability as our passenger network.</p>
+      </div>
+      <Button variant="secondary" href="/cargo-tracking" class="h-8 text-[11px] px-3 shrink-0">Track shipment</Button>
     </header>
 
-    <section class="grid gap-10 lg:grid-cols-12 lg:items-start">
-      <div class="lg:col-span-8">
-        <Card tone="default" class="px-6 py-7 sm:px-8 sm:py-9">
-          <div class="space-y-10">
-            <div class="flex flex-wrap items-start justify-between gap-5">
-              <div class="space-y-2">
-                <p class="ui-label">Cargo Booking</p>
-                <h2 class="text-[34px] font-bold text-[color:var(--color-brand-navy)]">Ship with Royal Air</h2>
-                <p class="max-w-[560px] text-[14px] text-[color:var(--color-text-body)]">
-                  Begin with a quote, move into booking, and track the shipment afterward without leaving the current cargo flow.
-                </p>
-              </div>
-              <Button variant="secondary" href="/cargo-tracking">Track shipment</Button>
-            </div>
-
-            <CargoSearchForm primaryLabel="Get instant quote" secondaryLabel="Book now" showSecondaryAction={true} />
+    <section class="grid gap-4 lg:grid-cols-[1fr_300px] lg:items-start">
+      <Card tone="default" class="px-4 py-5 rounded-[12px] shadow-sm">
+        <div class="space-y-5">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Cargo Booking</p>
+            <h2 class="text-[16px] font-bold text-[color:var(--color-brand-navy)]">Ship with Royal Air</h2>
+            <p class="text-[11px] text-[color:var(--color-text-body)] mt-0.5">Quote, book, and track without leaving the cargo flow.</p>
           </div>
-        </Card>
-      </div>
+          <CargoSearchForm primaryLabel="Get instant quote" secondaryLabel="Book now" showSecondaryAction={true} />
+        </div>
+      </Card>
 
-      <aside class="space-y-8 lg:col-span-4">
-        <div class="relative overflow-hidden rounded-[26px] bg-[color:var(--color-brand-navy)] px-7 py-8 text-white shadow-[0_28px_70px_rgba(0,11,96,0.12)] sm:px-8 sm:py-9">
-          <div class="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-white/8 blur-3xl"></div>
-          <div class="relative space-y-6">
-            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Fleet Highlight</p>
-            <div class="space-y-3">
-              <h3 class="text-[30px] font-bold tracking-[-0.03em] text-white">Global reach, personal touch.</h3>
-              <p class="text-[14px] leading-7 text-white/72">
-                Priority handling, secure chain of custody, and specialist support for sensitive or time-critical freight.
-              </p>
+      <aside class="space-y-4">
+        <div class="relative overflow-hidden rounded-[16px] bg-[color:var(--color-brand-navy)] px-5 py-5 text-white shadow-sm">
+          <div class="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-white/8 blur-3xl"></div>
+          <div class="relative space-y-4">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-white/70">Fleet Highlight</p>
+            <div>
+              <h3 class="text-[16px] font-bold text-white">Global reach, personal touch.</h3>
+              <p class="text-[11px] leading-snug text-white/70 mt-1">Priority handling, secure chain of custody, and specialist support for time-critical freight.</p>
             </div>
-            <div class="space-y-4 text-[14px] text-white/76">
-              <div class="flex items-center gap-3"><Shield size={17} /> Secure handling at every transfer point</div>
-              <div class="flex items-center gap-3"><Clock3 size={17} /> Fast-turnaround priority options</div>
-              <div class="flex items-center gap-3"><Headphones size={17} /> Cargo desk support for complex moves</div>
+            <div class="space-y-2 text-[11px] text-white/76">
+              <div class="flex items-center gap-2"><Shield size={13} /> Secure handling at every transfer</div>
+              <div class="flex items-center gap-2"><Clock3 size={13} /> Fast-turnaround priority options</div>
+              <div class="flex items-center gap-2"><Headphones size={13} /> Cargo desk support for complex moves</div>
             </div>
           </div>
         </div>
 
-        <Card tone="highest" class="px-6 py-7 sm:px-7">
-          <div class="space-y-6">
+        <Card tone="highest" class="px-4 py-4 rounded-[12px] shadow-sm">
+          <div class="space-y-3">
             <div>
-              <p class="ui-label">Cargo FAQ</p>
-              <h3 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Need a quick answer?</h3>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Cargo FAQ</p>
+              <h3 class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">Quick answers</h3>
             </div>
-
-            <div class="space-y-5 text-[14px] text-[color:var(--color-text-body)]">
+            <div class="space-y-3 text-[11px] text-[color:var(--color-text-body)]">
               <div>
-                <p class="font-semibold text-[color:var(--color-brand-navy)]">What qualifies as HAZMAT?</p>
-                <p class="mt-2 leading-7">Any regulated substance or material that requires controlled transport handling and documentation.</p>
+                <p class="font-bold text-[color:var(--color-brand-navy)]">What qualifies as HAZMAT?</p>
+                <p class="mt-0.5 leading-snug">Regulated substances requiring controlled transport handling and documentation.</p>
               </div>
               <div>
-                <p class="font-semibold text-[color:var(--color-brand-navy)]">Do you handle temperature-sensitive goods?</p>
-                <p class="mt-2 leading-7">Yes. Our flow supports perishables and pharmaceutical shipments with specialist coordination.</p>
+                <p class="font-bold text-[color:var(--color-brand-navy)]">Temperature-sensitive goods?</p>
+                <p class="mt-0.5 leading-snug">Yes. We support perishables and pharmaceutical shipments.</p>
               </div>
               <div>
-                <p class="font-semibold text-[color:var(--color-brand-navy)]">How do I unlock full tracking?</p>
-                <p class="mt-2 leading-7">Use the AWB tracking flow and verify access through the OTP sent to shipper or consignee contact details.</p>
+                <p class="font-bold text-[color:var(--color-brand-navy)]">How do I unlock full tracking?</p>
+                <p class="mt-0.5 leading-snug">Use the AWB flow and verify via OTP sent to shipper or consignee.</p>
               </div>
             </div>
           </div>
@@ -85,33 +75,31 @@
       </aside>
     </section>
 
-    <section class="grid gap-6 md:grid-cols-3">
-      <Card tone="highest" hover class="px-6 py-7">
-        <div class="space-y-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Package2 size={22} /></div>
+    <section class="grid gap-3 md:grid-cols-3">
+      <Card tone="highest" hover class="px-4 py-4 rounded-[12px]">
+        <div class="flex items-start gap-3">
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Package2 size={16} /></div>
           <div>
-            <h3 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">Priority handling</h3>
-            <p class="mt-2 text-[14px] leading-7 text-[color:var(--color-text-body)]">Guaranteed attention for time-sensitive freight moving on the next available capacity.</p>
+            <h3 class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">Priority handling</h3>
+            <p class="mt-0.5 text-[11px] leading-snug text-[color:var(--color-text-body)]">Guaranteed attention for time-sensitive freight on the next available capacity.</p>
           </div>
         </div>
       </Card>
-
-      <Card tone="highest" hover class="px-6 py-7">
-        <div class="space-y-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Shield size={22} /></div>
+      <Card tone="highest" hover class="px-4 py-4 rounded-[12px]">
+        <div class="flex items-start gap-3">
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Shield size={16} /></div>
           <div>
-            <h3 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">Secure chain</h3>
-            <p class="mt-2 text-[14px] leading-7 text-[color:var(--color-text-body)]">High-value goods move through monitored, controlled transfer points across the network.</p>
+            <h3 class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">Secure chain</h3>
+            <p class="mt-0.5 text-[11px] leading-snug text-[color:var(--color-text-body)]">High-value goods through monitored, controlled transfer points across the network.</p>
           </div>
         </div>
       </Card>
-
-      <Card tone="highest" hover class="px-6 py-7">
-        <div class="space-y-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Leaf size={22} /></div>
+      <Card tone="highest" hover class="px-4 py-4 rounded-[12px]">
+        <div class="flex items-start gap-3">
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Leaf size={16} /></div>
           <div>
-            <h3 class="text-[20px] font-bold text-[color:var(--color-brand-navy)]">Green freight</h3>
-            <p class="mt-2 text-[14px] leading-7 text-[color:var(--color-text-body)]">Smoother routing and efficiency-led operations support lower-impact shipment planning.</p>
+            <h3 class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">Green freight</h3>
+            <p class="mt-0.5 text-[11px] leading-snug text-[color:var(--color-text-body)]">Efficiency-led operations that support lower-impact shipment planning.</p>
           </div>
         </div>
       </Card>

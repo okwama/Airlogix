@@ -2,13 +2,11 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { appConfig } from '$lib/config/appConfig';
-  import Card from '$lib/components/ui/Card.svelte';
-  import Button from '$lib/components/ui/Button.svelte';
   import { authStore } from '$lib/stores/authStore.svelte';
   import { authService } from '$lib/services/auth/authService';
   import { accountService } from '$lib/services/account/accountService';
   import AccountTabs from '$lib/components/ui/AccountTabs.svelte';
-  import { Award, Star } from 'lucide-svelte';
+  import { Award, Star, TrendingUp, ChevronUp } from 'lucide-svelte';
 
   let loading = $state(true);
   let error = $state('');
@@ -17,136 +15,123 @@
   let unreadCount = $state(0);
 
   async function loadLoyalty() {
-    loading = true;
-    error = '';
-
+    loading = true; error = '';
     try {
       await authStore.init();
-      if (!authStore.isAuthenticated) {
-        goto('/login');
-        return;
-      }
-
+      if (!authStore.isAuthenticated) { goto('/login'); return; }
       const token = authService.getToken();
       const [info, rows, unread] = await Promise.all([
         accountService.fetchLoyaltyInfo(token),
         accountService.fetchLoyaltyHistory(token),
         accountService.fetchUnreadCount(token).catch(() => 0)
       ]);
-
       loyalty = info;
       history = Array.isArray(rows) ? rows : [];
       unreadCount = Number(unread || 0);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load loyalty data.';
-    } finally {
-      loading = false;
-    }
+    } finally { loading = false; }
   }
 
   onMount(loadLoyalty);
 </script>
 
-<svelte:head>
-  <title>Loyalty | {appConfig.name}</title>
-</svelte:head>
+<svelte:head><title>Loyalty | {appConfig.name}</title></svelte:head>
 
-<main class="min-h-[calc(100vh-58px-300px)] py-10 md:py-14 px-4 sm:px-6 bg-slate-50/60">
-  <div class="max-w-[1100px] mx-auto space-y-8">
-    <header class="flex items-start justify-between gap-6 flex-wrap">
-      <div class="space-y-2">
-        <div class="ui-label text-brand-blue">Loyalty</div>
-        <h1 class="text-brand-navy">Tier and points</h1>
-        <p class="text-[14px] text-text-muted max-w-[700px]">
-          View your current membership level, available points, and recent earning activity.
-        </p>
-      </div>
-      <div class="flex gap-3 flex-wrap">
-        <Button variant="secondary" href="/account">Back to account</Button>
-      </div>
-    </header>
+<main class="page-shell pb-12 pt-4">
+  <div class="page-width space-y-3 max-w-[1100px]">
 
-    <AccountTabs unreadCount={unreadCount} />
+    <!-- Page title row -->
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <Star size={15} class="text-[color:var(--color-brand-blue)]" />
+        <h1 class="text-[15px] font-bold text-[color:var(--color-brand-navy)]">Loyalty Program</h1>
+      </div>
+      <a href="/account" class="text-[12px] text-[color:var(--color-brand-blue)] hover:underline">← Account</a>
+    </div>
+
+    <AccountTabs {unreadCount} />
 
     {#if error}
-      <div class="bg-red-50 text-red-600 text-[13px] p-4 rounded-md border border-red-100">{error}</div>
+      <div class="rounded-lg bg-[color:var(--color-status-red-bg)] px-3 py-2 text-[12px] text-[color:var(--color-status-red-text)]">{error}</div>
     {/if}
 
     {#if loading}
-      <Card class="bg-white">
-        <p class="text-[13px] text-text-muted">Loading loyalty information...</p>
-      </Card>
+      <div class="rounded-xl bg-[color:var(--color-surface-lowest)] px-4 py-3 text-[12px] text-[color:var(--color-text-muted)]">Loading loyalty…</div>
     {:else}
-      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card padding="none" class="bg-white lg:col-span-2">
-          <div class="p-6 md:p-7 space-y-5">
-            <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-2xl bg-brand-blue/10 text-brand-blue flex items-center justify-center">
-                <Star size={22} />
-              </div>
-              <div>
-                <p class="text-[12px] text-text-muted uppercase tracking-widest">Current tier</p>
-                <h2 class="text-brand-navy text-[28px] font-semibold">{loyalty?.current_tier || 'BRONZE'}</h2>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="border border-border rounded-lg p-4">
-                <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium">Points balance</p>
-                <p class="text-brand-navy text-[24px] font-semibold mt-2">{Number(loyalty?.current_points || 0)}</p>
-              </div>
-              <div class="border border-border rounded-lg p-4">
-                <p class="text-[11px] text-text-muted uppercase tracking-widest font-medium">Next tier</p>
-                <p class="text-brand-navy text-[24px] font-semibold mt-2">{loyalty?.next_tier || 'Top tier reached'}</p>
-                {#if loyalty?.next_tier}
-                  <p class="text-[12px] text-text-muted mt-2">{Number(loyalty?.points_to_next || 0)} points remaining</p>
-                {/if}
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <Card padding="none" class="bg-white">
-          <div class="p-6 md:p-7 space-y-4">
-            <div class="ui-label text-brand-blue flex items-center gap-2"><Award size={14} /> Loyalty notes</div>
-            <p class="text-[13px] text-text-muted">
-              Points are awarded after eligible bookings are completed and posted to your account.
-            </p>
-            <p class="text-[13px] text-text-muted">
-              Keep using the same account so your balance and tier status remain consistent.
-            </p>
-          </div>
-        </Card>
-      </section>
-
-      <Card padding="none" class="bg-white">
-        <div class="p-6 md:p-7 space-y-4">
-          <div>
-            <div class="ui-label text-brand-blue">History</div>
-            <h2 class="text-brand-navy text-[18px] font-medium mt-1">Recent transactions</h2>
-          </div>
-
-          {#if history.length === 0}
-            <p class="text-[13px] text-text-muted">No loyalty transactions yet.</p>
+      <!-- Stats bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <!-- Tier -->
+        <div class="rounded-[14px] bg-[color:var(--color-brand-navy)] px-4 py-3 text-white">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-white/55">Tier</p>
+          <p class="mt-1 text-[22px] font-bold leading-none">{loyalty?.current_tier || 'BRONZE'}</p>
+        </div>
+        <!-- Points -->
+        <div class="rounded-[14px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-4 py-3 shadow-sm">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Points</p>
+          <p class="mt-1 text-[22px] font-bold leading-none text-[color:var(--color-brand-navy)]">{Number(loyalty?.current_points || 0).toLocaleString()}</p>
+        </div>
+        <!-- Next tier -->
+        <div class="rounded-[14px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-4 py-3 shadow-sm">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Next tier</p>
+          <p class="mt-1 text-[16px] font-bold leading-none text-[color:var(--color-brand-navy)]">{loyalty?.next_tier || '—'}</p>
+          {#if loyalty?.next_tier}
+            <p class="mt-1 text-[11px] text-[color:var(--color-text-muted)]">{Number(loyalty?.points_to_next || 0)} pts needed</p>
           {:else}
-            <div class="space-y-3">
-              {#each history as item (item.id)}
-                <div class="border border-border rounded-lg p-4">
-                  <div class="flex items-start justify-between gap-4">
-                    <div>
-                      <p class="text-brand-navy font-medium">{item.description || 'Loyalty activity'}</p>
-                      <p class="text-[11px] text-text-muted uppercase tracking-widest mt-2">{item.transaction_type} · {item.created_at}</p>
-                    </div>
-                    <span class="status-badge bg-status-blue-bg text-status-blue-text">
-                      {Number(item.points || 0)} pts
-                    </span>
-                  </div>
-                </div>
-              {/each}
-            </div>
+            <p class="mt-1 text-[11px] text-[color:var(--color-status-green-text)]">Top tier reached</p>
           {/if}
         </div>
-      </Card>
+        <!-- Progress -->
+        <div class="rounded-[14px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-4 py-3 shadow-sm flex flex-col justify-between">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Progress</p>
+          <div class="mt-2 space-y-1">
+            <div class="h-2 overflow-hidden rounded-full bg-[color:var(--color-surface-high)]">
+              <div class="h-full rounded-full bg-[color:var(--color-brand-blue)] transition-all" style="width: {loyalty?.next_tier ? '55' : '100'}%"></div>
+            </div>
+            <p class="text-[10px] text-[color:var(--color-text-muted)]">{loyalty?.next_tier ? '~55% to next' : 'Maximum tier'}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- History table -->
+      <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-[color:var(--color-border)]">
+          <div class="flex items-center gap-1.5">
+            <TrendingUp size={13} class="text-[color:var(--color-brand-blue)]" />
+            <span class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">Transaction history</span>
+            <span class="ml-1 rounded-full bg-[color:var(--color-surface-high)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--color-text-muted)]">{history.length}</span>
+          </div>
+        </div>
+
+        {#if history.length === 0}
+          <p class="px-4 py-3 text-[12px] text-[color:var(--color-text-muted)]">No loyalty transactions yet. Points are awarded after eligible bookings complete.</p>
+        {:else}
+          <!-- Table header -->
+          <div class="grid grid-cols-[1fr_100px_80px_72px] gap-2 px-4 py-1.5 bg-[color:var(--color-surface-low)] text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">
+            <span>Description</span><span>Type</span><span>Date</span><span class="text-right">Points</span>
+          </div>
+          <div class="divide-y divide-[color:var(--color-border)]">
+            {#each history as item (item.id)}
+              <div class="grid grid-cols-[1fr_100px_80px_72px] gap-2 items-center px-4 py-2 text-[12px] hover:bg-[color:var(--color-surface-low)] transition-colors">
+                <span class="font-medium text-[color:var(--color-brand-navy)] truncate">{item.description || 'Loyalty activity'}</span>
+                <span class="text-[color:var(--color-text-muted)] text-[11px] uppercase tracking-wide truncate">{item.transaction_type || '—'}</span>
+                <span class="text-[color:var(--color-text-muted)] tabular-nums text-[11px]">{item.created_at || '—'}</span>
+                <span class="text-right">
+                  <span class="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">
+                    +{Number(item.points || 0)}
+                  </span>
+                </span>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </div>
+
+      <!-- Notes -->
+      <div class="flex items-start gap-2 rounded-[12px] bg-[color:var(--color-status-blue-bg)]/60 px-3 py-2.5 text-[12px] text-[color:var(--color-status-blue-text)]">
+        <Award size={13} class="mt-0.5 shrink-0" />
+        <span>Points are posted to your account after eligible bookings complete. Keep using the same account to maintain your tier and balance.</span>
+      </div>
     {/if}
   </div>
 </main>

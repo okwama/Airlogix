@@ -131,39 +131,36 @@
 
 <main class="page-shell pb-20 pt-8 sm:pt-10">
   <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[color:var(--color-surface-lowest)] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
-      <div class="flex flex-wrap items-center justify-between gap-6">
-        <div class="space-y-3">
-          <p class="ui-label">Track Cargo</p>
-          <h1 class="hero-display">AWB {awb}</h1>
-          <p class="max-w-[720px] text-[15px] text-[color:var(--color-text-body)] sm:text-[17px]">Follow booking and handling milestones, then unlock full shipment details if you are the shipper or consignee.</p>
-        </div>
-        <div class="rounded-[18px] bg-[color:var(--color-surface-lowest)] px-5 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.05)]">
-          <p class="ui-label">Current status</p>
-          <p class="mt-2 text-[18px] font-bold text-[color:var(--color-brand-navy)]">{statusLabel(currentStatus)}</p>
-        </div>
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between rounded-[12px] bg-[color:var(--color-surface-lowest)] px-4 py-3 shadow-sm border border-[color:var(--color-border)] gap-4">
+      <div>
+        <h1 class="text-[16px] font-bold text-[color:var(--color-brand-navy)]">AWB {awb}</h1>
+        <p class="text-[11px] text-[color:var(--color-text-body)]">Follow booking and handling milestones.</p>
+      </div>
+      <div class="rounded-[8px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-4 py-1.5 flex items-center gap-2">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Status:</p>
+        <p class="text-[14px] font-bold text-[color:var(--color-brand-navy)] leading-none">{statusLabel(currentStatus)}</p>
       </div>
     </header>
 
     <div class="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
       <div class="space-y-8">
-        <Card tone="highest" class="px-6 py-7 sm:px-8">
-          <div class="space-y-6">
+        <Card tone="highest" class="px-4 py-4 rounded-[12px] shadow-sm">
+          <div class="space-y-4">
             <div>
-              <p class="ui-label">Shipment milestones</p>
-              <h2 class="mt-2 text-[28px] font-bold text-[color:var(--color-brand-navy)]">Progress overview</h2>
+              <h2 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Progress overview</h2>
+              <p class="text-[11px] text-[color:var(--color-text-body)]">Shipment milestones</p>
             </div>
-            <div class="space-y-5">
+            <div class="space-y-3">
               {#each milestones as m, i (m.key)}
-                <div class="flex items-start gap-4">
-                  <div class={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[12px] font-bold ${i <= currentIndex ? 'bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]' : 'bg-[color:var(--color-surface-high)] text-[color:var(--color-text-muted)]'}`}>
-                    {i < currentIndex ? 'OK' : i === currentIndex ? '*' : ''}
+                <div class="flex items-center gap-3">
+                  <div class={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${i <= currentIndex ? 'bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]' : 'bg-[color:var(--color-surface-high)] text-[color:var(--color-text-muted)]'}`}>
+                    {i < currentIndex ? '✓' : i === currentIndex ? '•' : ''}
                   </div>
                   <div>
-                    <p class="font-semibold text-[color:var(--color-brand-navy)]">{m.label}</p>
-                    <p class="mt-1 text-[12px] text-[color:var(--color-text-body)]">
+                    <p class="text-[12px] font-bold text-[color:var(--color-brand-navy)] leading-none">{m.label}</p>
+                    <p class="text-[10px] text-[color:var(--color-text-body)] mt-0.5">
                       {#if summary}
-                        {#if m.key === 'booked'}Booked on {summary.bookingDate}
+                        {#if m.key === 'booked'}Booked {summary.bookingDate}
                         {:else if m.key === 'manifested'}Manifested
                         {:else if m.key === 'in-transit'}In transit
                         {:else if m.key === 'arrived'}Arrived
@@ -179,64 +176,51 @@
           </div>
         </Card>
 
-        <Card tone="default" class="px-6 py-7 sm:px-8">
-          <div class="space-y-5">
+        <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm">
+          <div class="space-y-3">
             <div>
-              <p class="ui-label">Shipment summary</p>
-              <h2 class="mt-2 text-[28px] font-bold text-[color:var(--color-brand-navy)]">Operational snapshot</h2>
+              <h2 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Operational snapshot</h2>
+              <p class="text-[11px] text-[color:var(--color-text-body)]">Shipment summary</p>
             </div>
             {#if summary}
-              <div class="grid gap-4 sm:grid-cols-2">
-                <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4"><p class="ui-label">Route</p><p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{summary.origin} to {summary.destination}</p></div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4"><p class="ui-label">Flight</p><p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{summary.flightNumber}</p></div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4"><p class="ui-label">Departure</p><p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{summary.departureTime}</p></div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4"><p class="ui-label">Arrival</p><p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{summary.arrivalTime}</p></div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4"><p class="ui-label">Commodity</p><p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{summary.commodity}</p></div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4"><p class="ui-label">Weight</p><p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{summary.weightKg} kg</p></div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 sm:col-span-2"><p class="ui-label">Pieces</p><p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{summary.pieces}</p></div>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 sm:col-span-2"><p class="ui-label">Payment status</p><p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{paymentStatusLabel}</p></div>
+              <div class="grid gap-2 grid-cols-2">
+                <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-3 py-2"><p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Route</p><p class="mt-0.5 text-[11px] font-bold text-[color:var(--color-brand-navy)]">{summary.origin} to {summary.destination}</p></div>
+                <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-3 py-2"><p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Flight</p><p class="mt-0.5 text-[11px] font-bold text-[color:var(--color-brand-navy)]">{summary.flightNumber}</p></div>
+                <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-3 py-2"><p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Departure</p><p class="mt-0.5 text-[11px] font-bold text-[color:var(--color-brand-navy)]">{summary.departureTime}</p></div>
+                <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-3 py-2"><p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Arrival</p><p class="mt-0.5 text-[11px] font-bold text-[color:var(--color-brand-navy)]">{summary.arrivalTime}</p></div>
+                <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-3 py-2"><p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Commodity</p><p class="mt-0.5 text-[11px] font-bold text-[color:var(--color-brand-navy)]">{summary.commodity}</p></div>
+                <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-3 py-2"><p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Weight</p><p class="mt-0.5 text-[11px] font-bold text-[color:var(--color-brand-navy)]">{summary.weightKg} kg</p></div>
+                <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-3 py-2"><p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Pieces</p><p class="mt-0.5 text-[11px] font-bold text-[color:var(--color-brand-navy)]">{summary.pieces}</p></div>
+                <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-3 py-2"><p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Payment</p><p class="mt-0.5 text-[11px] font-bold text-[color:var(--color-brand-navy)]">{paymentStatusLabel}</p></div>
               </div>
             {/if}
 
-            <div class={`rounded-[16px] px-4 py-4 text-[13px] ${isPaymentCleared ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}>
+            <div class={`rounded-[8px] px-3 py-2 text-[10px] leading-snug ${isPaymentCleared ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
               {#if isPaymentCleared}
                 Payment cleared. Shipment can proceed through airline handling milestones.
               {:else}
-                Payment is not yet cleared. Shipment progress may pause until payment is confirmed.
+                Payment not cleared. Shipment progress may pause until payment is confirmed.
               {/if}
-            </div>
-
-            <div class="rounded-[16px] bg-amber-50 px-4 py-4 text-[12px] leading-7 text-amber-800">
-              AWB status reflects booking and tracking milestones. Final uplift remains subject to terminal acceptance checks and payment or credit clearance.
             </div>
           </div>
         </Card>
       </div>
 
-      <aside class="space-y-6">
-        <Card tone="highest" class="px-6 py-7">
-          <div class="space-y-5">
-            <p class="ui-label">Track another shipment</p>
-            <Input label="AWB / Waybill Number" icon={Search} placeholder="e.g. 450-1234-5678" bind:value={trackInput} />
-            <Button variant="primary" class="w-full" onclick={goToTracking} disabled={!trackInput.trim()}>Track <ArrowRight size={16} /></Button>
-            <p class="text-[12px] leading-7 text-[color:var(--color-text-body)]">Enter another AWB to view public shipment progress.</p>
-          </div>
-        </Card>
-
-        <Card tone="default" class="px-6 py-6">
+      <aside class="space-y-4">
+        <Card tone="highest" class="px-4 py-4 rounded-[12px] shadow-sm">
           <div class="space-y-3">
-            <p class="ui-label">Signed-in account</p>
-            <h2 class="text-[22px] font-bold text-[color:var(--color-brand-navy)]">Cargo history lives in My account.</h2>
-            <p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">If this shipment is linked to your traveler profile, you can review recent cargo activity alongside bookings, loyalty, and notifications in one place.</p>
-            <Button variant="secondary" href="/account" class="w-full">Open My account</Button>
+            <div>
+              <h2 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Track another shipment</h2>
+            </div>
+            <Input label="AWB / Waybill Number" icon={Search} placeholder="e.g. 450-1234-5678" bind:value={trackInput} />
+            <Button variant="primary" class="w-full h-9 text-[12px]" onclick={goToTracking} disabled={!trackInput.trim()}>Track <ArrowRight size={14} class="ml-1" /></Button>
           </div>
         </Card>
 
         {#if isAuthenticated && detailedBooking}
-          <Card tone="default" class="px-4 py-4">
-            <div class="mb-4 px-2">
-              <p class="ui-label">Printable label</p>
-              <h2 class="mt-2 text-[22px] font-bold text-[color:var(--color-brand-navy)]">Full shipment details unlocked</h2>
+          <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm">
+            <div class="mb-3">
+              <h2 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Printable label</h2>
             </div>
             <CargoLabel
               awb={detailedBooking.awb_number}
@@ -253,21 +237,20 @@
             />
           </Card>
         {:else}
-          <Card tone="default" class="px-6 py-7">
-            <div class="space-y-5">
+          <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm">
+            <div class="space-y-3">
               <div>
-                <p class="ui-label">Unlock Full Details</p>
-                <h2 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Verify with OTP</h2>
+                <h2 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Unlock Full Details</h2>
+                <p class="text-[10px] text-[color:var(--color-text-body)]">Verify with OTP to view label</p>
               </div>
               <Input label="Email used for shipment" placeholder="name@example.com" bind:value={accessEmail} />
-              <div class="grid gap-3 sm:grid-cols-[1fr_150px]">
-                <Button variant="secondary" class="w-full" onclick={requestAccessCode} disabled={sendingCode || !accessEmail.trim()}>{sendingCode ? 'Sending...' : 'Send code'}</Button>
-                <Input label="Code" placeholder="123456" bind:value={accessCode} />
+              <div class="flex gap-2">
+                <Input label="Code" placeholder="123456" bind:value={accessCode} class="w-1/2" />
+                <Button variant="secondary" class="h-[48px] w-1/2 text-[10px]" onclick={requestAccessCode} disabled={sendingCode || !accessEmail.trim()}>{sendingCode ? 'Sending...' : 'Send code'}</Button>
               </div>
-              <Button variant="primary" class="w-full" onclick={verifyAccessCode} disabled={verifyingCode || !accessEmail.trim() || !accessCode.trim()}>{verifyingCode ? 'Verifying...' : 'Verify and unlock'}</Button>
-              {#if accessMessage}<p class="text-[12px] text-[color:var(--color-status-green-text)]">{accessMessage}</p>{/if}
-              {#if accessError}<p class="text-[12px] text-[color:var(--color-status-red-text)]">{accessError}</p>{/if}
-              <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] px-4 py-4 text-[12px] leading-7 text-[color:var(--color-text-body)]"><div class="flex gap-3"><Lock size={16} class="mt-0.5 text-[color:var(--color-brand-blue)]" /><p>OTP access protects printable label data and personal shipment information.</p></div></div>
+              <Button variant="primary" class="w-full h-9 text-[12px]" onclick={verifyAccessCode} disabled={verifyingCode || !accessEmail.trim() || !accessCode.trim()}>{verifyingCode ? 'Verifying...' : 'Verify and unlock'}</Button>
+              {#if accessMessage}<p class="text-[10px] text-[color:var(--color-status-green-text)]">{accessMessage}</p>{/if}
+              {#if accessError}<p class="text-[10px] text-[color:var(--color-status-red-text)]">{accessError}</p>{/if}
             </div>
           </Card>
         {/if}

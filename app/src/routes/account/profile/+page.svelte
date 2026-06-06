@@ -4,12 +4,11 @@
   import { appConfig } from '$lib/config/appConfig';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
-  import Input from '$lib/components/ui/Input.svelte';
   import { authStore } from '$lib/stores/authStore.svelte';
   import { authService } from '$lib/services/auth/authService';
   import { accountService } from '$lib/services/account/accountService';
   import AccountTabs from '$lib/components/ui/AccountTabs.svelte';
-  import { Calendar, Globe, IdCard, Mail, Phone, UserRound } from 'lucide-svelte';
+  import { Calendar, Globe, IdCard, Mail, Phone, UserRound, Camera, KeyRound, Trash2 } from 'lucide-svelte';
 
   let loading = $state(true);
   let saving = $state(false);
@@ -33,28 +32,21 @@
   let confirmNewPassword = $state('');
 
   function syncFromUser(user: any) {
-    firstName = String(user?.first_name || '');
-    lastName = String(user?.last_name || '');
-    email = String(user?.email || '');
-    phone = String(user?.phone_number || '');
-    dateOfBirth = String(user?.date_of_birth || '');
-    nationality = String(user?.nationality || '');
-    passportNumber = String(user?.passport_number || '');
-    frequentFlyerNumber = String(user?.frequent_flyer_number || '');
+    firstName            = String(user?.first_name            || '');
+    lastName             = String(user?.last_name             || '');
+    email                = String(user?.email                 || '');
+    phone                = String(user?.phone_number          || '');
+    dateOfBirth          = String(user?.date_of_birth         || '');
+    nationality          = String(user?.nationality           || '');
+    passportNumber       = String(user?.passport_number       || '');
+    frequentFlyerNumber  = String(user?.frequent_flyer_number || '');
   }
 
   async function loadProfile() {
-    loading = true;
-    error = '';
-    success = '';
-
+    loading = true; error = ''; success = '';
     try {
       await authStore.init();
-      if (!authStore.isAuthenticated) {
-        goto('/login');
-        return;
-      }
-
+      if (!authStore.isAuthenticated) { goto('/login'); return; }
       const token = authService.getToken();
       const [profile, unread] = await Promise.all([
         accountService.fetchProfile(token),
@@ -65,262 +57,223 @@
       unreadCount = Number(unread || 0);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load profile.';
-    } finally {
-      loading = false;
-    }
+    } finally { loading = false; }
   }
 
   async function saveProfile() {
-    saving = true;
-    error = '';
-    success = '';
-
+    saving = true; error = ''; success = '';
     try {
       const token = authService.getToken();
-      await accountService.updateProfile(
-        {
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          email: email.trim(),
-          date_of_birth: dateOfBirth || null,
-          nationality: nationality.trim(),
-          passport_number: passportNumber.trim(),
-          frequent_flyer_number: frequentFlyerNumber.trim()
-        },
-        token
-      );
-
+      await accountService.updateProfile({
+        first_name: firstName.trim(), last_name: lastName.trim(), email: email.trim(),
+        date_of_birth: dateOfBirth || null, nationality: nationality.trim(),
+        passport_number: passportNumber.trim(), frequent_flyer_number: frequentFlyerNumber.trim()
+      }, token);
       const refreshed = await accountService.fetchProfile(token);
       authStore.setUser(refreshed);
       syncFromUser(refreshed);
-      success = 'Profile updated successfully.';
+      success = 'Profile saved.';
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to update profile.';
-    } finally {
-      saving = false;
-    }
+    } finally { saving = false; }
   }
 
   async function onPhotoSelected(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-
-    uploading = true;
-    error = '';
-    success = '';
-
+    uploading = true; error = ''; success = '';
     try {
       const token = authService.getToken();
       const updated = await accountService.uploadProfilePhoto(file, token);
-      authStore.setUser(updated);
-      syncFromUser(updated);
-      success = 'Profile photo updated successfully.';
+      authStore.setUser(updated); syncFromUser(updated);
+      success = 'Photo updated.';
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to upload profile photo.';
-    } finally {
-      uploading = false;
-      input.value = '';
-    }
+      error = err instanceof Error ? err.message : 'Failed to upload photo.';
+    } finally { uploading = false; input.value = ''; }
   }
 
   async function changePassword() {
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-      error = 'Enter your current password and confirm the new password.';
-      success = '';
-      return;
-    }
-    if (newPassword.length < 8) {
-      error = 'New password must be at least 8 characters.';
-      success = '';
-      return;
-    }
-    if (newPassword !== confirmNewPassword) {
-      error = 'New passwords do not match.';
-      success = '';
-      return;
-    }
-
-    changingPassword = true;
-    error = '';
-    success = '';
-
+    if (!currentPassword || !newPassword || !confirmNewPassword) { error = 'All password fields are required.'; success = ''; return; }
+    if (newPassword.length < 8)       { error = 'New password must be at least 8 characters.'; success = ''; return; }
+    if (newPassword !== confirmNewPassword) { error = 'Passwords do not match.'; success = ''; return; }
+    changingPassword = true; error = ''; success = '';
     try {
       const token = authService.getToken();
       await accountService.changePassword(currentPassword, newPassword, token);
-      currentPassword = '';
-      newPassword = '';
-      confirmNewPassword = '';
-      success = 'Password changed successfully.';
+      currentPassword = ''; newPassword = ''; confirmNewPassword = '';
+      success = 'Password changed.';
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to change password.';
-    } finally {
-      changingPassword = false;
-    }
+    } finally { changingPassword = false; }
   }
 
   async function deleteAccount() {
-    if (typeof window !== 'undefined') {
-      const confirmed = window.confirm('Delete this account? This action cannot be undone.');
-      if (!confirmed) return;
-    }
-
-    deletingAccount = true;
-    error = '';
-    success = '';
-
+    if (typeof window !== 'undefined' && !window.confirm('Delete this account? This cannot be undone.')) return;
+    deletingAccount = true; error = ''; success = '';
     try {
       const token = authService.getToken();
       await accountService.deleteAccount(token);
-      authStore.logout();
-      goto('/signup');
+      authStore.logout(); goto('/signup');
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to delete account.';
-    } finally {
-      deletingAccount = false;
-    }
+    } finally { deletingAccount = false; }
   }
 
   onMount(loadProfile);
+
+  const iClass = 'w-full rounded-[10px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-3 py-2 text-[12px] text-[color:var(--color-text-heading)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow';
+  const lClass = 'text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]';
+  const pClass = 'w-full rounded-[10px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-3 py-2 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow';
 </script>
 
-<svelte:head>
-  <title>Profile | {appConfig.name}</title>
-</svelte:head>
+<svelte:head><title>Profile | {appConfig.name}</title></svelte:head>
 
-<main class="min-h-[calc(100vh-58px-300px)] py-10 md:py-14 px-4 sm:px-6 bg-slate-50/60">
-  <div class="max-w-[1100px] mx-auto space-y-8">
-    <header class="flex items-start justify-between gap-6 flex-wrap">
-      <div class="space-y-2">
-        <div class="ui-label text-brand-blue">Profile</div>
-        <h1 class="text-brand-navy">Traveler details</h1>
-        <p class="text-[14px] text-text-muted max-w-[700px]">
-          Keep your core contact and travel identity details ready for future bookings and support verification.
-        </p>
+<main class="page-shell pb-12 pt-4">
+  <div class="page-width space-y-3 max-w-[1100px]">
+
+    <!-- Compact page title row -->
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <UserRound size={15} class="text-[color:var(--color-brand-blue)]" />
+        <h1 class="text-[15px] font-bold text-[color:var(--color-brand-navy)]">Profile &amp; Security</h1>
       </div>
-      <div class="flex gap-3 flex-wrap">
-        <Button variant="secondary" href="/account">Back to account</Button>
-      </div>
-    </header>
+      <Button variant="ghost" href="/account" class="!py-1 !px-2 !text-[12px]">← Account</Button>
+    </div>
 
-    <AccountTabs unreadCount={unreadCount} />
+    <AccountTabs {unreadCount} />
 
+    <!-- Status messages -->
     {#if error}
-      <div class="bg-red-50 text-red-600 text-[13px] p-4 rounded-md border border-red-100">{error}</div>
+      <div class="rounded-lg bg-[color:var(--color-status-red-bg)] px-3 py-2 text-[12px] text-[color:var(--color-status-red-text)]">{error}</div>
     {/if}
     {#if success}
-      <div class="bg-green-50 text-green-700 text-[13px] p-4 rounded-md border border-green-100">{success}</div>
+      <div class="rounded-lg bg-[color:var(--color-status-green-bg)] px-3 py-2 text-[12px] text-[color:var(--color-status-green-text)]">{success}</div>
     {/if}
 
     {#if loading}
-      <Card class="bg-white">
-        <p class="text-[13px] text-text-muted">Loading your profile...</p>
-      </Card>
+      <div class="rounded-xl bg-[color:var(--color-surface-lowest)] px-4 py-3 text-[12px] text-[color:var(--color-text-muted)]">Loading profile…</div>
     {:else}
-      <div class="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-        <Card padding="none" class="bg-white">
-          <div class="p-6 space-y-5">
-            <div class="flex flex-col items-center text-center gap-4">
-              {#if authStore.user?.profile_photo_url}
-                <img
-                  src={authStore.user.profile_photo_url}
-                  alt="Profile"
-                  class="w-28 h-28 rounded-3xl object-cover border border-border"
-                />
-              {:else}
-                <div class="w-28 h-28 rounded-3xl bg-brand-blue/10 text-brand-blue flex items-center justify-center">
-                  <UserRound size={40} />
-                </div>
-              {/if}
+      <!-- Main 2-column layout -->
+      <div class="grid gap-3 lg:grid-cols-[200px_1fr]">
 
-              <div>
-                <p class="text-brand-navy font-semibold text-[18px]">{firstName} {lastName}</p>
-                <p class="text-[13px] text-text-muted mt-1">{email || phone || 'Traveler account'}</p>
-              </div>
+        <!-- Avatar column -->
+        <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-4 py-4 flex flex-col items-center gap-3 shadow-sm">
+          {#if authStore.user?.profile_photo_url}
+            <img src={authStore.user.profile_photo_url} alt="Profile" class="h-20 w-20 rounded-2xl object-cover border border-[color:var(--color-border)]" />
+          {:else}
+            <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]">
+              <UserRound size={32} />
             </div>
-
-            <label class="block">
-              <span class="sr-only">Upload profile photo</span>
-              <input type="file" accept="image/*" class="hidden" onchange={onPhotoSelected} id="profilePhotoInput" />
-              <Button variant="secondary" class="w-full" onclick={() => document.getElementById('profilePhotoInput')?.click()} disabled={uploading}>
-                {uploading ? 'Uploading...' : 'Upload photo'}
-              </Button>
-            </label>
+          {/if}
+          <div class="text-center">
+            <p class="text-[13px] font-bold text-[color:var(--color-brand-navy)] leading-tight">{firstName} {lastName}</p>
+            <p class="mt-0.5 text-[11px] text-[color:var(--color-text-muted)] truncate max-w-[160px]">{email || phone || 'Traveler'}</p>
           </div>
-        </Card>
+          <label class="w-full">
+            <span class="sr-only">Upload photo</span>
+            <input type="file" accept="image/*" class="hidden" onchange={onPhotoSelected} id="profilePhotoInput" />
+            <button type="button"
+              onclick={() => document.getElementById('profilePhotoInput')?.click()}
+              disabled={uploading}
+              class="flex w-full items-center justify-center gap-1.5 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-3 py-1.5 text-[12px] font-semibold text-[color:var(--color-text-body)] hover:bg-[color:var(--color-surface-high)] disabled:opacity-60 transition-colors">
+              <Camera size={13} />{uploading ? 'Uploading…' : 'Change photo'}
+            </button>
+          </label>
+        </div>
 
-        <Card padding="none" class="bg-white">
-          <div class="p-6 md:p-7 space-y-5">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="First name" icon={UserRound} bind:value={firstName} />
-              <Input label="Last name" icon={UserRound} bind:value={lastName} />
+        <!-- Fields column -->
+        <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-4 py-4 shadow-sm space-y-3">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Personal details</p>
+
+          <!-- 3-col grid for fields -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5">
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>First name</label>
+              <input type="text" bind:value={firstName} class={iClass} />
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Email" type="email" icon={Mail} bind:value={email} />
-              <Input label="Phone" icon={Phone} bind:value={phone} disabled />
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>Last name</label>
+              <input type="text" bind:value={lastName} class={iClass} />
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Date of birth" type="date" icon={Calendar} bind:value={dateOfBirth} />
-              <Input label="Nationality" icon={Globe} bind:value={nationality} />
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>Email</label>
+              <input type="email" bind:value={email} class={iClass} />
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Passport number" icon={IdCard} bind:value={passportNumber} />
-              <Input label="Frequent flyer number" icon={IdCard} bind:value={frequentFlyerNumber} />
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>Phone</label>
+              <input type="tel" bind:value={phone} disabled class="{iClass} opacity-50 cursor-not-allowed" />
             </div>
-
-            <div class="pt-2 flex gap-3 flex-wrap">
-              <Button variant="primary" onclick={saveProfile} disabled={saving}>
-                {saving ? 'Saving...' : 'Save changes'}
-              </Button>
-              <Button variant="secondary" href="/account">Back to account</Button>
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>Date of birth</label>
+              <input type="date" bind:value={dateOfBirth} class={iClass} />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>Nationality</label>
+              <input type="text" bind:value={nationality} class={iClass} />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>Passport / ID</label>
+              <input type="text" bind:value={passportNumber} class={iClass} />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>Frequent flyer</label>
+              <input type="text" bind:value={frequentFlyerNumber} class={iClass} />
             </div>
           </div>
-        </Card>
+
+          <div class="flex gap-2 pt-1">
+            <button type="button" onclick={saveProfile} disabled={saving}
+              class="inline-flex items-center gap-1.5 rounded-[10px] bg-[color:var(--color-brand-navy)] px-4 py-2 text-[12px] font-bold text-white shadow disabled:opacity-60 hover:opacity-90 transition-opacity">
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card padding="none" class="bg-white">
-          <div class="p-6 md:p-7 space-y-5">
-            <div>
-              <div class="ui-label text-brand-blue">Security</div>
-              <h2 class="text-brand-navy text-[18px] font-medium mt-1">Change password</h2>
-            </div>
+      <!-- Security + Danger row -->
+      <div class="grid gap-3 lg:grid-cols-2">
 
-            <div class="space-y-4">
-              <Input label="Current password" type="password" bind:value={currentPassword} />
-              <Input label="New password" type="password" bind:value={newPassword} />
-              <Input label="Confirm new password" type="password" bind:value={confirmNewPassword} />
+        <!-- Change password -->
+        <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-4 py-4 shadow-sm space-y-3">
+          <div class="flex items-center gap-2">
+            <KeyRound size={13} class="text-[color:var(--color-brand-blue)]" />
+            <p class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">Change password</p>
+          </div>
+          <div class="grid gap-2">
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>Current password</label>
+              <input type="password" bind:value={currentPassword} class={pClass} />
             </div>
-
-            <div class="pt-2">
-              <Button variant="primary" onclick={changePassword} disabled={changingPassword}>
-                {changingPassword ? 'Updating...' : 'Change password'}
-              </Button>
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>New password</label>
+              <input type="password" bind:value={newPassword} class={pClass} />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class={lClass}>Confirm new password</label>
+              <input type="password" bind:value={confirmNewPassword} class={pClass} />
             </div>
           </div>
-        </Card>
+          <button type="button" onclick={changePassword} disabled={changingPassword}
+            class="inline-flex items-center gap-1.5 rounded-[10px] bg-[color:var(--color-brand-navy)] px-4 py-2 text-[12px] font-bold text-white shadow disabled:opacity-60 hover:opacity-90 transition-opacity">
+            {changingPassword ? 'Updating…' : 'Update password'}
+          </button>
+        </div>
 
-        <Card padding="none" class="bg-white">
-          <div class="p-6 md:p-7 space-y-5">
-            <div>
-              <div class="ui-label text-red-600">Account controls</div>
-              <h2 class="text-brand-navy text-[18px] font-medium mt-1">Delete account</h2>
-            </div>
-
-            <p class="text-[13px] text-text-muted">
-              This removes your traveler account access. Use this only if you are sure you no longer want to keep your profile active.
-            </p>
-
-            <div class="pt-2">
-              <Button variant="secondary" onclick={deleteAccount} disabled={deletingAccount} class="!border-red-300 !text-red-600 hover:!bg-red-600 hover:!text-white">
-                {deletingAccount ? 'Deleting...' : 'Delete account'}
-              </Button>
-            </div>
+        <!-- Delete account -->
+        <div class="rounded-[16px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-4 py-4 shadow-sm space-y-3">
+          <div class="flex items-center gap-2">
+            <Trash2 size={13} class="text-[color:var(--color-status-red-text)]" />
+            <p class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">Delete account</p>
           </div>
-        </Card>
+          <p class="text-[12px] text-[color:var(--color-text-muted)] leading-relaxed">
+            Permanently removes your traveler profile and all associated data. This action cannot be undone.
+          </p>
+          <button type="button" onclick={deleteAccount} disabled={deletingAccount}
+            class="inline-flex items-center gap-1.5 rounded-[10px] border border-[color:var(--color-status-red-text)]/40 bg-[color:var(--color-status-red-bg)] px-4 py-2 text-[12px] font-bold text-[color:var(--color-status-red-text)] hover:bg-[color:var(--color-status-red-text)] hover:text-white disabled:opacity-60 transition-colors">
+            <Trash2 size={12} />{deletingAccount ? 'Deleting…' : 'Delete account'}
+          </button>
+        </div>
       </div>
     {/if}
   </div>

@@ -1,4 +1,7 @@
 <script>
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { authStore } from '$lib/stores/authStore.svelte';
   import FlightSearchForm from '$lib/features/flights/FlightSearchForm.svelte';
   import CargoSearchForm from '$lib/features/cargo/CargoSearchForm.svelte';
   import InteractiveNetworkMap from '$lib/components/ui/InteractiveNetworkMap.svelte';
@@ -9,6 +12,13 @@
   import playStoreImg from '$lib/assets/playstore.png';
 
   let searchMode = $state('flight');
+
+  onMount(async () => {
+    await authStore.init();
+    if (authStore.isAuthenticated) {
+      goto('/account');
+    }
+  });
 
   const benefits = [
     {

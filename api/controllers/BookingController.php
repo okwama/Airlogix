@@ -151,6 +151,14 @@ class BookingController {
             return;
         }
 
+        // Enforce Nationality and Age for all passengers
+        foreach ($passengers as $idx => $p) {
+            if (empty($p['nationality']) || empty($p['age'])) {
+                Response::fail(400, 'Nationality and Age are required for all passengers.', 'BOOKING_CREATE_MISSING_PASSENGER_FIELDS');
+                return;
+            }
+        }
+
         // Securely fetch fares from DB to ensure integrity
         require_once __DIR__ . '/../models/Flight.php';
         $flightModel = new Flight(db());

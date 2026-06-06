@@ -64,27 +64,27 @@
   <title>Search Results: {displayFrom} to {displayTo} | {appConfig.name}</title>
 </svelte:head>
 
-<main class="page-shell pb-20 pt-8 sm:pt-10">
-  <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
-      <div class="flex flex-wrap items-end justify-between gap-5">
-        <div class="space-y-3">
-          <a href="/" class="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-brand-navy)]"><ChevronLeft size={14} /> Back to search</a>
+<main class="page-shell pb-12 pt-4">
+  <div class="page-width space-y-4">
+    <header class="rounded-[12px] bg-[color:var(--color-surface-lowest)] px-4 py-3 shadow-sm border border-[color:var(--color-border)]">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <a href="/" class="inline-flex items-center gap-1 text-[11px] font-semibold text-[color:var(--color-text-muted)] hover:text-[color:var(--color-brand-navy)]"><ChevronLeft size={13} /> Back</a>
           {#if searchQuery.isReturnTrip}
-            <div class="mb-1">
+            <div class="mt-0.5">
               <span class="status-badge bg-indigo-50 text-[color:var(--color-brand-blue)] uppercase font-bold tracking-wider text-[10px]">
-                {currentStep === 'outbound' ? 'Step 1: Select Outbound Flight' : 'Step 2: Select Return Flight'}
+                {currentStep === 'outbound' ? 'Step 1: Outbound' : 'Step 2: Return'}
               </span>
             </div>
           {/if}
-          <h1 class="hero-display">{displayFrom} to {displayTo}</h1>
-          <div class="flex flex-wrap items-center gap-3 text-[13px] text-[color:var(--color-text-body)]">
+          <h1 class="text-[18px] font-bold text-[color:var(--color-brand-navy)] leading-tight">{displayFrom} → {displayTo}</h1>
+          <div class="flex flex-wrap items-center gap-2 text-[11px] text-[color:var(--color-text-body)]">
             <span>{formattedDate}</span>
-            <span class="h-1.5 w-1.5 rounded-full bg-[color:var(--color-brand-blue)]"></span>
+            <span class="h-1 w-1 rounded-full bg-[color:var(--color-brand-blue)]"></span>
             <span>{passengersLabel}</span>
           </div>
         </div>
-        <button class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]"><SlidersHorizontal size={14} class="inline" /> Sort and filter</button>
+        <button class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)] text-[11px]"><SlidersHorizontal size={12} class="inline mr-1" />Filter</button>
       </div>
     </header>
 
@@ -196,19 +196,18 @@
         {/if}
       </main>
 
-      <aside class="space-y-6">
-        <Card tone="default" class="px-6 py-7 sticky top-[96px]">
-          <div class="space-y-5">
+      <aside class="space-y-4">
+        <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm sticky top-[80px]">
+          <div class="space-y-3">
             <div>
-              <p class="ui-label">Luggage Policy</p>
-              <h2 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Cabin and checked baggage</h2>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Luggage Policy</p>
+              <h2 class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">Cabin & checked baggage</h2>
             </div>
-            <div class="space-y-4 text-[13px] text-[color:var(--color-text-body)]">
-              <div class="flex items-start gap-3"><span class="mt-1.5 h-2 w-2 rounded-full bg-[color:var(--color-brand-blue)]"></span><div><p class="font-semibold text-[color:var(--color-brand-navy)]">Personal item <span class="ml-1 text-[color:var(--color-text-muted)]">(Free)</span></p><p class="mt-1 text-[12px]">Under-seat bag, max 7kg weight limit.</p></div></div>
-              <div class="flex items-start gap-3"><span class="mt-1.5 h-2 w-2 rounded-full bg-[color:var(--color-brand-blue)]"></span><div><p class="font-semibold text-[color:var(--color-brand-navy)]">Cabin bag <span class="ml-1 text-[color:var(--color-text-muted)]">(Free)</span></p><p class="mt-1 text-[12px]">Overhead bin, standard aircraft dimensions.</p></div></div>
-              <div class="flex items-start gap-3"><span class="mt-1.5 h-2 w-2 rounded-full bg-[color:var(--color-surface-highest)]"></span><div><p class="font-semibold text-[color:var(--color-brand-navy)]">Checked bag <span class="ml-1 text-[color:var(--color-text-muted)]">(Check-in review)</span></p><p class="mt-1 text-[12px]">Selected during booking, finalized at check-in.</p></div></div>
+            <div class="space-y-2.5 text-[11px] text-[color:var(--color-text-body)]">
+              <div class="flex items-start gap-2"><span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[color:var(--color-brand-blue)]"></span><div><p class="font-bold text-[color:var(--color-brand-navy)]">Personal item <span class="font-normal text-[color:var(--color-text-muted)]">(Free)</span></p><p class="text-[10px] mt-0.5">Under-seat bag, max 7kg.</p></div></div>
+              <div class="flex items-start gap-2"><span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[color:var(--color-brand-blue)]"></span><div><p class="font-bold text-[color:var(--color-brand-navy)]">Cabin bag <span class="font-normal text-[color:var(--color-text-muted)]">(Free)</span></p><p class="text-[10px] mt-0.5">Overhead bin, standard dimensions.</p></div></div>
+              <div class="flex items-start gap-2"><span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[color:var(--color-surface-highest)]"></span><div><p class="font-bold text-[color:var(--color-brand-navy)]">Checked bag <span class="font-normal text-[color:var(--color-text-muted)]">(Review)</span></p><p class="text-[10px] mt-0.5">Finalized at check-in.</p></div></div>
             </div>
-            <p class="text-[12px] italic leading-7 text-[color:var(--color-text-muted)]">Excess, oversized, or special luggage is finalized during check-in review.</p>
           </div>
         </Card>
       </aside>

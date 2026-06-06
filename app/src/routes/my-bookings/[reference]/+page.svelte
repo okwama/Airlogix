@@ -94,25 +94,20 @@
   <title>Booking - {reference} | {appConfig.name}</title>
 </svelte:head>
 
-<main class="page-shell pb-20 pt-8 sm:pt-10">
-  <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[color:var(--color-surface-lowest)] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
-      <div class="flex flex-wrap items-start justify-between gap-6">
-        <div class="max-w-[780px] space-y-3">
-          <p class="ui-label">Booking Detail</p>
-          <h1 class="hero-display">PNR {reference}</h1>
-          <p class="max-w-[700px] text-[15px] text-[color:var(--color-text-body)] sm:text-[17px]">
-            View itinerary details, payment status, documents, and the current hold window without leaving the passenger flow.
-          </p>
-        </div>
-        <div class="flex gap-3">
-          <Button variant="secondary" onclick={loadBooking} disabled={loading}><RefreshCw size={16} /> Refresh</Button>
-          {#if authStore.isAuthenticated}
-            <Button variant="primary" href="/account">My account</Button>
-          {:else}
-            <Button variant="primary" href="/manage">Back to manage</Button>
-          {/if}
-        </div>
+<main class="page-shell pb-12 pt-4">
+  <div class="page-width space-y-4">
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between rounded-[12px] bg-[color:var(--color-surface-lowest)] px-4 py-3 shadow-sm border border-[color:var(--color-border)] gap-4">
+      <div>
+        <h1 class="text-[16px] font-bold text-[color:var(--color-brand-navy)]">PNR {reference}</h1>
+        <p class="text-[11px] text-[color:var(--color-text-body)]">Booking Detail &amp; Status</p>
+      </div>
+      <div class="flex gap-2">
+        <Button variant="secondary" class="h-8 px-3 text-[11px]" onclick={loadBooking} disabled={loading}><RefreshCw size={12} class="mr-1" /> Refresh</Button>
+        {#if authStore.isAuthenticated}
+          <Button variant="primary" class="h-8 px-3 text-[11px]" href="/account">My account</Button>
+        {:else}
+          <Button variant="primary" class="h-8 px-3 text-[11px]" href="/manage">Back to manage</Button>
+        {/if}
       </div>
     </header>
 
@@ -136,59 +131,57 @@
         <p class="text-[14px] text-[color:var(--color-text-body)]">Loading booking...</p>
       </Card>
     {:else if booking}
-      <div class="grid gap-8 lg:grid-cols-[1fr_360px]">
-        <div class="space-y-8">
-          <Card tone="highest" class="overflow-hidden p-0">
-            <div class="grid gap-0 md:grid-cols-[0.92fr_1.3fr]">
-              <div class="min-h-[260px] bg-[color:var(--color-brand-navy)] p-7 text-white sm:p-8">
-                <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/65">Flight {booking.flight_number || 'Scheduled'}</p>
-                <div class="mt-6 space-y-3">
-                  <h2 class="text-[34px] font-bold tracking-[-0.03em] text-white">{booking.from_code} to {booking.to_code}</h2>
-                  <p class="max-w-[260px] text-[14px] leading-7 text-white/72">{booking.from_city || 'Departure city'} to {booking.to_city || 'Arrival city'} on {booking.booking_date}.</p>
+      <div class="grid gap-4 lg:grid-cols-[1fr_320px]">
+        <div class="space-y-4">
+          <Card tone="highest" class="overflow-hidden p-0 rounded-[12px]">
+            <div class="flex flex-col md:flex-row">
+              <div class="bg-[color:var(--color-brand-navy)] p-4 text-white md:w-1/3 flex flex-col justify-between">
+                <div>
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-white/65">Flight {booking.flight_number || 'Scheduled'}</p>
+                  <h2 class="mt-2 text-[18px] font-bold text-white leading-tight">{booking.from_code} to {booking.to_code}</h2>
+                  <p class="text-[11px] text-white/72 mt-1">{booking.from_city || 'Departure'} to {booking.to_city || 'Arrival'}</p>
+                  <p class="text-[11px] text-white/72">{booking.booking_date}</p>
                 </div>
-                <div class="mt-10 grid grid-cols-2 gap-4 text-[13px]">
+                <div class="mt-4 grid grid-cols-2 gap-2 text-[11px]">
                   <div>
-                    <p class="font-['Inter'] text-[11px] uppercase tracking-[0.18em] text-white/75">Payment</p>
-                    <p class="mt-1 font-semibold text-white">{paymentState || '-'}</p>
+                    <p class="text-[9px] uppercase tracking-widest text-white/75">Payment</p>
+                    <p class="font-bold text-white">{paymentState || '-'}</p>
                   </div>
                   <div>
-                    <p class="font-['Inter'] text-[11px] uppercase tracking-[0.18em] text-white/75">Ticket</p>
-                    <p class="mt-1 font-semibold text-white">{ticketState || '-'}</p>
+                    <p class="text-[9px] uppercase tracking-widest text-white/75">Ticket</p>
+                    <p class="font-bold text-white">{ticketState || '-'}</p>
                   </div>
                 </div>
               </div>
 
-              <div class="bg-[color:var(--color-surface-lowest)] p-7 sm:p-8">
-                <div class="flex items-start justify-between gap-4 flex-wrap">
-                  <div>
-                    <p class="ui-label">Journey</p>
-                    <div class="mt-3 flex items-center gap-5">
-                      <div>
-                        <p class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">{booking.from_code}</p>
-                        <p class="text-[13px] text-[color:var(--color-text-body)]">{booking.from_city || 'Departure'}</p>
-                      </div>
-                      <div class="flex-1"><div class="soft-divider"></div></div>
-                      <div class="text-right">
-                        <p class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">{booking.to_code}</p>
-                        <p class="text-[13px] text-[color:var(--color-text-body)]">{booking.to_city || 'Arrival'}</p>
-                      </div>
+              <div class="bg-[color:var(--color-surface-lowest)] p-4 md:w-2/3 flex flex-col justify-between">
+                <div class="flex items-center justify-between border-b border-[color:var(--color-border)] pb-3">
+                  <div class="flex items-center gap-4">
+                    <div>
+                      <p class="text-[20px] font-bold text-[color:var(--color-brand-navy)] leading-none">{booking.from_code}</p>
+                      <p class="text-[10px] text-[color:var(--color-text-body)]">{booking.from_city || 'Departure'}</p>
+                    </div>
+                    <div class="w-8 h-px bg-[color:var(--color-border)]"></div>
+                    <div>
+                      <p class="text-[20px] font-bold text-[color:var(--color-brand-navy)] leading-none">{booking.to_code}</p>
+                      <p class="text-[10px] text-[color:var(--color-text-body)]">{booking.to_city || 'Arrival'}</p>
                     </div>
                   </div>
-                  <span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">{bookingState || 'ACTIVE'}</span>
+                  <span class="rounded-[4px] bg-[color:var(--color-brand-blue)] px-2 py-1 text-[9px] font-bold text-white">{bookingState || 'ACTIVE'}</span>
                 </div>
 
-                <div class="mt-8 grid gap-4 sm:grid-cols-3">
-                  <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-4">
-                    <p class="ui-label">Date</p>
-                    <p class="mt-2 flex items-center gap-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]"><Calendar size={15} /> {booking.booking_date || '-'}</p>
+                <div class="mt-3 grid grid-cols-3 gap-3">
+                  <div class="rounded-[8px] bg-[color:var(--color-surface-low)] border border-[color:var(--color-border)] px-3 py-2">
+                    <p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Date</p>
+                    <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">{booking.booking_date || '-'}</p>
                   </div>
-                  <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-4">
-                    <p class="ui-label">Booking</p>
-                    <p class="mt-2 text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{bookingState || '-'}</p>
+                  <div class="rounded-[8px] bg-[color:var(--color-surface-low)] border border-[color:var(--color-border)] px-3 py-2">
+                    <p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Booking</p>
+                    <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">{bookingState || '-'}</p>
                   </div>
-                  <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-4">
-                    <p class="ui-label">Reference</p>
-                    <p class="mt-2 font-mono text-[14px] font-semibold text-[color:var(--color-brand-navy)]">{reference}</p>
+                  <div class="rounded-[8px] bg-[color:var(--color-surface-low)] border border-[color:var(--color-border)] px-3 py-2">
+                    <p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Reference</p>
+                    <p class="mt-0.5 font-mono text-[12px] font-bold text-[color:var(--color-brand-navy)]">{reference}</p>
                   </div>
                 </div>
               </div>
@@ -196,55 +189,48 @@
           </Card>
 
           {#if hasActiveHold}
-            <Card tone="default" class="px-6 py-6 sm:px-7">
-              <div class="flex flex-wrap items-start justify-between gap-4">
+            <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm">
+              <div class="flex items-center justify-between">
                 <div>
-                  <p class="ui-label">Payment Window</p>
-                  <h3 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Your reservation is still active</h3>
-                  <p class="mt-2 max-w-[620px] text-[14px] leading-7 text-[color:var(--color-text-body)]">
-                    Seats are reserved until {new Date(reservationExpiresAt).toLocaleString()}. You can leave this page and return through Manage Booking before the timer ends.
-                  </p>
+                  <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Active Hold</h3>
+                  <p class="text-[11px] text-[color:var(--color-text-body)]">Reserved until {new Date(reservationExpiresAt).toLocaleString()}</p>
                 </div>
-                <div class="rounded-[18px] bg-[color:var(--color-surface-lowest)] px-5 py-4 text-center shadow-[0_18px_40px_rgba(26,28,26,0.05)]">
-                  <p class="ui-label">Time left</p>
-                  <p class="mt-2 text-[28px] font-bold text-[color:var(--color-brand-navy)]">{holdTimeRemaining}</p>
+                <div class="rounded-[6px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-3 py-1.5 text-center">
+                  <p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Time left</p>
+                  <p class="text-[16px] font-extrabold text-[color:var(--color-brand-navy)] leading-none">{holdTimeRemaining}</p>
                 </div>
               </div>
             </Card>
           {:else if showExpiredHold}
-            <Card tone="default" class="px-6 py-6 sm:px-7">
-              <p class="ui-label text-[color:var(--color-status-red-text)]">Reservation expired</p>
-              <h3 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">This unpaid hold is no longer active.</h3>
-              <p class="mt-2 max-w-[620px] text-[14px] leading-7 text-[color:var(--color-text-body)]">Please search again and create a new booking if you still want to travel.</p>
+            <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm border border-red-200 bg-red-50">
+              <h3 class="text-[14px] font-bold text-red-800">Reservation expired</h3>
+              <p class="text-[11px] text-red-600 mt-1">This unpaid hold is no longer active.</p>
             </Card>
           {/if}
 
           {#if nextActions.length}
-            <Card tone="highest" class="px-6 py-6 sm:px-7">
-              <p class="ui-label">Next actions</p>
-              <div class="mt-4 flex flex-wrap gap-2">
+            <Card tone="highest" class="px-4 py-4 rounded-[12px]">
+              <p class="text-[11px] font-bold text-[color:var(--color-brand-navy)] mb-2">Next actions</p>
+              <div class="flex gap-2 flex-wrap">
                 {#each nextActions as a, idx (idx)}
-                  <span class="status-badge bg-[color:var(--color-status-blue-bg)] text-[color:var(--color-status-blue-text)]">{a.label}</span>
+                  <span class="rounded bg-[color:var(--color-brand-navy)] px-2 py-1 text-[10px] font-bold text-white">{a.label}</span>
                 {/each}
               </div>
             </Card>
           {/if}
 
           {#if Array.isArray(booking.passengers) && booking.passengers.length}
-            <Card tone="default" class="px-6 py-6 sm:px-7">
-              <div class="space-y-4">
-                <div>
-                  <p class="ui-label">Passengers</p>
-                  <h3 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Traveler roster</h3>
-                </div>
-                <div class="grid gap-3">
+            <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm">
+              <div class="space-y-3">
+                <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Passengers</h3>
+                <div class="grid gap-2">
                   {#each booking.passengers as p (p.id || p.passenger_id || p.pnr)}
-                    <div class="flex items-center justify-between gap-4 rounded-[16px] bg-[color:var(--color-surface-lowest)] px-5 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
-                      <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><UserRound size={17} /></div>
-                        <span class="font-semibold text-[color:var(--color-brand-navy)]">{p.name || p.passenger_name || 'Traveler'}</span>
+                    <div class="flex items-center justify-between rounded-[8px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-3 py-2">
+                      <div class="flex items-center gap-2">
+                        <UserRound size={12} class="text-[color:var(--color-brand-blue)]" />
+                        <span class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">{p.name || p.passenger_name || 'Traveler'}</span>
                       </div>
-                      <span class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]">{p.passenger_type || 'Passenger'}</span>
+                      <span class="text-[10px] text-[color:var(--color-text-body)]">{p.passenger_type || 'Passenger'}</span>
                     </div>
                   {/each}
                 </div>
@@ -253,41 +239,46 @@
           {/if}
         </div>
 
-        <aside class="space-y-6">
-          <Card tone="highest" class="px-6 py-6 sm:px-7">
-            <div class="space-y-4">
+        <aside class="space-y-4">
+          <Card tone="highest" class="px-4 py-4 rounded-[12px] shadow-sm">
+            <div class="space-y-3">
               {#if hasActiveHold}
-                <p class="ui-label">Resume payment</p>
-                <h3 class="text-[22px] font-bold text-[color:var(--color-brand-navy)]">Complete payment while the hold is active.</h3>
-                <p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">Continue to payment before the countdown ends to keep these seats.</p>
-                <Button variant="primary" href={`/my-bookings/${reference}/pay`} class="w-full"><CreditCard size={16} /> Continue payment</Button>
+                <div>
+                  <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Resume payment</h3>
+                  <p class="text-[11px] leading-snug text-[color:var(--color-text-body)] mt-1">Complete payment before the countdown ends to keep these seats.</p>
+                </div>
+                <Button variant="primary" href={`/my-bookings/${reference}/pay`} class="w-full h-9 text-[12px]"><CreditCard size={14} class="mr-1.5" /> Continue payment</Button>
               {:else if paymentState === 'PAID' || ticketState === 'TICKETED'}
-                <p class="ui-label">Documents</p>
-                <h3 class="text-[22px] font-bold text-[color:var(--color-brand-navy)]">Your e-ticket is ready.</h3>
-                <p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">Download the combined e-ticket and receipt.</p>
-                <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="w-full"><Download size={16} /> View e-ticket PDF</Button>
+                <div>
+                  <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Your e-ticket is ready</h3>
+                  <p class="text-[11px] leading-snug text-[color:var(--color-text-body)] mt-1">Download the combined e-ticket and receipt.</p>
+                </div>
+                <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="w-full h-9 text-[12px]"><Download size={14} class="mr-1.5" /> View e-ticket PDF</Button>
               {:else}
-                <p class="ui-label">Reservation status</p>
-                <h3 class="text-[22px] font-bold text-[color:var(--color-brand-navy)]">No active payment window.</h3>
-                <p class="text-[13px] leading-7 text-[color:var(--color-text-body)]">Search again to create a fresh booking if this reservation has lapsed.</p>
-                <Button variant="secondary" href="/search" class="w-full"><Clock3 size={16} /> Search flights again</Button>
+                <div>
+                  <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">No active payment window</h3>
+                  <p class="text-[11px] leading-snug text-[color:var(--color-text-body)] mt-1">Search again to create a fresh booking if this reservation has lapsed.</p>
+                </div>
+                <Button variant="secondary" href="/search" class="w-full h-9 text-[12px]"><Clock3 size={14} class="mr-1.5" /> Search flights again</Button>
               {/if}
             </div>
           </Card>
 
           {#if !authStore.isAuthenticated}
-            <Card tone="default" class="px-6 py-6 sm:px-7">
-              <p class="ui-label">Need access?</p>
-              <h3 class="mt-2 text-[22px] font-bold text-[color:var(--color-brand-navy)]">Verify with OTP</h3>
-              <p class="mt-2 text-[13px] leading-7 text-[color:var(--color-text-body)]">If this browser session cannot open the booking, go back to Manage and verify through the OTP flow.</p>
-              <div class="mt-4"><Button variant="secondary" href="/manage" class="w-full">Verify with OTP</Button></div>
+            <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm">
+              <div>
+                <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Need access?</h3>
+                <p class="text-[11px] leading-snug text-[color:var(--color-text-body)] mt-1">If this session cannot open the booking, verify through the OTP flow.</p>
+              </div>
+              <div class="mt-3"><Button variant="secondary" href="/manage" class="w-full h-9 text-[12px]">Verify with OTP</Button></div>
             </Card>
           {:else}
-            <Card tone="default" class="px-6 py-6 sm:px-7">
-              <p class="ui-label">Account</p>
-              <h3 class="mt-2 text-[22px] font-bold text-[color:var(--color-brand-navy)]">Back to your trips</h3>
-              <p class="mt-2 text-[13px] leading-7 text-[color:var(--color-text-body)]">Return to your account dashboard to view all upcoming and past trips.</p>
-              <div class="mt-4"><Button variant="secondary" href="/account" class="w-full">My account</Button></div>
+            <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm">
+              <div>
+                <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Account</h3>
+                <p class="text-[11px] leading-snug text-[color:var(--color-text-body)] mt-1">Return to your account dashboard to view all upcoming and past trips.</p>
+              </div>
+              <div class="mt-3"><Button variant="secondary" href="/account" class="w-full h-9 text-[12px]">My account</Button></div>
             </Card>
           {/if}
         </aside>

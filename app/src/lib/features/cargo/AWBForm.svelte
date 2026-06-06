@@ -101,111 +101,110 @@
   }
 </script>
 
-<form onsubmit={handleSubmit} class="flex flex-col gap-10">
+<form onsubmit={handleSubmit} class="flex flex-col gap-4">
   <!-- Shipper Details -->
-  <div class="bg-surface border-[0.5px] border-border rounded-lg p-6 lg:p-10">
-    <div class="mb-8 pb-3 border-b-[0.5px] border-border">
-      <h3 class="text-[22px] font-medium text-brand-navy leading-none mb-2">Shipper Details</h3>
-      <p class="text-text-muted text-[11px] font-medium uppercase tracking-wider">Origin Consignor Information</p>
+  <div class="rounded-[12px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] p-4 shadow-sm">
+    <div class="mb-4 border-b border-[color:var(--color-border)] pb-2 flex justify-between items-center">
+      <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Shipper Details</h3>
+      <span class="rounded bg-[color:var(--color-surface-low)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-muted)]">Origin</span>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-      <div class="flex flex-col">
-        <span class="ui-label mb-1">Full Name *</span>
-        <input type="text" bind:value={shipper.name} required class="input-field w-full" placeholder="e.g. John Kamau" />
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Full Name *</label>
+        <input type="text" bind:value={shipper.name} required class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="e.g. John Kamau" />
       </div>
       
-      <div class="flex flex-col">
-        <span class="ui-label mb-1">Company Name</span>
-        <input type="text" bind:value={shipper.company} class="input-field w-full" placeholder="ABC Logistics Ltd" />
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Company Name</label>
+        <input type="text" bind:value={shipper.company} class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="ABC Logistics Ltd" />
       </div>
 
-      <div class="flex flex-col">
-        <span class="ui-label mb-1">Phone Number *</span>
-        <input type="tel" bind:value={shipper.phone} required class="input-field w-full" placeholder="+254 700 000000" />
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Phone Number *</label>
+        <input type="tel" bind:value={shipper.phone} required class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="+254 700 000000" />
       </div>
 
-      <div class="flex flex-col">
-        <span class="ui-label mb-1">Email Address</span>
-        <input type="email" bind:value={shipper.email} class="input-field w-full" placeholder="john@example.com" />
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Email Address</label>
+        <input type="email" bind:value={shipper.email} class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="john@example.com" />
       </div>
 
-      <div class="flex flex-col md:col-span-2">
-        <span class="ui-label mb-1">Physical Address *</span>
-        <input type="text" bind:value={shipper.address} required class="input-field w-full" placeholder="Industrial Area, Nairobi" />
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Physical Address *</label>
+        <input type="text" bind:value={shipper.address} required class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="Industrial Area, Nairobi" />
       </div>
     </div>
   </div>
 
   <!-- Consignee Details -->
-  <div class="bg-surface border-[0.5px] border-border rounded-lg p-6 lg:p-10">
-    <div class="mb-8 pb-3 border-b-[0.5px] border-border">
-      <h3 class="text-[22px] font-medium text-brand-navy leading-none mb-2">Consignee Details</h3>
-      <p class="text-text-muted text-[11px] font-medium uppercase tracking-wider">Destination Receiver Information</p>
+  <div class="rounded-[12px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] p-4 shadow-sm">
+    <div class="mb-4 border-b border-[color:var(--color-border)] pb-2 flex justify-between items-center">
+      <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Consignee Details</h3>
+      <span class="rounded bg-[color:var(--color-surface-low)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-muted)]">Destination</span>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-      <div class="flex flex-col">
-        <span class="ui-label mb-1">Full Name *</span>
-        <input type="text" bind:value={consignee.name} required class="input-field w-full" placeholder="e.g. Amina Hassan" />
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Full Name *</label>
+        <input type="text" bind:value={consignee.name} required class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="e.g. Amina Hassan" />
       </div>
       
-      <div class="flex flex-col">
-        <span class="ui-label mb-1">Company Name</span>
-        <input type="text" bind:value={consignee.company} class="input-field w-full" placeholder="XYZ Imports Ltd" />
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Company Name</label>
+        <input type="text" bind:value={consignee.company} class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="XYZ Imports Ltd" />
       </div>
 
-      <div class="flex flex-col">
-        <span class="ui-label mb-1">Phone Number *</span>
-        <input type="tel" bind:value={consignee.phone} required class="input-field w-full" placeholder="+255 700 000000" />
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Phone Number *</label>
+        <input type="tel" bind:value={consignee.phone} required class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="+255 700 000000" />
       </div>
 
-      <div class="flex flex-col">
-        <span class="ui-label mb-1">Email Address</span>
-        <input type="email" bind:value={consignee.email} class="input-field w-full" placeholder="amina@example.com" />
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Email Address</label>
+        <input type="email" bind:value={consignee.email} class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="amina@example.com" />
       </div>
 
-      <div class="flex flex-col md:col-span-2">
-        <span class="ui-label mb-1">Physical Address *</span>
-        <input type="text" bind:value={consignee.address} required class="input-field w-full" placeholder="Kariakoo, Dar es Salaam" />
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Physical Address *</label>
+        <input type="text" bind:value={consignee.address} required class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="Kariakoo, Dar es Salaam" />
       </div>
     </div>
   </div>
 
   <!-- Shipment Declaration -->
-  <div class="bg-surface border-[0.5px] border-border rounded-lg p-6 lg:p-10">
-    <div class="mb-6">
-      <h3 class="text-[18px] font-medium text-brand-navy mb-2">Shipment Declaration</h3>
-      <p class="text-text-muted text-[11px] font-medium uppercase tracking-wider">Customs &amp; Liability</p>
+  <div class="rounded-[12px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] p-4 shadow-sm">
+    <div class="mb-4 border-b border-[color:var(--color-border)] pb-2 flex justify-between items-center">
+      <h3 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Shipment Declaration</h3>
+      <span class="rounded bg-[color:var(--color-surface-low)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-muted)]">Optional</span>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-      <div class="flex flex-col">
-        <span class="ui-label mb-1">Declared Value for Carriage ({appConfig.defaultCurrency})</span>
-        <input type="number" bind:value={declaredValue} class="input-field w-full" placeholder="e.g. 50000" />
-        <p class="text-text-muted text-[11px] mt-1">Used to calculate excess value charges. Optional.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1">
+        <label class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Declared Value ({appConfig.defaultCurrency})</label>
+        <input type="number" bind:value={declaredValue} class="w-full rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-2.5 py-1.5 text-[12px] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)]/30 transition-shadow" placeholder="e.g. 50000" />
       </div>
     </div>
   </div>
 
   <!-- Error Message -->
   {#if errorMessage}
-    <div class="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-      <AlertCircle size={16} class="text-red-500 mt-0.5 shrink-0" />
-      <p class="text-red-700 text-[13px]">{errorMessage}</p>
+    <div class="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-[8px]">
+      <AlertCircle size={14} class="text-red-500 mt-0.5 shrink-0" />
+      <p class="text-red-700 text-[12px]">{errorMessage}</p>
     </div>
   {/if}
 
-  <div class="flex justify-end pt-4">
+  <div class="flex justify-end pt-2">
     <button
       type="submit"
       id="btn-confirm-cargo-booking"
       disabled={isSubmitting}
-      class="btn-primary w-full md:w-[280px] h-[48px] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+      class="inline-flex h-9 items-center justify-center rounded-[8px] bg-[color:var(--color-brand-blue)] px-5 text-[12px] font-bold text-white transition-colors hover:bg-[color:var(--color-brand-navy)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-blue)] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {#if isSubmitting}
-        <Loader2 size={16} class="animate-spin" />
-        Confirming Booking...
+        <Loader2 size={14} class="animate-spin mr-2" />
+        Confirming...
       {:else}
         Confirm Cargo Booking
       {/if}

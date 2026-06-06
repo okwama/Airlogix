@@ -18,52 +18,49 @@
   <title>Cargo Search Results | {appConfig.name}</title>
 </svelte:head>
 
-<main class="page-shell pb-20 pt-8 sm:pt-10">
-  <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(244,244,240,0.92))] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
-      <div class="flex flex-wrap items-end justify-between gap-5">
-        <div class="space-y-3">
-          <button class="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-brand-navy)]" onclick={() => window.history.back()}><ChevronLeft size={14} /> Back to search</button>
-          <h1 class="hero-display">{searchQuery.from} to {searchQuery.to}</h1>
-          <div class="flex flex-wrap items-center gap-3 text-[13px] text-[color:var(--color-text-body)]">
-            <span>{new Date(searchQuery.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-            <span class="h-1.5 w-1.5 rounded-full bg-[color:var(--color-brand-blue)]"></span>
+<main class="page-shell pb-12 pt-4">
+  <div class="page-width space-y-4">
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between rounded-[12px] bg-[color:var(--color-brand-navy)] px-4 py-3 text-white shadow-sm gap-4">
+      <div class="flex items-center gap-4">
+        <button class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors" onclick={() => window.history.back()}><ChevronLeft size={16} /></button>
+        <div>
+          <h1 class="text-[16px] font-bold text-white">{searchQuery.from} to {searchQuery.to}</h1>
+          <div class="flex items-center gap-2 text-[11px] text-white/80">
+            <span>{new Date(searchQuery.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+            <span class="h-1 w-1 rounded-full bg-white/40"></span>
             <span>{searchQuery.weight} kg</span>
-            <span class="h-1.5 w-1.5 rounded-full bg-[color:var(--color-brand-blue)]"></span>
+            <span class="h-1 w-1 rounded-full bg-white/40"></span>
             <span class="capitalize">{searchQuery.commodity}</span>
+            {#if searchQuery.intent === 'book'}
+              <span class="ml-2 rounded bg-[color:var(--color-status-green-bg)] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-status-green-text)]">Booking Intent</span>
+            {/if}
           </div>
-          <p class="max-w-[640px] text-[13px] leading-7 text-[color:var(--color-text-body)]">
-            {searchQuery.intent === 'book'
-              ? 'Select a flight with available capacity to continue straight into the cargo booking step.'
-              : 'Review available capacity and pricing, then continue into booking when you are ready.'}
-          </p>
         </div>
-        <div class="flex items-center gap-3">
-          <button class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]"><SlidersHorizontal size={14} class="inline" /> Capacity filters</button>
-          <Button variant="secondary" onclick={() => window.history.back()}>Change search</Button>
-        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="inline-flex h-8 items-center gap-1.5 rounded-[6px] border border-white/20 bg-transparent px-3 text-[11px] font-bold text-white hover:bg-white/10" onclick={() => window.history.back()}>Change search</button>
       </div>
     </header>
 
-    <div class="grid gap-8 lg:grid-cols-[300px_1fr] lg:items-start">
+    <div class="grid gap-4 lg:grid-cols-[280px_1fr] lg:items-start">
       <aside class="hidden lg:block">
-        <Card tone="default" class="sticky top-[96px] px-6 py-7">
-          <div class="space-y-7">
+        <Card tone="default" class="sticky top-[96px] px-4 py-4 rounded-[12px]">
+          <div class="space-y-4">
             <div>
-              <p class="ui-label">Filter capacity</p>
-              <h2 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Handling options</h2>
+              <p class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">Handling options</p>
+              <p class="text-[10px] text-[color:var(--color-text-body)]">Filter aircraft and capacity</p>
             </div>
-            <div class="space-y-6">
-              <div class="space-y-3">
-                <p class="ui-label">Aircraft type</p>
-                <label class="flex items-center gap-3 text-[13px] text-[color:var(--color-text-body)]"><input type="checkbox" checked class="accent-[color:var(--color-brand-blue)]" /> Belly cargo (Passenger)</label>
-                <label class="flex items-center gap-3 text-[13px] text-[color:var(--color-text-body)]"><input type="checkbox" checked class="accent-[color:var(--color-brand-blue)]" /> Main deck (Freighter)</label>
+            <div class="space-y-3">
+              <div class="space-y-1.5">
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Aircraft type</p>
+                <label class="flex items-center gap-2 text-[11px] text-[color:var(--color-text-body)]"><input type="checkbox" checked class="accent-[color:var(--color-brand-blue)]" /> Belly cargo (Passenger)</label>
+                <label class="flex items-center gap-2 text-[11px] text-[color:var(--color-text-body)]"><input type="checkbox" checked class="accent-[color:var(--color-brand-blue)]" /> Main deck (Freighter)</label>
               </div>
-              <div class="space-y-3">
-                <p class="ui-label">Handling</p>
-                <label class="flex items-center gap-3 text-[13px] text-[color:var(--color-text-body)]"><input type="checkbox" checked class="accent-[color:var(--color-brand-blue)]" /> Temperature control</label>
-                <label class="flex items-center gap-3 text-[13px] text-[color:var(--color-text-body)]"><input type="checkbox" class="accent-[color:var(--color-brand-blue)]" /> Dangerous goods (DGR)</label>
-                <label class="flex items-center gap-3 text-[13px] text-[color:var(--color-text-body)]"><input type="checkbox" class="accent-[color:var(--color-brand-blue)]" /> Live animal (AVI)</label>
+              <div class="space-y-1.5">
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Handling</p>
+                <label class="flex items-center gap-2 text-[11px] text-[color:var(--color-text-body)]"><input type="checkbox" checked class="accent-[color:var(--color-brand-blue)]" /> Temperature control</label>
+                <label class="flex items-center gap-2 text-[11px] text-[color:var(--color-text-body)]"><input type="checkbox" class="accent-[color:var(--color-brand-blue)]" /> Dangerous goods (DGR)</label>
+                <label class="flex items-center gap-2 text-[11px] text-[color:var(--color-text-body)]"><input type="checkbox" class="accent-[color:var(--color-brand-blue)]" /> Live animal (AVI)</label>
               </div>
             </div>
           </div>
@@ -82,12 +79,12 @@
             {/each}
           </div>
         {:else if loadError}
-          <Card tone="ghost" class="px-6 py-16 text-center sm:px-8 sm:py-20">
-            <div class="flex flex-col items-center justify-center">
-              <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><PackageSearch size={40} /></div>
-              <h2 class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">Could not load availability.</h2>
-              <p class="mt-3 max-w-[420px] text-[14px] leading-7 text-[color:var(--color-text-body)]">{loadError}</p>
-              <div class="mt-6"><Button variant="secondary" onclick={() => window.location.reload()}>Try again</Button></div>
+          <Card tone="ghost" class="px-5 py-10 text-center">
+            <div class="flex flex-col items-center justify-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><PackageSearch size={24} /></div>
+              <h2 class="text-[16px] font-bold text-[color:var(--color-brand-navy)]">Could not load availability.</h2>
+              <p class="max-w-[400px] text-[12px] leading-snug text-[color:var(--color-text-body)]">{loadError}</p>
+              <Button variant="secondary" class="h-8 text-[11px] px-3" onclick={() => window.location.reload()}>Try again</Button>
             </div>
           </Card>
         {:else if flights.length > 0}
@@ -102,12 +99,12 @@
             {/each}
           </div>
         {:else}
-          <Card tone="ghost" class="px-6 py-16 text-center sm:px-8 sm:py-20">
-            <div class="flex flex-col items-center justify-center">
-              <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><PackageSearch size={40} /></div>
-              <h2 class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">No space available.</h2>
-              <p class="mt-3 max-w-[460px] text-[14px] leading-7 text-[color:var(--color-text-body)]">We could not find flights with enough cargo capacity for this shipment on the selected date. Try splitting the shipment or choosing another date.</p>
-              <div class="mt-6"><Button variant="secondary" onclick={() => window.history.back()}>Search again</Button></div>
+          <Card tone="ghost" class="px-5 py-10 text-center">
+            <div class="flex flex-col items-center justify-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><PackageSearch size={24} /></div>
+              <h2 class="text-[16px] font-bold text-[color:var(--color-brand-navy)]">No space available.</h2>
+              <p class="max-w-[440px] text-[12px] leading-snug text-[color:var(--color-text-body)]">No flights with enough cargo capacity on the selected date. Try another date or split the shipment.</p>
+              <Button variant="secondary" class="h-8 text-[11px] px-3" onclick={() => window.history.back()}>Search again</Button>
             </div>
           </Card>
         {/if}

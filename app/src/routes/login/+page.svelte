@@ -39,31 +39,31 @@
   <title>Log in | {appConfig.name}</title>
 </svelte:head>
 
-<main class="page-shell flex min-h-[calc(100vh-160px)] items-center py-12">
-  <div class="page-width grid gap-8 lg:grid-cols-[0.9fr_0.8fr] lg:items-center">
-    <div class="max-w-[560px] space-y-4">
-      <p class="ui-label">Welcome back</p>
-      <h1 class="hero-display">Log in to your account.</h1>
-      <p class="max-w-[440px] text-[15px] leading-7 text-[color:var(--color-text-body)]">
+<main class="page-shell flex min-h-[calc(100vh-160px)] items-center py-6">
+  <div class="page-width grid gap-6 lg:grid-cols-[0.9fr_0.8fr] lg:items-center">
+    <div class="max-w-[560px] space-y-2">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Welcome back</p>
+      <h1 class="text-[28px] font-bold leading-tight text-[color:var(--color-text-heading)]">Log in to your account.</h1>
+      <p class="text-[12px] leading-snug text-[color:var(--color-text-body)]">
         Manage your bookings, loyalty points and travel profile in one place.
       </p>
     </div>
 
-    <Card tone="highest" class="px-6 py-7 sm:px-8 sm:py-9">
-      <div class="space-y-7">
-        <header class="space-y-2">
-          <p class="ui-label">Log in</p>
-          <h2 class="text-[30px] font-bold text-[color:var(--color-brand-navy)]">Access your account</h2>
+    <Card tone="highest" class="px-5 py-6">
+      <div class="space-y-5">
+        <header class="space-y-1">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Log in</p>
+          <h2 class="text-[18px] font-bold text-[color:var(--color-brand-navy)]">Access your account</h2>
         </header>
 
         {#if error}
-          <div class="rounded-[16px] bg-[color:var(--color-status-red-bg)] px-4 py-4 text-[13px] text-[color:var(--color-status-red-text)]">
+          <div class="rounded-[8px] bg-[color:var(--color-status-red-bg)] px-3 py-2 text-[11px] text-[color:var(--color-status-red-text)]">
             {error}
           </div>
         {/if}
 
         <form
-          class="space-y-5"
+          class="space-y-4"
           onsubmit={(event) => {
             event.preventDefault();
             handleSubmit();
@@ -84,7 +84,7 @@
             required
           />
 
-          <Button type="submit" variant="primary" class="w-full" disabled={submitting}>
+          <Button type="submit" variant="primary" class="w-full h-9 text-[13px]" disabled={submitting}>
             {#if submitting}
               Signing in...
             {:else}
@@ -93,7 +93,7 @@
           </Button>
         </form>
 
-        <p class="text-[13px] text-[color:var(--color-text-body)]">
+        <p class="text-[12px] text-[color:var(--color-text-body)]">
           Don't have an account?
           <a href="/signup" class="font-semibold">Sign up</a>
         </p>

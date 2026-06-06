@@ -145,59 +145,41 @@
   <title>Complete Your Booking | {appConfig.name}</title>
 </svelte:head>
 
-<main class="page-shell pb-20 pt-6 sm:pt-8">
-  <div class="page-width space-y-8">
-    <header class="rounded-[28px] bg-[color:var(--color-brand-navy)] px-6 py-5 text-white shadow-[0_24px_64px_rgba(0,11,96,0.11)] sm:px-8 sm:py-6 md:px-9">
-      <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-        <div class="space-y-3">
-          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Flight Booking Wizard</p>
-          <h1 class="max-w-[760px] text-[clamp(1.95rem,3.5vw,3rem)] font-extrabold leading-[0.99] tracking-[-0.04em] text-white">Complete your journey with calm, step-by-step clarity.</h1>
-          <p class="max-w-[560px] text-[13px] leading-6 text-white/72 sm:text-[14px]">
-            Enter traveler details, note luggage preferences, then review and pay to secure your seats before the hold expires.
-          </p>
-          <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-[11px] text-white/76">
-            <Lock size={14} /> Secure reservation workflow
-          </div>
+<main class="page-shell pb-20 pt-4 sm:pt-6">
+  <div class="page-width space-y-4">
+    <!-- Compact Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between rounded-[12px] bg-[color:var(--color-brand-navy)] px-4 py-3 text-white shadow-sm gap-4">
+      <div class="flex items-center gap-3">
+        <div class="flex h-8 items-center rounded-md bg-white/10 px-3 text-[12px] font-mono font-bold tracking-wider">
+          {reference || 'PENDING'}
         </div>
-
-        <div class="rounded-[22px] bg-white/10 px-5 py-4.5 backdrop-blur-sm">
-          <div class="flex items-center justify-between mb-2">
-            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Booking Ref</p>
-            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-white/15 text-white">
-              {bookingStore.isReturnTrip ? 'Return' : 'One-Way'}
-            </span>
-          </div>
-          <p class="mt-1 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference || 'PENDING'}</p>
-          <div class="mt-4 flex flex-wrap items-center gap-3 text-[12px] text-white/74">
-            <span>{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</span>
-            <span class="h-1.5 w-1.5 rounded-full bg-white/40"></span>
-            <span>{booking?.flight_number || 'Selected flight'}</span>
-            {#if bookingStore.outboundDate}
-              <span class="h-1.5 w-1.5 rounded-full bg-white/40"></span>
-              <span>{new Date(bookingStore.outboundDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-            {/if}
-          </div>
+        <div class="flex items-center gap-2 text-[11px] text-white/80">
+          <span class="font-semibold text-white">{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</span>
+          <span class="h-1 w-1 rounded-full bg-white/40"></span>
+          <span>{booking?.flight_number || 'Selected'}</span>
+          {#if bookingStore.outboundDate}
+            <span class="h-1 w-1 rounded-full bg-white/40"></span>
+            <span>{new Date(bookingStore.outboundDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+          {/if}
+          <span class="ml-2 rounded bg-white/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+            {bookingStore.isReturnTrip ? 'Return' : 'One-Way'}
+          </span>
         </div>
       </div>
-    </header>
 
-    <section class="grid gap-3 md:grid-cols-3">
-      {#each steps as item, index}
-        {@const Icon = item.icon}
-        {@const state = stepState(item.key)}
-        <div class={`rounded-[18px] px-4 py-4 shadow-[0_18px_40px_rgba(26,28,26,0.04)] ${state === 'active' ? 'bg-[color:var(--color-brand-navy)] text-white' : state === 'complete' ? 'bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]' : 'bg-[color:var(--color-surface-lowest)] text-[color:var(--color-text-body)]'}`}>
-          <div class="flex items-center gap-3">
-            <div class={`flex h-9 w-9 items-center justify-center rounded-full ${state === 'active' ? 'bg-white/12 text-white' : state === 'complete' ? 'bg-white/65 text-[color:var(--color-status-green-text)]' : 'bg-[color:var(--color-surface-low)] text-[color:var(--color-brand-blue)]'}`}>
-              <Icon size={17} />
-            </div>
-            <div>
-              <p class={`font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] ${state === 'active' ? 'text-white/80' : 'text-[color:var(--color-text-muted)]'}`}>Step {index + 1}</p>
-              <p class="mt-1 text-[14px] font-semibold">{item.label}</p>
-            </div>
+      <!-- Compact Steps -->
+      <div class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider">
+        {#each steps as item, index}
+          {@const state = stepState(item.key)}
+          <div class={`flex items-center gap-1.5 rounded-full px-2.5 py-1 ${state === 'active' ? 'bg-white/20 text-white' : state === 'complete' ? 'bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]' : 'text-white/40'}`}>
+            <span>{index + 1}.</span> {item.label}
           </div>
-        </div>
-      {/each}
-    </section>
+          {#if index < steps.length - 1}
+            <span class="text-white/20">›</span>
+          {/if}
+        {/each}
+      </div>
+    </header>
 
     <div class="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
       <section class="space-y-6">
@@ -243,89 +225,89 @@
             </div>
           {/if}
 
-          <Card tone="highest" class="px-6 py-6 sm:px-7 sm:py-7">
-            <div class="space-y-7">
+          <Card tone="highest" class="px-4 py-4 sm:px-5 sm:py-5">
+            <div class="space-y-4">
               <div>
-                <p class="ui-label">Booking Review</p>
-                <h2 class="mt-2 text-[26px] font-bold text-[color:var(--color-brand-navy)]">Review before payment</h2>
+                <p class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Booking Review</p>
+                <p class="text-[12px] text-[color:var(--color-text-body)]">Review details before payment</p>
               </div>
 
-              <div class="grid gap-3 sm:grid-cols-2">
-                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                  <p class="ui-label">Trip Type</p>
-                  <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{bookingStore.isReturnTrip ? 'Return' : 'One-Way'}</p>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div class="rounded-[8px] bg-[color:var(--color-surface-low)] px-3 py-2 border border-[color:var(--color-border)]">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Trip Type</p>
+                  <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">{bookingStore.isReturnTrip ? 'Return' : 'One-Way'}</p>
                 </div>
-                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                  <p class="ui-label">Route</p>
-                  <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '--'} → {booking?.destination_iata || '--'}</p>
+                <div class="rounded-[8px] bg-[color:var(--color-surface-low)] px-3 py-2 border border-[color:var(--color-border)]">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Route</p>
+                  <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '--'} → {booking?.destination_iata || '--'}</p>
                 </div>
-                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                  <p class="ui-label">Outbound Flight</p>
-                  <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.flight_number || '--'}</p>
+                <div class="rounded-[8px] bg-[color:var(--color-surface-low)] px-3 py-2 border border-[color:var(--color-border)]">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Outbound Flight</p>
+                  <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">{booking?.flight_number || '--'}</p>
                 </div>
-                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                  <p class="ui-label">Departure</p>
-                  <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">
+                <div class="rounded-[8px] bg-[color:var(--color-surface-low)] px-3 py-2 border border-[color:var(--color-border)]">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Departure</p>
+                  <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">
                     {booking?.departure_time || '--'}
                     {#if bookingStore.outboundDate}
-                      <span class="ml-1.5 text-[12px] font-normal text-[color:var(--color-text-muted)]">
-                        {new Date(bookingStore.outboundDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      <span class="ml-1 text-[10px] font-normal text-[color:var(--color-text-muted)]">
+                        {new Date(bookingStore.outboundDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                       </span>
                     {/if}
                   </p>
                 </div>
                 {#if bookingStore.isReturnTrip && bookingStore.selectedReturnFlight}
-                  <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                    <p class="ui-label">Return Route</p>
-                    <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{bookingStore.selectedReturnFlight.origin_iata} → {bookingStore.selectedReturnFlight.destination_iata}</p>
+                  <div class="rounded-[8px] bg-[color:var(--color-surface-low)] px-3 py-2 border border-[color:var(--color-border)]">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Return Route</p>
+                    <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">{bookingStore.selectedReturnFlight.origin_iata} → {bookingStore.selectedReturnFlight.destination_iata}</p>
                   </div>
-                  <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                    <p class="ui-label">Return Flight</p>
-                    <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">
+                  <div class="rounded-[8px] bg-[color:var(--color-surface-low)] px-3 py-2 border border-[color:var(--color-border)]">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Return Flight</p>
+                    <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">
                       {bookingStore.selectedReturnFlight.flight_number}
                       {#if bookingStore.returnDate}
-                        <span class="ml-1.5 text-[12px] font-normal text-[color:var(--color-text-muted)]">
-                          {new Date(bookingStore.returnDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        <span class="ml-1 text-[10px] font-normal text-[color:var(--color-text-muted)]">
+                          {new Date(bookingStore.returnDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                         </span>
                       {/if}
                     </p>
                   </div>
                 {/if}
-                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                  <p class="ui-label">Passengers</p>
-                  <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">{adultCount} Adult{adultCount > 1 ? 's' : ''}{childCount > 0 ? `, ${childCount} Child${childCount > 1 ? 'ren' : ''}` : ''}</p>
+                <div class="rounded-[8px] bg-[color:var(--color-surface-low)] px-3 py-2 border border-[color:var(--color-border)]">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Passengers</p>
+                  <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">{adultCount} Adult{adultCount > 1 ? 's' : ''}{childCount > 0 ? `, ${childCount} Child${childCount > 1 ? 'ren' : ''}` : ''}</p>
                 </div>
-                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                  <p class="ui-label">Cabin Class</p>
-                  <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">{cabinClassName}</p>
+                <div class="rounded-[8px] bg-[color:var(--color-surface-low)] px-3 py-2 border border-[color:var(--color-border)]">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--color-text-muted)]">Cabin Class</p>
+                  <p class="mt-0.5 text-[12px] font-bold text-[color:var(--color-brand-navy)]">{cabinClassName}</p>
                 </div>
               </div>
 
 
-              <div class="space-y-3">
-                <p class="ui-label">Traveler Details</p>
-                <div class="space-y-3">
+              <div class="space-y-2">
+                <p class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">Traveler Details</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {#each bookingStore.passengers as p, i}
-                    <div class="rounded-[15px] bg-[color:var(--color-surface-lowest)] px-4 py-3.5 shadow-[0_18px_40px_rgba(26,28,26,0.04)]">
-                      <p class="font-semibold text-[color:var(--color-brand-navy)]">{i + 1}. {p.first_name} {p.last_name}</p>
-                      <p class="mt-1 text-[12px] uppercase tracking-[0.14em] text-[color:var(--color-text-muted)]">{p.passenger_type}</p>
+                    <div class="rounded-[8px] bg-[color:var(--color-surface-lowest)] border border-[color:var(--color-border)] px-3 py-2 shadow-sm flex justify-between items-center">
+                      <p class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">{i + 1}. {p.first_name} {p.last_name}</p>
+                      <p class="text-[9px] uppercase tracking-widest font-semibold text-[color:var(--color-text-muted)] bg-[color:var(--color-surface-low)] px-1.5 py-0.5 rounded">{p.passenger_type}</p>
                     </div>
                   {/each}
                 </div>
               </div>
 
-              <div class="space-y-3">
-                <p class="ui-label">Luggage Selection</p>
-                <div class="rounded-[16px] bg-[color:var(--color-surface-low)] px-4 py-4 text-[14px] text-[color:var(--color-text-body)]">
+              <div class="space-y-2">
+                <p class="text-[12px] font-bold text-[color:var(--color-brand-navy)]">Luggage Selection</p>
+                <div class="flex items-center gap-4 rounded-[8px] bg-[color:var(--color-surface-low)] border border-[color:var(--color-border)] px-3 py-2 text-[11px] text-[color:var(--color-text-body)]">
                   <p>Checked bags: <strong class="text-[color:var(--color-brand-navy)]">{luggageData.checkedBags}</strong></p>
-                  <p class="mt-2">Special items: <strong class="text-[color:var(--color-brand-navy)]">{luggageData.specialItems}</strong></p>
-                  <p class="mt-2">Optional luggage charges are finalized at check-in review.</p>
+                  <p>Special items: <strong class="text-[color:var(--color-brand-navy)]">{luggageData.specialItems}</strong></p>
+                  <p class="ml-auto text-[10px] text-[color:var(--color-text-muted)]">Optional luggage charges finalized at check-in.</p>
                 </div>
               </div>
 
-              <div class="flex flex-col gap-3 sm:flex-row">
-                <Button variant="secondary" class="w-full sm:w-auto" onclick={() => step = 'luggage'}>Back to luggage</Button>
-                <Button variant="primary" class="w-full sm:w-auto" onclick={() => step = 'payment'}>Proceed to payment</Button>
+              <div class="flex items-center justify-end gap-3 pt-2">
+                <button class="inline-flex h-8 items-center justify-center rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-lowest)] px-4 text-[11px] font-bold text-[color:var(--color-text-body)] transition-colors hover:bg-[color:var(--color-surface-low)]" onclick={() => step = 'luggage'}>Back</button>
+                <button class="inline-flex h-8 items-center justify-center rounded-[6px] bg-[color:var(--color-brand-blue)] px-4 text-[11px] font-bold text-white transition-colors hover:bg-[color:var(--color-brand-navy)]" onclick={() => step = 'payment'}>Proceed to payment</button>
               </div>
             </div>
           </Card>
@@ -342,67 +324,49 @@
         {/if}
       </section>
 
-      <aside class="space-y-5 lg:sticky lg:top-20">
-        <Card tone="highest" class="overflow-hidden p-0">
-          <div class="bg-[color:var(--color-brand-navy)] px-6 py-6 text-white sm:px-7">
-            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Order Summary</p>
-            <div class="mt-4 flex items-start gap-4">
-              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/12 text-white shrink-0">
-                <Plane size={18} />
+      <aside class="space-y-4 lg:sticky lg:top-20">
+        <Card tone="highest" class="overflow-hidden p-0 rounded-[12px]">
+          <div class="bg-[color:var(--color-brand-navy)] px-4 py-3 text-white">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-white/80">Order Summary</p>
+            <div class="mt-2 flex items-start gap-3">
+              <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/12 text-white shrink-0">
+                <Plane size={14} />
               </div>
-              <div class="space-y-3">
+              <div class="space-y-2">
                 <div>
-                  <p class="text-[17px] font-semibold text-white leading-tight">{booking?.flight_number || '--'} (Outbound)</p>
-                  <p class="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-white/70">{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</p>
+                  <p class="text-[14px] font-bold text-white leading-tight">{booking?.flight_number || '--'} <span class="font-normal text-[11px] opacity-70">(Out)</span></p>
+                  <p class="text-[10px] font-medium text-white/70">{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</p>
                 </div>
                 {#if bookingStore.isReturnTrip && bookingStore.selectedReturnFlight}
-                  <div class="border-t border-white/15 pt-2">
-                    <p class="text-[17px] font-semibold text-white leading-tight">{bookingStore.selectedReturnFlight.flight_number} (Return)</p>
-                    <p class="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-white/70">{bookingStore.selectedReturnFlight.origin_iata} to {bookingStore.selectedReturnFlight.destination_iata}</p>
+                  <div class="border-t border-white/15 pt-1">
+                    <p class="text-[14px] font-bold text-white leading-tight">{bookingStore.selectedReturnFlight.flight_number} <span class="font-normal text-[11px] opacity-70">(Ret)</span></p>
+                    <p class="text-[10px] font-medium text-white/70">{bookingStore.selectedReturnFlight.origin_iata} to {bookingStore.selectedReturnFlight.destination_iata}</p>
                   </div>
                 {/if}
               </div>
             </div>
           </div>
 
-          <div class="space-y-5 bg-[color:var(--color-surface-lowest)] px-6 py-6 sm:px-7">
+          <div class="space-y-3 bg-[color:var(--color-surface-lowest)] px-4 py-4">
             {#if adultCount > 0}
-              <div class="flex items-center justify-between text-[14px]">
-                <span class="text-[color:var(--color-text-body)]">{adultCount}x Adult{adultCount > 1 ? 's' : ''}</span>
-                <span class="font-semibold text-[color:var(--color-brand-navy)]">{currencyStore.format(adultsTotal)}</span>
+              <div class="flex items-center justify-between text-[12px]">
+                <span class="text-[color:var(--color-text-body)]">{adultCount}x Adult</span>
+                <span class="font-bold text-[color:var(--color-brand-navy)]">{currencyStore.format(adultsTotal)}</span>
               </div>
             {/if}
 
             {#if childCount > 0}
-              <div class="flex items-center justify-between text-[14px]">
-                <span class="text-[color:var(--color-text-body)]">{childCount}x Child{childCount > 1 ? 'ren' : ''}</span>
-                <span class="font-semibold text-[color:var(--color-brand-navy)]">{currencyStore.format(childrenTotal)}</span>
+              <div class="flex items-center justify-between text-[12px]">
+                <span class="text-[color:var(--color-text-body)]">{childCount}x Child</span>
+                <span class="font-bold text-[color:var(--color-brand-navy)]">{currencyStore.format(childrenTotal)}</span>
               </div>
             {/if}
 
-            {#if luggageData.checkedBags > 0 || luggageData.specialItems > 0}
-              <div class="flex items-center justify-between text-[14px]">
-                <span class="text-[color:var(--color-text-body)]">Luggage selected</span>
-                <span class="font-semibold text-[color:var(--color-brand-navy)]">Finalized at check-in</span>
-              </div>
-            {/if}
-
-            <div class="soft-divider"></div>
-
-            <div class="flex items-center justify-between">
-              <span class="text-[15px] font-semibold text-[color:var(--color-brand-navy)]">Total amount</span>
-              <span class="text-[26px] font-bold text-[color:var(--color-brand-navy)]">{currencyStore.format(payableTotal)}</span>
+            <div class="border-t border-[color:var(--color-border)] pt-2 mt-2 flex items-center justify-between">
+              <span class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">Total</span>
+              <span class="text-[18px] font-extrabold text-[color:var(--color-brand-navy)]">{currencyStore.format(payableTotal)}</span>
             </div>
           </div>
-        </Card>
-
-        <Card tone="ghost" class="px-5 py-5 text-center">
-          <div class="flex items-center justify-center gap-2 text-[12px] font-semibold text-[color:var(--color-text-muted)]">
-            <Lock size={13} /> SSL secure reservation engine
-          </div>
-          <p class="mt-3 text-[12px] leading-6 text-[color:var(--color-text-muted)]">
-            By paying you agree to {appConfig.name} General Conditions of Carriage.
-          </p>
         </Card>
       </aside>
     </div>

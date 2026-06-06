@@ -20,41 +20,37 @@
   <title>Flight Status | {appConfig.name}</title>
 </svelte:head>
 
-<main class="page-shell pb-20 pt-8 sm:pt-10">
-  <div class="page-width space-y-10">
-    <header class="rounded-[28px] bg-[color:var(--color-surface-lowest)] px-6 py-8 shadow-[0_26px_70px_rgba(26,28,26,0.06)] sm:px-8 md:px-10 md:py-10">
-      <div class="max-w-[640px] space-y-3">
-        <p class="ui-label">Flight Status</p>
-        <h1 class="hero-display">Track your flight status in real time.</h1>
-        <p class="text-[15px] text-[color:var(--color-text-body)]">
-          Search by flight number or route to get live departure, arrival, and delay information.
-        </p>
-      </div>
+<main class="page-shell pb-12 pt-4">
+  <div class="page-width space-y-4">
+    <header class="rounded-[12px] bg-[color:var(--color-surface-lowest)] px-4 py-3 shadow-sm border border-[color:var(--color-border)]">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Flight Status</p>
+      <h1 class="text-[18px] font-bold leading-tight text-[color:var(--color-brand-navy)]">Track your flight status in real time.</h1>
+      <p class="text-[11px] text-[color:var(--color-text-body)] mt-0.5">Search by flight number or route to get live departure, arrival, and delay information.</p>
     </header>
 
-    <section class="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-start">
-      <Card tone="default" class="px-6 py-7 sm:px-8 sm:py-9">
-        <div class="space-y-8">
-          <div class="flex flex-wrap items-center gap-3">
+    <section class="grid gap-4 lg:grid-cols-[1fr_280px] lg:items-start">
+      <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm">
+        <div class="space-y-4">
+          <div class="flex flex-wrap items-center gap-2">
             <button
-              class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]"
+              class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)] text-[11px]"
               class:!bg-[color:var(--color-brand-navy)]={searchMode === 'number'}
               class:!text-white={searchMode === 'number'}
               onclick={() => (searchMode = 'number')}
             >
-              <Hash size={14} class="inline" /> Flight number
+              <Hash size={12} class="inline mr-1" /> Flight number
             </button>
             <button
-              class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)]"
+              class="status-badge bg-[color:var(--color-surface-high)] text-[color:var(--color-text-body)] text-[11px]"
               class:!bg-[color:var(--color-brand-navy)]={searchMode === 'route'}
               class:!text-white={searchMode === 'route'}
               onclick={() => (searchMode = 'route')}
             >
-              <ArrowRightLeft size={14} class="inline" /> Route
+              <ArrowRightLeft size={12} class="inline mr-1" /> Route
             </button>
           </div>
 
-          <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
             {#if searchMode === 'number'}
               <div class="md:col-span-2">
                 <Input id="flightNumber" label="Flight Number" icon={Hash} placeholder="e.g. MC 123" bind:value={flightNumber} />
@@ -69,33 +65,33 @@
             </div>
           </div>
 
-          <div class="flex flex-wrap gap-3">
-            <Button class="min-w-[190px]" variant="primary" onclick={handleSearch}><Search size={16} /> Check status</Button>
-          </div>
+          <Button class="h-9 text-[13px] px-5" variant="primary" onclick={handleSearch}><Search size={14} /> Check status</Button>
         </div>
       </Card>
 
-      <Card tone="highest" class="px-6 py-7 sm:px-7">
-        <div class="space-y-5">
-          <p class="ui-label">Search Notes</p>
-          <h2 class="text-[26px] font-bold text-[color:var(--color-brand-navy)]">Two ways to locate a service.</h2>
-          <div class="space-y-4 text-[14px] leading-7 text-[color:var(--color-text-body)]">
+      <Card tone="highest" class="px-4 py-4 rounded-[12px] shadow-sm">
+        <div class="space-y-3">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Search Notes</p>
+            <h2 class="text-[14px] font-bold text-[color:var(--color-brand-navy)]">Two ways to locate a service.</h2>
+          </div>
+          <div class="space-y-2 text-[11px] leading-snug text-[color:var(--color-text-body)]">
             <p>Use the flight number when you already know the service code.</p>
             <p>Use route search when you only know the city pair and travel date.</p>
-            <p>Status results can later plug into live service data without changing this layout.</p>
+            <p>Status results will plug into live service data without changing this layout.</p>
           </div>
         </div>
       </Card>
     </section>
 
-    <Card tone="ghost" class="px-6 py-10 sm:px-8">
-      <div class="flex flex-col items-center justify-center gap-4 text-center">
-        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]">
-          <Radar size={28} />
+    <Card tone="ghost" class="px-5 py-10">
+      <div class="flex flex-col items-center justify-center gap-3 text-center">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]">
+          <Radar size={22} />
         </div>
-        <p class="ui-label">Results placeholder</p>
-        <h2 class="text-[28px] font-bold text-[color:var(--color-brand-navy)]">Results will appear here.</h2>
-        <p class="max-w-[520px] text-[14px] leading-7 text-[color:var(--color-text-body)]">Enter flight details above to surface operational progress, timing, and route context in the same premium interface.</p>
+        <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Results placeholder</p>
+        <h2 class="text-[16px] font-bold text-[color:var(--color-brand-navy)]">Results will appear here.</h2>
+        <p class="max-w-[480px] text-[12px] leading-snug text-[color:var(--color-text-body)]">Enter flight details above to surface operational progress, timing, and route context.</p>
       </div>
     </Card>
   </div>

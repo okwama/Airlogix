@@ -89,136 +89,108 @@
   <title>Booking Confirmed | {appConfig.name}</title>
 </svelte:head>
 
-<main class="page-shell pb-20 pt-6 sm:pt-8">
+<main class="page-shell pb-12 pt-4">
   <div class="confetti-portal" bind:this={confettiEl}></div>
 
-  <div class="page-width space-y-6">
-    <header class="rounded-[28px] bg-[color:var(--color-brand-navy)] px-6 py-6 text-white shadow-[0_24px_64px_rgba(0,11,96,0.1)] sm:px-8 sm:py-7">
-      <div class="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-        <div class="space-y-3">
-          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Booking Status</p>
-          <h1 class="max-w-[640px] text-[clamp(1.9rem,3.6vw,3rem)] font-extrabold leading-[0.98] tracking-[-0.04em] text-white">{heading}</h1>
-          <p class="max-w-[580px] text-[13px] leading-6 text-white/74 sm:text-[14px]">{subtitle}</p>
+  <div class="page-width space-y-4">
+    <header class="rounded-[12px] bg-[color:var(--color-brand-navy)] px-4 py-3 text-white shadow-sm">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-white/70">Booking Status</p>
+          <h1 class="text-[18px] font-bold text-white leading-tight">{heading}</h1>
+          <p class="text-[11px] text-white/70 mt-0.5">{subtitle}</p>
         </div>
-
-        <div class="rounded-[22px] bg-white/10 px-5 py-5 backdrop-blur-sm">
-          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Reference</p>
-          <p class="mt-2 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference}</p>
-          <div class="mt-4 flex flex-wrap items-center gap-3 text-[12px] text-white/72">
-            <span>{booking?.from_code || '---'} to {booking?.to_code || '---'}</span>
-            <span class="h-1.5 w-1.5 rounded-full bg-white/36"></span>
-            <span>{booking?.flight_number || 'Flight details pending'}</span>
-          </div>
+        <div class="rounded-[10px] bg-white/10 px-4 py-2 shrink-0 text-right">
+          <p class="text-[9px] font-bold uppercase tracking-wider text-white/70">Reference</p>
+          <p class="mt-0.5 font-mono text-[16px] font-bold tracking-wider text-white">{reference}</p>
+          <p class="text-[10px] text-white/60 mt-0.5">{booking?.from_code || '---'} → {booking?.to_code || '---'} · {booking?.flight_number || 'TBA'}</p>
         </div>
       </div>
     </header>
 
-    <div class="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
-      <section class="space-y-6">
-        <Card tone="highest" class="px-6 py-7 sm:px-7 sm:py-8">
-          <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex items-start gap-4">
-              <div class={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${statusTone}`}>
-                <CheckCircle2 size={24} />
-              </div>
-              <div>
-                <p class="ui-label">Confirmation</p>
-                <p class="mt-2 text-[26px] font-bold leading-tight text-[color:var(--color-brand-navy)]">{heading}</p>
-                <p class="mt-2 max-w-[540px] text-[14px] leading-7 text-[color:var(--color-text-body)]">{subtitle}</p>
-              </div>
+    <div class="grid gap-4 lg:grid-cols-[1fr_280px] lg:items-start">
+      <section class="space-y-4">
+        <Card tone="highest" class="px-4 py-4 rounded-[12px] shadow-sm">
+          <div class="flex items-start gap-3">
+            <div class={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${statusTone}`}>
+              <CheckCircle2 size={18} />
+            </div>
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Confirmation</p>
+              <p class="text-[16px] font-bold leading-tight text-[color:var(--color-brand-navy)]">{heading}</p>
+              <p class="mt-1 text-[11px] leading-snug text-[color:var(--color-text-body)]">{subtitle}</p>
             </div>
           </div>
 
-          <div class="mt-7 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-5">
-              <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-surface-lowest)] text-[color:var(--color-brand-blue)]">
-                  <Plane size={18} />
-                </div>
-                <div>
-                  <p class="ui-label">Journey</p>
-                  <p class="mt-1 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.from_code || '---'} to {booking?.to_code || '---'}</p>
-                </div>
+          <div class="mt-4 grid gap-2 sm:grid-cols-2">
+            <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-3 py-2 flex items-center gap-2">
+              <Plane size={13} class="text-[color:var(--color-brand-blue)]" />
+              <div>
+                <p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Journey</p>
+                <p class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">{booking?.from_code || '---'} → {booking?.to_code || '---'}</p>
               </div>
             </div>
-
-            <div class="rounded-[18px] bg-[color:var(--color-surface-low)] px-5 py-5">
-              <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-surface-lowest)] text-[color:var(--color-brand-blue)]">
-                  <ReceiptText size={18} />
-                </div>
-                <div>
-                  <p class="ui-label">Flight</p>
-                  <p class="mt-1 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.flight_number || 'TBA'}</p>
-                </div>
+            <div class="rounded-[8px] border border-[color:var(--color-border)] bg-[color:var(--color-surface-low)] px-3 py-2 flex items-center gap-2">
+              <ReceiptText size={13} class="text-[color:var(--color-brand-blue)]" />
+              <div>
+                <p class="text-[9px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Flight</p>
+                <p class="text-[13px] font-bold text-[color:var(--color-brand-navy)]">{booking?.flight_number || 'TBA'}</p>
               </div>
             </div>
           </div>
         </Card>
 
-        <div class={`flex items-start gap-3 rounded-[18px] px-5 py-4 text-[13px] leading-6 shadow-[0_18px_40px_rgba(26,28,26,0.04)] ${statusTone}`} aria-live="polite">
-          <Mail size={18} class="mt-0.5 shrink-0" />
+        <div class={`flex items-start gap-2 rounded-[8px] px-3 py-2.5 text-[11px] leading-snug ${statusTone}`} aria-live="polite">
+          <Mail size={14} class="mt-0.5 shrink-0" />
           <span>{infoMessage}</span>
         </div>
 
-        <Card tone="default" class="px-6 py-6 sm:px-7">
-          <div class="space-y-4">
-            <div>
-              <p class="ui-label">Next Steps</p>
-              <h2 class="mt-2 text-[24px] font-bold text-[color:var(--color-brand-navy)]">Everything you need is ready from here.</h2>
-            </div>
-
-            <div class="grid gap-3 sm:grid-cols-2">
-              {#if !booking}
-                <Button variant="primary" href={`/manage?reference=${reference}`} class="w-full justify-center">
-                  <Download size={18} /> Open Manage Booking
-                </Button>
-              {:else if paymentState.toLowerCase() === 'paid' || ticketState === 'TICKETED'}
-                <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="w-full justify-center">
-                  <Download size={18} /> View E-Ticket PDF
-                </Button>
-              {:else}
-                <Button variant="primary" href={`/my-bookings/${reference}`} class="w-full justify-center">
-                  <Download size={18} /> View Booking
-                </Button>
-              {/if}
-
-              <Button variant="secondary" href="/" class="w-full justify-center">
-                <Home size={18} /> Back to Home
+        <Card tone="default" class="px-4 py-4 rounded-[12px] shadow-sm">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-[color:var(--color-text-body)]">Next Steps</p>
+          <h2 class="mt-1 text-[14px] font-bold text-[color:var(--color-brand-navy)]">Everything you need is ready from here.</h2>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {#if !booking}
+              <Button variant="primary" href={`/manage?reference=${reference}`} class="h-8 text-[11px] px-3">
+                <Download size={13} class="mr-1" /> Open Manage Booking
               </Button>
-            </div>
+            {:else if paymentState.toLowerCase() === 'paid' || ticketState === 'TICKETED'}
+              <Button variant="primary" href={`/my-bookings/${reference}/documents`} class="h-8 text-[11px] px-3">
+                <Download size={13} class="mr-1" /> View E-Ticket PDF
+              </Button>
+            {:else}
+              <Button variant="primary" href={`/my-bookings/${reference}`} class="h-8 text-[11px] px-3">
+                <Download size={13} class="mr-1" /> View Booking
+              </Button>
+            {/if}
+            <Button variant="secondary" href="/" class="h-8 text-[11px] px-3">
+              <Home size={13} class="mr-1" /> Home
+            </Button>
           </div>
         </Card>
       </section>
 
-      <aside class="space-y-5 lg:sticky lg:top-20">
-        <Card tone="highest" class="overflow-hidden p-0">
-          <div class="bg-[color:var(--color-brand-navy)] px-6 py-6 text-white sm:px-7">
-            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Booking Reference</p>
-            <p class="mt-3 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference}</p>
+      <aside class="lg:sticky lg:top-16">
+        <Card tone="highest" class="overflow-hidden p-0 rounded-[12px]">
+          <div class="bg-[color:var(--color-brand-navy)] px-4 py-3 text-white">
+            <p class="text-[9px] font-bold uppercase tracking-wider text-white/70">Booking Reference</p>
+            <p class="mt-1 font-mono text-[18px] font-bold tracking-wider text-white">{reference}</p>
           </div>
-
-          <div class="space-y-4 bg-[color:var(--color-surface-lowest)] px-6 py-6 sm:px-7">
-            <div>
-              <p class="ui-label">Route</p>
-              <p class="mt-2 text-[18px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.from_code || '---'} to {booking?.to_code || '---'}</p>
+          <div class="space-y-2 px-4 py-3">
+            <div class="flex items-center justify-between text-[12px]">
+              <span class="text-[color:var(--color-text-body)]">Route</span>
+              <span class="font-bold text-[color:var(--color-brand-navy)]">{booking?.from_code || '---'} → {booking?.to_code || '---'}</span>
             </div>
-
-            <div class="soft-divider"></div>
-
-            <div class="flex items-center justify-between text-[14px]">
+            <div class="flex items-center justify-between text-[12px]">
               <span class="text-[color:var(--color-text-body)]">Payment</span>
-              <span class={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${statusTone}`}>{paymentState || 'Pending'}</span>
+              <span class={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusTone}`}>{paymentState || 'Pending'}</span>
             </div>
-
-            <div class="flex items-center justify-between text-[14px]">
+            <div class="flex items-center justify-between text-[12px]">
               <span class="text-[color:var(--color-text-body)]">Ticket</span>
-              <span class="font-semibold text-[color:var(--color-brand-navy)]">{ticketState || 'Pending'}</span>
+              <span class="font-bold text-[color:var(--color-brand-navy)]">{ticketState || 'Pending'}</span>
             </div>
-
-            <div class="flex items-center justify-between text-[14px]">
+            <div class="flex items-center justify-between text-[12px]">
               <span class="text-[color:var(--color-text-body)]">Flight</span>
-              <span class="font-semibold text-[color:var(--color-brand-navy)]">{booking?.flight_number || 'TBA'}</span>
+              <span class="font-bold text-[color:var(--color-brand-navy)]">{booking?.flight_number || 'TBA'}</span>
             </div>
           </div>
         </Card>
