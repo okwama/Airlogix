@@ -1,3 +1,5 @@
+export const ssr = false;
+
 import { bookingService } from '$lib/services/booking/bookingService';
 
 export const load = async ({ params, url }) => {
