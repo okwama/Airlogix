@@ -20,6 +20,10 @@ export type BookingStatus = 'Pending' | 'Confirmed' | 'Cancelled';
 
 function createBookingStore() {
   let selectedFlight = $state<Flight | null>(null);
+  let selectedReturnFlight = $state<Flight | null>(null);
+  let isReturnTrip = $state(false);
+  let outboundDate = $state('');
+  let returnDate = $state('');
   let reference = $state('');
   let passengers = $state<Passenger[]>([]);
   let status = $state<BookingStatus>('Pending');
@@ -33,6 +37,10 @@ function createBookingStore() {
     if (browser) {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
         selectedFlight,
+        selectedReturnFlight,
+        isReturnTrip,
+        outboundDate,
+        returnDate,
         reference,
         passengers,
         status,
@@ -50,6 +58,10 @@ function createBookingStore() {
         try {
           const data = JSON.parse(stored);
           selectedFlight = data.selectedFlight || null;
+          selectedReturnFlight = data.selectedReturnFlight || null;
+          isReturnTrip = data.isReturnTrip || false;
+          outboundDate = data.outboundDate || '';
+          returnDate = data.returnDate || '';
           reference = data.reference || '';
           passengers = data.passengers || [];
           status = data.status || 'Pending';
@@ -68,6 +80,13 @@ function createBookingStore() {
 
   return {
     get selectedFlight() { return selectedFlight; },
+    get selectedReturnFlight() { return selectedReturnFlight; },
+    get isReturnTrip() { return isReturnTrip; },
+    set isReturnTrip(val) { isReturnTrip = val; save(); },
+    get outboundDate() { return outboundDate; },
+    set outboundDate(val) { outboundDate = val; save(); },
+    get returnDate() { return returnDate; },
+    set returnDate(val) { returnDate = val; save(); },
     get reference() { return reference; },
     get passengers() { return passengers; },
     get status() { return status; },
@@ -81,15 +100,21 @@ function createBookingStore() {
     // Keeping for backward compatibility but using the new breakdown
     get passengerCount() { return adultCount + childCount; },
 
-    setFlight(flight: Flight, adults = 1, children = 0) {
+    setFlight(flight: Flight, adults = 1, children = 0, date = '') {
       selectedFlight = flight;
       adultCount = adults;
       childCount = children;
+      outboundDate = date;
       
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       let res = '';
       for (let i = 0; i < 6; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
       reference = `MC-${res}`;
+      save();
+    },
+
+    setReturnFlight(flight: Flight) {
+      selectedReturnFlight = flight;
       save();
     },
 
@@ -105,6 +130,10 @@ function createBookingStore() {
 
     reset() {
       selectedFlight = null;
+      selectedReturnFlight = null;
+      isReturnTrip = false;
+      outboundDate = '';
+      returnDate = '';
       reference = '';
       passengers = [];
       status = 'Pending';

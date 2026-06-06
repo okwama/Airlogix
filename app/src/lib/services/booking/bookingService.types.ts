@@ -16,8 +16,12 @@ export interface BookingPayload {
   passengers: Passenger[];
   payment_method?: string;
   total_amount?: number;
+  booking_date?: string | null;
   contact_phone?: string;
   contact_email?: string;
+  is_return_trip?: number;
+  return_flight_series_id?: number | null;
+  return_date?: string | null;
   luggage?: {
     checked_bags?: number;
     special_items?: number;

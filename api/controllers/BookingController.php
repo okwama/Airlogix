@@ -170,6 +170,18 @@ class BookingController {
             $expectedTotal += $fare;
         }
 
+        // Add return flight fares if applicable
+        if (!empty($data['is_return_trip']) && !empty($data['return_flight_series_id'])) {
+            $returnFlightSeries = $flightModel->getById($data['return_flight_series_id']);
+            if ($returnFlightSeries) {
+                foreach ($passengers as $p) {
+                    $type = strtolower($p['passenger_type'] ?? 'adult');
+                    $fare = (float)($returnFlightSeries[$type . '_fare'] ?? $returnFlightSeries['adult_fare']);
+                    $expectedTotal += $fare;
+                }
+            }
+        }
+
         $clientTotal = (float)$data['total_amount'];
         $delta = abs($expectedTotal - $clientTotal);
 
@@ -211,8 +223,42 @@ class BookingController {
 
             $primaryPassenger = $passengers[0];
             $primaryPassengerContact = $primaryPassenger['contact'] ?? ($primaryPassenger['phone'] ?? null);
+
+            // Query flights table to find matching individual dated occurrence (outbound)
+            $flightId = null;
+            $travelDate = $data['booking_date'] ?? date('Y-m-d');
+            try {
+                $stmt = $db->prepare("SELECT id FROM flights WHERE series_id = ? AND flight_date = ? LIMIT 1");
+                $stmt->execute([$data['flight_series_id'], $travelDate]);
+                $flightRow = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($flightRow) {
+                    $flightId = (int)$flightRow['id'];
+                }
+            } catch (Throwable $fe) {
+                error_log("Failed to query flight occurrence: " . $fe->getMessage());
+            }
+
+            // Do the same for return flight if is_return_trip is true
+            $returnFlightId = null;
+            $isReturn = !empty($data['is_return_trip']) ? 1 : 0;
+            $returnDate = $data['return_date'] ?? null;
+            $returnFlightSeriesId = $data['return_flight_series_id'] ?? null;
+            if ($isReturn && $returnFlightSeriesId && $returnDate) {
+                try {
+                    $stmt = $db->prepare("SELECT id FROM flights WHERE series_id = ? AND flight_date = ? LIMIT 1");
+                    $stmt->execute([$returnFlightSeriesId, $returnDate]);
+                    $returnFlightRow = $stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($returnFlightRow) {
+                        $returnFlightId = (int)$returnFlightRow['id'];
+                    }
+                } catch (Throwable $fe) {
+                    error_log("Failed to query return flight occurrence: " . $fe->getMessage());
+                }
+            }
+
             $bookingData = [
                 'flight_series_id' => $data['flight_series_id'],
+                'flight_id' => $flightId,
                 'cabin_class_id' => $data['cabin_class_id'] ?? 1, // Defaulting to Economy if not provided
                 'passenger_name' => $primaryPassenger['name'],
                 'passenger_email' => $primaryPassenger['email'] ?? null,
@@ -227,7 +273,10 @@ class BookingController {
                 'payment_method' => $data['payment_method'] ?? 'pending',
                 'reservation_expires_at' => $this->bookingModel->reservationExpiresAt(),
                 'notes' => $data['notes'] ?? null,
-                'user_id' => $userId
+                'user_id' => $userId,
+                'is_return_trip' => $isReturn,
+                'return_date' => $returnDate,
+                'return_flight_series_id' => $returnFlightSeriesId
             ];
 
             $bookingResponse = $this->bookingModel->create($bookingData);
@@ -276,11 +325,32 @@ class BookingController {
                     $bookingId,
                     $passenger['id'],
                     $passengerType,
-                    $fareAmount
+                    $fareAmount,
+                    $bookingData['flight_series_id'],
+                    $bookingData['flight_id'],
+                    $travelDate,
+                    'outbound'
                 );
 
                 if (!$linkCreated) {
                     throw new Exception('Failed to link passenger to booking');
+                }
+
+                // If return trip, create return link
+                if ($isReturn && $returnFlightSeriesId) {
+                    $returnLinkCreated = $this->bookingPassengerModel->create(
+                        $bookingId,
+                        $passenger['id'],
+                        $passengerType,
+                        $fareAmount,
+                        $returnFlightSeriesId,
+                        $returnFlightId,
+                        $returnDate,
+                        'return'
+                    );
+                    if (!$returnLinkCreated) {
+                        throw new Exception('Failed to link return passenger to booking');
+                    }
                 }
 
                 $createdPassengers[] = [
@@ -292,6 +362,29 @@ class BookingController {
                     'fare_amount' => $fareAmount
                 ];
             }
+
+            // Create seat reservation (status 'reserved', payment_status 'unpaid')
+            $seatReservationStmt = $db->prepare("
+                INSERT INTO seat_reservations 
+                (flight_series_id, flight_id, number_of_seats, passenger_id, passenger_name, passenger_title, passenger_email, passenger_phone, booking_reference, status, reservation_date, trip_type, return_flight_series_id, return_date, fare_amount, payment_status, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?, ?, ?, ?, 'unpaid', NOW(), NOW())
+            ");
+            $seatReservationStmt->execute([
+                $bookingData['flight_series_id'],
+                $bookingData['flight_id'],
+                $numPassengers,
+                $createdPassengers[0]['passenger_id'] ?? null,
+                $bookingData['passenger_name'],
+                $primaryPassenger['title'] ?? null,
+                $bookingData['passenger_email'],
+                $bookingData['passenger_phone'],
+                $bookingReference,
+                $travelDate,
+                $isReturn ? 'return' : 'one_way',
+                $returnFlightSeriesId,
+                $returnDate,
+                $bookingData['total_amount']
+            ]);
 
             // Commit transaction
             $db->commit();

@@ -75,7 +75,8 @@ class Booking {
 
         $columns = [
             'booking_reference' => ':ref',
-            'flight_series_id' => ':flight_id',
+            'flight_series_id' => ':flight_series_id',
+            'flight_id' => ':flight_id',
             'cabin_class_id' => ':cabin_class_id',
             'passenger_id' => ':passenger_id',
             'passenger_name' => ':passenger_name',
@@ -96,7 +97,8 @@ class Booking {
 
         $params = [
             ':ref' => $ref,
-            ':flight_id' => $data['flight_series_id'],
+            ':flight_series_id' => $data['flight_series_id'],
+            ':flight_id' => $data['flight_id'] ?? null,
             ':cabin_class_id' => $data['cabin_class_id'] ?? null,
             ':passenger_id' => $data['passenger_id'] ?? null,
             ':passenger_name' => $data['passenger_name'],
@@ -114,6 +116,19 @@ class Booking {
             ':notes' => $data['notes'] ?? null,
             ':user_id' => $data['user_id'] ?? null
         ];
+
+        if ($this->hasColumn('is_return_trip')) {
+            $columns['is_return_trip'] = ':is_return_trip';
+            $params[':is_return_trip'] = $data['is_return_trip'] ?? 0;
+        }
+        if ($this->hasColumn('return_date')) {
+            $columns['return_date'] = ':return_date';
+            $params[':return_date'] = $data['return_date'] ?? null;
+        }
+        if ($this->hasColumn('return_flight_series_id')) {
+            $columns['return_flight_series_id'] = ':return_flight_series_id';
+            $params[':return_flight_series_id'] = $data['return_flight_series_id'] ?? null;
+        }
 
         if ($this->hasColumn('reservation_expires_at')) {
             $columns['reservation_expires_at'] = ':reservation_expires_at';

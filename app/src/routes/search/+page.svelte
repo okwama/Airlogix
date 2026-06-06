@@ -1,6 +1,7 @@
-<script>
+<script lang="ts">
   import FlightCard from '$lib/features/flights/FlightCard.svelte';
   import { navigating } from '$app/stores';
+  import { goto } from '$app/navigation';
   import { Plane, ChevronLeft, SlidersHorizontal, Info } from 'lucide-svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import { appConfig } from '$lib/config/appConfig';
@@ -9,7 +10,6 @@
   let { data } = $props();
 
   const searchQuery = $derived(data.searchQuery);
-  const flights = $derived(data.flights);
   const isNavigating = $derived(Boolean($navigating));
 
   $effect(() => {
@@ -18,20 +18,50 @@
     }
   });
 
-  const formattedDate = $derived(new Date(searchQuery.date).toLocaleDateString('en-GB', {
+  let selectedOutbound = $state<any>(null);
+  const currentStep = $derived(searchQuery.isReturnTrip && selectedOutbound ? 'return' : 'outbound');
+
+  const displayFrom = $derived(currentStep === 'return' ? searchQuery.to : searchQuery.from);
+  const displayTo = $derived(currentStep === 'return' ? searchQuery.from : searchQuery.to);
+  const displayDate = $derived(currentStep === 'return' ? searchQuery.returnDate : searchQuery.date);
+
+  const formattedDate = $derived(new Date(displayDate).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
   }));
 
+  const activeFlights = $derived(currentStep === 'return' ? data.returnFlights : data.flights);
+  const activeSuggestions = $derived(currentStep === 'return' ? data.returnSuggestions : data.suggestions);
+
   const passengersLabel = $derived(
     `${searchQuery.adults} Adult${searchQuery.adults > 1 ? 's' : ''}` +
     (searchQuery.children > 0 ? `, ${searchQuery.children} Child${searchQuery.children > 1 ? 'ren' : ''}` : '')
   );
+
+  function selectOutbound(flight: any) {
+    if (!searchQuery.isReturnTrip) {
+      bookingStore.reset();
+      bookingStore.setFlight(flight, searchQuery.adults, searchQuery.children, searchQuery.date);
+      goto(`/booking/${bookingStore.reference}`);
+    } else {
+      selectedOutbound = flight;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function selectReturn(flight: any) {
+    bookingStore.reset();
+    bookingStore.setFlight(selectedOutbound, searchQuery.adults, searchQuery.children, searchQuery.date);
+    bookingStore.setReturnFlight(flight);
+    bookingStore.isReturnTrip = true;
+    bookingStore.returnDate = searchQuery.returnDate;
+    goto(`/booking/${bookingStore.reference}`);
+  }
 </script>
 
 <svelte:head>
-  <title>Search Results: {searchQuery.from} to {searchQuery.to} | {appConfig.name}</title>
+  <title>Search Results: {displayFrom} to {displayTo} | {appConfig.name}</title>
 </svelte:head>
 
 <main class="page-shell pb-20 pt-8 sm:pt-10">
@@ -40,7 +70,14 @@
       <div class="flex flex-wrap items-end justify-between gap-5">
         <div class="space-y-3">
           <a href="/" class="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-brand-navy)]"><ChevronLeft size={14} /> Back to search</a>
-          <h1 class="hero-display">{searchQuery.from} to {searchQuery.to}</h1>
+          {#if searchQuery.isReturnTrip}
+            <div class="mb-1">
+              <span class="status-badge bg-indigo-50 text-[color:var(--color-brand-blue)] uppercase font-bold tracking-wider text-[10px]">
+                {currentStep === 'outbound' ? 'Step 1: Select Outbound Flight' : 'Step 2: Select Return Flight'}
+              </span>
+            </div>
+          {/if}
+          <h1 class="hero-display">{displayFrom} to {displayTo}</h1>
           <div class="flex flex-wrap items-center gap-3 text-[13px] text-[color:var(--color-text-body)]">
             <span>{formattedDate}</span>
             <span class="h-1.5 w-1.5 rounded-full bg-[color:var(--color-brand-blue)]"></span>
@@ -53,8 +90,33 @@
 
     <div class="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
       <main class="space-y-4">
+        {#if searchQuery.isReturnTrip && selectedOutbound}
+          <div class="rounded-[18px] bg-slate-50 border border-slate-200/80 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-start gap-3">
+              <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]">
+                <Plane size={15} />
+              </div>
+              <div>
+                <p class="text-[12px] font-bold uppercase tracking-[0.1em] text-[color:var(--color-text-muted)]">Selected Outbound Leg</p>
+                <p class="mt-1 text-[14px] font-semibold text-brand-navy">
+                  {selectedOutbound.flight_number} ({selectedOutbound.origin_iata} → {selectedOutbound.destination_iata})
+                </p>
+                <p class="text-[12px] text-[color:var(--color-text-body)] mt-0.5">
+                  Departure: {selectedOutbound.departure_time}
+                </p>
+              </div>
+            </div>
+            <button 
+              class="inline-flex min-h-[38px] items-center justify-center rounded-[8px] bg-white border border-slate-300 hover:bg-slate-50 px-4 text-[12px] font-bold text-red-500 uppercase tracking-wider transition-all shadow-sm"
+              onclick={() => selectedOutbound = null}
+            >
+              Change
+            </button>
+          </div>
+        {/if}
+
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <span class="text-[14px] text-[color:var(--color-text-body)]">{flights.length} flights available</span>
+          <span class="text-[14px] text-[color:var(--color-text-body)]">{activeFlights.length} flights available</span>
           <div class="status-badge bg-[color:var(--color-status-green-bg)] text-[color:var(--color-status-green-text)]"><Info size={12} class="inline" /> Flexible booking active</div>
         </div>
 
@@ -68,11 +130,39 @@
               </Card>
             {/each}
           </div>
-        {:else if flights.length > 0}
-          {#each flights as flight}
-            <FlightCard {flight} adults={searchQuery.adults} children={searchQuery.children} />
+        {:else if activeFlights.length > 0}
+          {#each activeFlights as flight}
+            <FlightCard 
+              {flight} 
+              adults={searchQuery.adults} 
+              children={searchQuery.children} 
+              onselect={currentStep === 'outbound' ? selectOutbound : selectReturn}
+            />
           {/each}
-        {:else if data.suggestions && data.suggestions.length > 0}
+
+          {#if activeSuggestions && activeSuggestions.length > 0}
+            <div class="mt-8 space-y-6 pt-6 border-t border-slate-100">
+              <div>
+                <h3 class="text-[18px] font-bold text-[color:var(--color-brand-navy)] flex items-center gap-2">
+                  <span class="inline-block h-2 w-2 rounded-full bg-[color:var(--color-brand-blue)]"></span>
+                  Alternative Date Suggestions & Options
+                </h3>
+                <p class="mt-1 text-[13px] text-[color:var(--color-text-body)]">Consider these alternative dates or nearby airports for your journey.</p>
+              </div>
+              {#each activeSuggestions as flight}
+                <div class="relative">
+                  <div class="absolute right-6 top-[-10px] z-10 rounded-full bg-[color:var(--color-brand-blue)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-sm">{flight.suggestion_label || 'Suggested'}</div>
+                  <FlightCard 
+                    {flight} 
+                    adults={searchQuery.adults} 
+                    children={searchQuery.children} 
+                    onselect={currentStep === 'outbound' ? selectOutbound : selectReturn}
+                  />
+                </div>
+              {/each}
+            </div>
+          {/if}
+        {:else if activeSuggestions && activeSuggestions.length > 0}
           <Card tone="default" class="px-5 py-5">
             <div class="flex items-center gap-4">
               <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--color-brand-blue)]/10 text-[color:var(--color-brand-blue)]"><Info size={20} /></div>
@@ -83,10 +173,15 @@
             </div>
           </Card>
 
-          {#each data.suggestions as flight}
+          {#each activeSuggestions as flight}
             <div class="relative">
               <div class="absolute right-6 top-[-10px] z-10 rounded-full bg-[color:var(--color-brand-blue)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-sm">{flight.suggestion_label || 'Suggested'}</div>
-              <FlightCard {flight} adults={searchQuery.adults} children={searchQuery.children} />
+              <FlightCard 
+                {flight} 
+                adults={searchQuery.adults} 
+                children={searchQuery.children} 
+                onselect={currentStep === 'outbound' ? selectOutbound : selectReturn}
+              />
             </div>
           {/each}
         {:else}

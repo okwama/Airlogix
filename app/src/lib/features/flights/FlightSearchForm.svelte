@@ -1,29 +1,59 @@
 <script>
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
   // @ts-ignore
   import { Loader2, Search, Users, Info } from 'lucide-svelte';
   import { clickOutside } from '../../utils/clickOutside';
   import { slide } from 'svelte/transition';
+
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
+
+  // Dynamic dates: today + 7 days
+  // @ts-ignore
+  function toDateStr(d) { return d.toISOString().split('T')[0]; }
+  const today = new Date();
+  const nextWeek = new Date(today);
+  nextWeek.setDate(nextWeek.getDate() + 7);
 
   let from = $state('NBO');
   let fromLabel = $state('Nairobi');
   let to = $state('MBA');
   let toLabel = $state('Mombasa');
   
-  let date = $state('2026-04-10');
+  let date = $state(toDateStr(today));
+  let isRoundTrip = $state(false);
+  let returnDate = $state(toDateStr(nextWeek));
   let adults = $state(1);
   let children = $state(0);
   let infants = $state(0);
   let cabinClassId = $state(1);
   let isSearching = $state(false);
 
-  const cabinClasses = [
+  // ── Cabin Classes (fetched from DB, with fallback) ──────────────────
+  const FALLBACK_CABIN_CLASSES = [
     { id: 1, name: 'Economy' },
-    { id: 2, name: 'Premium Econ' },
+    { id: 2, name: 'Premium Economy' },
     { id: 3, name: 'Business' },
     { id: 4, name: 'First Class' }
   ];
+  let cabinClasses = $state(FALLBACK_CABIN_CLASSES);
   let cabinClassName = $derived(cabinClasses.find(c => c.id === cabinClassId)?.name || 'Economy');
+
+  // ── Destinations (fetched from DB, with fallback) ───────────────────
+  const FALLBACK_DESTINATIONS = [
+    { code: 'NBO', name: 'Nairobi', city: 'Nairobi', country: 'Kenya' },
+    { code: 'MBA', name: 'Mombasa', city: 'Mombasa', country: 'Kenya' },
+    { code: 'KIS', name: 'Kisumu', city: 'Kisumu', country: 'Kenya' },
+    { code: 'DAR', name: 'Dar es Salaam', city: 'Dar es Salaam', country: 'Tanzania' },
+    { code: 'JRO', name: 'Kilimanjaro', city: 'Kilimanjaro', country: 'Tanzania' },
+    { code: 'ZNZ', name: 'Zanzibar', city: 'Zanzibar', country: 'Tanzania' },
+    { code: 'EBB', name: 'Entebbe', city: 'Entebbe', country: 'Uganda' },
+    { code: 'KGL', name: 'Kigali', city: 'Kigali', country: 'Rwanda' },
+    { code: 'ADD', name: 'Addis Ababa', city: 'Addis Ababa', country: 'Ethiopia' },
+    { code: 'BJM', name: 'Bujumbura', city: 'Bujumbura', country: 'Burundi' }
+  ];
+  let allDestinations = $state(FALLBACK_DESTINATIONS);
+  let isLoadingData = $state(true);
 
   let fromSearch = $state('');
   let toSearch = $state('');
@@ -31,39 +61,26 @@
   let showToDropdown = $state(false);
   let showPassengerDropdown = $state(false);
 
-  const destinations = [
-    { label: 'Kenya', options: [{ code: 'NBO', name: 'Nairobi' }, { code: 'MBA', name: 'Mombasa' }, { code: 'KIS', name: 'Kisumu' }] },
-    { label: 'Tanzania', options: [{ code: 'DAR', name: 'Dar es Salaam' }, { code: 'JRO', name: 'Kilimanjaro' }, { code: 'ZNZ', name: 'Zanzibar' }] },
-    { label: 'Uganda', options: [{ code: 'EBB', name: 'Entebbe' }] },
-    { label: 'Rwanda', options: [{ code: 'KGL', name: 'Kigali' }] },
-    { label: 'Ethiopia', options: [{ code: 'ADD', name: 'Addis Ababa' }] },
-    { label: 'Zambia', options: [{ code: 'LUN', name: 'Lusaka' }] },
-    { label: 'Zimbabwe', options: [{ code: 'HRE', name: 'Harare' }] },
-    { label: 'Seychelles', options: [{ code: 'SEZ', name: 'Mahe' }] },
-    { label: 'DRC', options: [{ code: 'FIH', name: 'Kinshasa' }] },
-    { label: 'Burundi', options: [{ code: 'BJM', name: 'Bujumbura' }] }
-  ];
-
-  const allDestinations = destinations.flatMap(g => g.options.map(o => ({ ...o, country: g.label })));
-
   let filteredFrom = $derived(
     allDestinations.filter(d => 
-      d.name.toLowerCase().includes(fromSearch.toLowerCase()) || 
-      d.code.toLowerCase().includes(fromSearch.toLowerCase())
+      (d.name || '').toLowerCase().includes(fromSearch.toLowerCase()) || 
+      (d.code || '').toLowerCase().includes(fromSearch.toLowerCase()) ||
+      (d.city || '').toLowerCase().includes(fromSearch.toLowerCase())
     )
   );
 
   let filteredTo = $derived(
     allDestinations.filter(d => 
-      d.name.toLowerCase().includes(toSearch.toLowerCase()) || 
-      d.code.toLowerCase().includes(toSearch.toLowerCase())
+      (d.name || '').toLowerCase().includes(toSearch.toLowerCase()) || 
+      (d.code || '').toLowerCase().includes(toSearch.toLowerCase()) ||
+      (d.city || '').toLowerCase().includes(toSearch.toLowerCase())
     )
   );
 
   /** @param {any} d */
   function selectFrom(d) {
     from = d.code;
-    fromLabel = d.name;
+    fromLabel = d.city || d.name;
     fromSearch = '';
     showFromDropdown = false;
   }
@@ -71,7 +88,7 @@
   /** @param {any} d */
   function selectTo(d) {
     to = d.code;
-    toLabel = d.name;
+    toLabel = d.city || d.name;
     toSearch = '';
     showToDropdown = false;
   }
@@ -89,21 +106,79 @@
       infants: infants.toString(),
       cabin_class: cabinClassId.toString()
     });
+    if (isRoundTrip) {
+      params.append('is_return', 'true');
+      params.append('return_date', returnDate);
+    }
     await goto(`/search?${params.toString()}`);
     isSearching = false;
   }
 
-  // Pre-fill labels from codes
-  $effect(() => {
+  // Fetch destinations and cabin classes from the server
+  onMount(async () => {
+    const fetchDestinations = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/destinations`);
+        if (res.ok) {
+          const result = await res.json();
+          if (result.status && Array.isArray(result.data) && result.data.length > 0) {
+            // @ts-ignore
+            allDestinations = result.data.map(d => ({
+              ...d,
+              code: d.code || '',
+              name: d.name || d.city || '',
+              city: d.city || d.name || '',
+              country: d.destination_type ? (d.destination_type.charAt(0).toUpperCase() + d.destination_type.slice(1)) : ''
+            }));
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch destinations, using fallback', e);
+      }
+    };
+
+    const fetchCabinClasses = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/cabin-classes`);
+        if (res.ok) {
+          const result = await res.json();
+          if (result.status && Array.isArray(result.data) && result.data.length > 0) {
+            cabinClasses = result.data;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch cabin classes, using fallback', e);
+      }
+    };
+
+    await Promise.all([fetchDestinations(), fetchCabinClasses()]);
+    isLoadingData = false;
+
+    // Re-resolve labels after destinations are loaded from DB
     const f = allDestinations.find(d => d.code === from);
-    if (f) fromLabel = f.name;
+    if (f) fromLabel = f.city || f.name;
     const t = allDestinations.find(d => d.code === to);
-    if (t) toLabel = t.name;
+    if (t) toLabel = t.city || t.name;
   });
 </script>
 
 <div class="flex flex-col gap-5 sm:gap-8">
-  <div class="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+  <div class="flex gap-4 mb-1 border-b border-[color:var(--color-border)]/40 pb-2">
+    <button 
+      class="text-[12px] font-bold uppercase tracking-[0.12em] px-4 py-2 rounded-full transition-all {!isRoundTrip ? 'bg-[color:var(--color-brand-navy)] text-white shadow-sm' : 'text-[color:var(--color-text-muted)] hover:text-[color:var(--color-brand-navy)]'}"
+      onclick={() => isRoundTrip = false}
+    >
+      One-Way
+    </button>
+    <button 
+      class="text-[12px] font-bold uppercase tracking-[0.12em] px-4 py-2 rounded-full transition-all {isRoundTrip ? 'bg-[color:var(--color-brand-navy)] text-white shadow-sm' : 'text-[color:var(--color-text-muted)] hover:text-[color:var(--color-brand-navy)]'}"
+      onclick={() => isRoundTrip = true}
+    >
+      Round-Trip
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 {isRoundTrip ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} lg:gap-6">
     
     <!-- ORIGIN Field (Searchable) -->
     <div class="flex flex-col relative" use:clickOutside={() => showFromDropdown = false}>
@@ -199,6 +274,14 @@
       <input type="date" bind:value={date} class="input-field w-full min-h-[56px] rounded-[12px] bg-[color:var(--color-surface-high)] px-4 cursor-pointer" />
     </div>
 
+    <!-- RETURN DATE Field -->
+    {#if isRoundTrip}
+      <div class="flex flex-col" transition:slide={{ duration: 150 }}>
+        <span class="ui-label mb-1">Return Date</span>
+        <input type="date" bind:value={returnDate} class="input-field w-full min-h-[56px] rounded-[12px] bg-[color:var(--color-surface-high)] px-4 cursor-pointer" />
+      </div>
+    {/if}
+
     <!-- PASSENGERS Field -->
     <div class="flex flex-col relative" use:clickOutside={() => showPassengerDropdown = false}>
       <span class="ui-label mb-1">Travelers & Class</span>
@@ -207,7 +290,7 @@
         onclick={() => showPassengerDropdown = !showPassengerDropdown}
       >
         <span class="text-[13px] font-medium text-brand-navy truncate">
-          {adults} Adult{adults > 1 ? 's' : ''}{children > 0 ? `, ${children} Child` : ''}{infants > 0 ? `, ${infants} Inf` : ''}, {cabinClassId === 1 ? 'Economy' : 'Premium'}
+          {adults} Adult{adults > 1 ? 's' : ''}{children > 0 ? `, ${children} Child` : ''}{infants > 0 ? `, ${infants} Inf` : ''}, {cabinClassName}
         </span>
         <Users size={14} class="text-text-muted group-hover:text-brand-blue" />
       </button>
@@ -290,31 +373,19 @@
           <div class="h-[1px] w-full bg-border/60 mb-4"></div>
 
           <div class="flex flex-col gap-2">
-            <!-- Economy -->
-            <button 
-              class="flex items-center justify-between py-2 text-left w-full group"
-              onclick={() => cabinClassId = 1}
-            >
-              <span class="text-[14px] text-brand-navy {cabinClassId === 1 ? 'font-medium' : ''}">Economy</span>
-              <div class="w-[22px] h-[22px] rounded-full flex items-center justify-center border transition-colors {cabinClassId === 1 ? 'bg-[#3b3b98] border-[#3b3b98]' : 'border-gray-400 group-hover:border-[#3b3b98]'}">
-                {#if cabinClassId === 1}
-                  <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
-                {/if}
-              </div>
-            </button>
-
-            <!-- Premium -->
-            <button 
-              class="flex items-center justify-between py-2 text-left w-full group"
-              onclick={() => cabinClassId = 3}
-            >
-              <span class="text-[14px] text-brand-navy {cabinClassId === 3 ? 'font-medium' : ''}">Premium (Business/First)</span>
-              <div class="w-[22px] h-[22px] rounded-full flex items-center justify-center border transition-colors {cabinClassId === 3 ? 'bg-[#3b3b98] border-[#3b3b98]' : 'border-gray-400 group-hover:border-[#3b3b98]'}">
-                {#if cabinClassId === 3}
-                  <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
-                {/if}
-              </div>
-            </button>
+            {#each cabinClasses as cc}
+              <button 
+                class="flex items-center justify-between py-2 text-left w-full group"
+                onclick={() => cabinClassId = cc.id}
+              >
+                <span class="text-[14px] text-brand-navy {cabinClassId === cc.id ? 'font-medium' : ''}">{cc.name}</span>
+                <div class="w-[22px] h-[22px] rounded-full flex items-center justify-center border transition-colors {cabinClassId === cc.id ? 'bg-[#3b3b98] border-[#3b3b98]' : 'border-gray-400 group-hover:border-[#3b3b98]'}">
+                  {#if cabinClassId === cc.id}
+                    <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  {/if}
+                </div>
+              </button>
+            {/each}
           </div>
 
           <button 

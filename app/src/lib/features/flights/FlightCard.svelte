@@ -23,10 +23,11 @@
    * @property {Flight} flight
    * @property {number} [adults=1]
    * @property {number} [children=0]
+   * @property {function} [onselect]
    */
 
   /** @type {Props} */
-  let { flight, adults = 1, children = 0 } = $props();
+  let { flight, adults = 1, children = 0, onselect } = $props();
 
   const depTime = $derived(flight.departure_time || '10:00');
   const arrTime = $derived(flight.arrival_time || '14:30');
@@ -43,9 +44,15 @@
     if (isSelecting) return;
     isSelecting = true;
     try {
-      bookingStore.setFlight(flight, adults, children);
-      await goto(`/booking/${bookingStore.reference}`);
+      if (onselect) {
+        await onselect(flight);
+      } else {
+        bookingStore.setFlight(flight, adults, children);
+        await goto(`/booking/${bookingStore.reference}`);
+      }
     } catch (e) {
+      console.error(e);
+    } finally {
       isSelecting = false;
     }
   }

@@ -24,8 +24,18 @@
   const cabinClasses: Record<number, string> = { 1: 'Economy', 2: 'Premium Economy', 3: 'Business', 4: 'First Class' };
   const cabinClassName = $derived(cabinClasses[bookingStore.cabinClassId] || 'Economy');
 
-  const adultFare = $derived(Number(booking?.adult_fare ?? booking?.base_fare ?? 0));
-  const childFare = $derived(Number(booking?.child_fare ?? booking?.adult_fare ?? booking?.base_fare ?? 0));
+  const returnBooking = $derived(bookingStore.selectedReturnFlight);
+  const returnAdultFare = $derived(Number(returnBooking?.adult_fare ?? returnBooking?.base_fare ?? 0));
+  const returnChildFare = $derived(Number(returnBooking?.child_fare ?? returnBooking?.adult_fare ?? returnBooking?.base_fare ?? 0));
+
+  const adultFare = $derived(
+    Number(booking?.adult_fare ?? booking?.base_fare ?? 0) +
+    (bookingStore.isReturnTrip && returnBooking ? returnAdultFare : 0)
+  );
+  const childFare = $derived(
+    Number(booking?.child_fare ?? booking?.adult_fare ?? booking?.base_fare ?? 0) +
+    (bookingStore.isReturnTrip && returnBooking ? returnChildFare : 0)
+  );
   const adultsTotal = $derived(adultFare * adultCount);
   const childrenTotal = $derived(childFare * childCount);
   const baseTotal = $derived(adultsTotal + childrenTotal);
@@ -95,8 +105,12 @@
         passengers: bookingStore.passengers,
         payment_method: 'pending',
         total_amount: payableTotal,
+        booking_date: bookingStore.outboundDate || null,
         contact_email: contactEmail || undefined,
-        contact_phone: contactPhone || undefined
+        contact_phone: contactPhone || undefined,
+        is_return_trip: bookingStore.isReturnTrip ? 1 : 0,
+        return_flight_series_id: bookingStore.selectedReturnFlight ? Number(bookingStore.selectedReturnFlight.id) : null,
+        return_date: bookingStore.returnDate || null
       });
 
       reference = response.reference || response.data?.reference || response.data?.booking_reference || reference;
@@ -147,12 +161,21 @@
         </div>
 
         <div class="rounded-[22px] bg-white/10 px-5 py-4.5 backdrop-blur-sm">
-          <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Booking Ref</p>
-          <p class="mt-2 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference || 'PENDING'}</p>
+          <div class="flex items-center justify-between mb-2">
+            <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Booking Ref</p>
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-white/15 text-white">
+              {bookingStore.isReturnTrip ? 'Return' : 'One-Way'}
+            </span>
+          </div>
+          <p class="mt-1 font-mono text-[20px] font-semibold tracking-[0.08em] text-white">{reference || 'PENDING'}</p>
           <div class="mt-4 flex flex-wrap items-center gap-3 text-[12px] text-white/74">
             <span>{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</span>
             <span class="h-1.5 w-1.5 rounded-full bg-white/40"></span>
             <span>{booking?.flight_number || 'Selected flight'}</span>
+            {#if bookingStore.outboundDate}
+              <span class="h-1.5 w-1.5 rounded-full bg-white/40"></span>
+              <span>{new Date(bookingStore.outboundDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            {/if}
           </div>
         </div>
       </div>
@@ -229,17 +252,45 @@
 
               <div class="grid gap-3 sm:grid-cols-2">
                 <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                  <p class="ui-label">Route</p>
-                  <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</p>
+                  <p class="ui-label">Trip Type</p>
+                  <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{bookingStore.isReturnTrip ? 'Return' : 'One-Way'}</p>
                 </div>
                 <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
-                  <p class="ui-label">Flight</p>
+                  <p class="ui-label">Route</p>
+                  <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.origin_iata || '--'} → {booking?.destination_iata || '--'}</p>
+                </div>
+                <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
+                  <p class="ui-label">Outbound Flight</p>
                   <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.flight_number || '--'}</p>
                 </div>
                 <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
                   <p class="ui-label">Departure</p>
-                  <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">{booking?.departure_time || '--'}</p>
+                  <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">
+                    {booking?.departure_time || '--'}
+                    {#if bookingStore.outboundDate}
+                      <span class="ml-1.5 text-[12px] font-normal text-[color:var(--color-text-muted)]">
+                        {new Date(bookingStore.outboundDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    {/if}
+                  </p>
                 </div>
+                {#if bookingStore.isReturnTrip && bookingStore.selectedReturnFlight}
+                  <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
+                    <p class="ui-label">Return Route</p>
+                    <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">{bookingStore.selectedReturnFlight.origin_iata} → {bookingStore.selectedReturnFlight.destination_iata}</p>
+                  </div>
+                  <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
+                    <p class="ui-label">Return Flight</p>
+                    <p class="mt-1.5 text-[17px] font-semibold text-[color:var(--color-brand-navy)]">
+                      {bookingStore.selectedReturnFlight.flight_number}
+                      {#if bookingStore.returnDate}
+                        <span class="ml-1.5 text-[12px] font-normal text-[color:var(--color-text-muted)]">
+                          {new Date(bookingStore.returnDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      {/if}
+                    </p>
+                  </div>
+                {/if}
                 <div class="rounded-[15px] bg-[color:var(--color-surface-low)] px-4 py-3.5">
                   <p class="ui-label">Passengers</p>
                   <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">{adultCount} Adult{adultCount > 1 ? 's' : ''}{childCount > 0 ? `, ${childCount} Child${childCount > 1 ? 'ren' : ''}` : ''}</p>
@@ -249,6 +300,7 @@
                   <p class="mt-1.5 text-[15px] font-semibold text-[color:var(--color-brand-navy)]">{cabinClassName}</p>
                 </div>
               </div>
+
 
               <div class="space-y-3">
                 <p class="ui-label">Traveler Details</p>
@@ -295,12 +347,20 @@
           <div class="bg-[color:var(--color-brand-navy)] px-6 py-6 text-white sm:px-7">
             <p class="font-['Inter'] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">Order Summary</p>
             <div class="mt-4 flex items-start gap-4">
-              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/12 text-white">
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/12 text-white shrink-0">
                 <Plane size={18} />
               </div>
-              <div>
-                <p class="text-[18px] font-semibold text-white">{booking?.flight_number || '--'}</p>
-                <p class="mt-1 text-[12px] uppercase tracking-[0.14em] text-white/70">{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</p>
+              <div class="space-y-3">
+                <div>
+                  <p class="text-[17px] font-semibold text-white leading-tight">{booking?.flight_number || '--'} (Outbound)</p>
+                  <p class="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-white/70">{booking?.origin_iata || '--'} to {booking?.destination_iata || '--'}</p>
+                </div>
+                {#if bookingStore.isReturnTrip && bookingStore.selectedReturnFlight}
+                  <div class="border-t border-white/15 pt-2">
+                    <p class="text-[17px] font-semibold text-white leading-tight">{bookingStore.selectedReturnFlight.flight_number} (Return)</p>
+                    <p class="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-white/70">{bookingStore.selectedReturnFlight.origin_iata} to {bookingStore.selectedReturnFlight.destination_iata}</p>
+                  </div>
+                {/if}
               </div>
             </div>
           </div>
