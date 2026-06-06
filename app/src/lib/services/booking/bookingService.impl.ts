@@ -41,11 +41,28 @@ function clearAccessToken(reference: string) {
   }
 }
 
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const jwt = localStorage.getItem('airlogix_jwt');
+      if (jwt) headers.Authorization = `Bearer ${jwt}`;
+    }
+  } catch {
+    // ignore
+  }
+
+  return headers;
+}
+
 async function createBooking(payload: BookingPayload) {
   try {
     const response = await fetch(`${BASE_URL}/bookings`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload)
     });
 

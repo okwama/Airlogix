@@ -479,7 +479,33 @@ class BookingController {
         $authUserId = $this->userModel->validateToken($token);
         $isAuthorized = ($authUserId && (int)$authUserId === (int)($booking['user_id'] ?? 0));
 
-        // 2. Try OTP Access Token (X-Booking-Access-Token)
+        // 2. Fallback: If logged in, check if user's email or phone matches the booking's email or phone
+        if (!$isAuthorized && $authUserId) {
+            $userProfile = $this->userModel->getProfile($authUserId);
+            if ($userProfile) {
+                $userEmail = isset($userProfile['email']) ? strtolower(trim($userProfile['email'])) : '';
+                $bookingEmail = isset($booking['passenger_email']) ? strtolower(trim($booking['passenger_email'])) : '';
+                
+                $userPhone = isset($userProfile['phone_number']) ? trim($userProfile['phone_number']) : '';
+                $bookingPhone = isset($booking['passenger_phone']) ? trim($booking['passenger_phone']) : '';
+                
+                if (($userEmail !== '' && $userEmail === $bookingEmail) || ($userPhone !== '' && $userPhone === $bookingPhone)) {
+                    $isAuthorized = true;
+                    // Proactively link the booking to this user in the database so it shows up in their bookings list!
+                    if (empty($booking['user_id'])) {
+                        try {
+                            $db = db();
+                            $stmt = $db->prepare("UPDATE bookings SET user_id = ? WHERE id = ?");
+                            $stmt->execute([$authUserId, $booking['id']]);
+                        } catch (Throwable $e) {
+                            error_log("Failed to auto-link booking to user: " . $e->getMessage());
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Try OTP Access Token (X-Booking-Access-Token)
         if (!$isAuthorized) {
             $accessToken = $headers['X-Booking-Access-Token'] ?? '';
             if (!empty($accessToken)) {

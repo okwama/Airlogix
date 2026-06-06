@@ -40,7 +40,7 @@
         last_name: lastName.trim(),
         email: email.trim() || undefined
       });
-      goto('/manage');
+      goto('/account');
     } catch (err) {
       error = err instanceof Error ? err.message : 'Sign up failed. Please try again.';
     } finally {

@@ -26,7 +26,7 @@
     submitting = true;
     try {
       await authStore.login(identifier.trim(), password);
-      goto('/manage');
+      goto('/account');
     } catch (err) {
       error = err instanceof Error ? err.message : 'Login failed. Please try again.';
     } finally {
