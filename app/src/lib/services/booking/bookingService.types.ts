@@ -8,6 +8,8 @@ export interface Passenger {
   date_of_birth?: string;
   passport_number?: string;
   nationality?: string;
+  identification?: string;
+  age?: number | string;
 }
 
 export interface BookingPayload {

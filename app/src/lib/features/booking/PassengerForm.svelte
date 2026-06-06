@@ -15,7 +15,9 @@
       email: '',
       phone: '',
       passport_number: '',
-      passenger_type: 'adult'
+      passenger_type: 'adult',
+      nationality: '',
+      age: ''
     };
   }
 
@@ -29,7 +31,13 @@
 
   function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
-    if (onsubmit) onsubmit(passengers);
+    // Ensure identification is set for the backend, and age is submitted
+    const preparedPassengers = passengers.map(p => ({
+      ...p,
+      identification: p.passport_number,
+      age: p.age ? Number(p.age) : null
+    }));
+    if (onsubmit) onsubmit(preparedPassengers);
   }
 </script>
 
@@ -76,6 +84,16 @@
         <div class="flex flex-col gap-2 md:col-span-2">
           <span class="ui-label">Passport / ID Number</span>
           <input type="text" bind:value={p.passport_number} required class="input-field w-full min-h-[52px] px-4" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <span class="ui-label">Nationality</span>
+          <input type="text" bind:value={p.nationality} required class="input-field w-full min-h-[52px] px-4" placeholder="e.g. Kenyan" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <span class="ui-label">Age</span>
+          <input type="number" bind:value={p.age} required min="0" max="120" class="input-field w-full min-h-[52px] px-4" placeholder="e.g. 25" />
         </div>
       </div>
     </div>
