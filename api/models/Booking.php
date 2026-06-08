@@ -232,17 +232,31 @@ class Booking {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function updatePaymentStatus($booking_id, $status, $method = null) {
+    public function updatePaymentStatus($booking_id, $status, $method = null, $reference = null, $account = null) {
+        $setParams = ['payment_status = :status', 'updated_at = NOW()'];
+        $executeParams = [':status' => $status, ':id' => $booking_id];
+
+        if ($method !== null) {
+            $setParams[] = 'payment_method = :method';
+            $executeParams[':method'] = $method;
+        }
+
+        if ($reference !== null) {
+            $setParams[] = 'payment_reference = :reference';
+            $executeParams[':reference'] = $reference;
+        }
+
+        if ($account !== null) {
+            $setParams[] = 'payment_account = :account';
+            $executeParams[':account'] = $account;
+        }
+
         $query = "UPDATE " . $this->table_name . " 
-                  SET payment_status = :status, payment_method = :method, updated_at = NOW()
+                  SET " . implode(', ', $setParams) . "
                   WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute([
-            ':status' => $status,
-            ':method' => $method,
-            ':id' => $booking_id
-        ]);
+        return $stmt->execute($executeParams);
     }
 
     public function expireBooking(int $bookingId): bool

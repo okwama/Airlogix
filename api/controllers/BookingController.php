@@ -580,7 +580,7 @@ class BookingController {
         $manageUrl = $frontendUrl !== ''
             ? $frontendUrl . '/manage?reference=' . rawurlencode($reference) . '&email=' . rawurlencode($email)
             : '';
-        $brandName = (string)env('MAIL_FROM_NAME', env('APP_NAME', 'Mc Aviation'));
+        $brandName = (string)env('MAIL_FROM_NAME', env('APP_NAME', 'Royal air'));
 
         if ($email !== '') {
             require_once __DIR__ . '/../services/EmailService.php';
@@ -670,6 +670,23 @@ class BookingController {
     public function listByUser() {
         // Securely get user_id from auth token
         $userId = $this->authenticate();
+        
+        // Auto-link any guest bookings that match the user's email or phone
+        $userProfile = $this->userModel->getProfile($userId);
+        if ($userProfile) {
+            $userEmail = isset($userProfile['email']) ? strtolower(trim($userProfile['email'])) : '';
+            $userPhone = isset($userProfile['phone_number']) ? trim($userProfile['phone_number']) : '';
+            
+            if ($userEmail !== '' || $userPhone !== '') {
+                try {
+                    $db = db();
+                    $stmt = $db->prepare("UPDATE bookings SET user_id = ? WHERE user_id IS NULL AND (LOWER(passenger_email) = ? OR passenger_phone = ?)");
+                    $stmt->execute([$userId, $userEmail, $userPhone]);
+                } catch (Throwable $e) {
+                    error_log("Failed to auto-link bookings on list fetch: " . $e->getMessage());
+                }
+            }
+        }
         
         $bookings = $this->bookingModel->getByUserId($userId);
         
@@ -956,7 +973,7 @@ class BookingController {
             require_once __DIR__ . '/../services/SmsService.php';
             $sms = SmsService::getInstance();
             if ($sms->isConfigured()) {
-                $msg = "Mc Aviation booking access code for {$reference}: {$code}. Expires in 10 minutes.";
+                $msg = "Royal air booking access code for {$reference}: {$code}. Expires in 10 minutes.";
                 $sentSms = $sms->send($phone, $msg);
             }
         }
