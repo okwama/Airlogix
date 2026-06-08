@@ -1,0 +1,23 @@
+RewriteEngine On
+
+# Must live in: public_html/api/airlogix/ (same folder as index.php).
+# If sub-routes still 404 on LiteSpeed: try toggling this RewriteBase to match
+# your exact public path (with trailing slash). If files are only under
+# public_html/airlogix/, use URL https://domain/airlogix/ instead, or symlink
+# public_html/api/airlogix -> ../airlogix and keep RewriteBase /api/airlogix/
+
+RewriteBase /api/air/
+
+# v1/... style segment after the folder
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^v\d+/.*$ index.php [QSA,L]
+
+# Everything else that is not a real file/dir → front controller
+# (relative "index.php" + RewriteBase works on many LiteSpeed setups where
+# absolute "/api/airlogix/index.php" did not)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule .* index.php [QSA,L]
+
+DirectoryIndex index.php
