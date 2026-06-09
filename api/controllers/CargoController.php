@@ -517,7 +517,7 @@ class CargoController {
             require_once __DIR__ . '/../services/SmsService.php';
             $sms = SmsService::getInstance();
             if ($sms->isConfigured()) {
-                $msg = "Mc Aviation cargo access code for {$awb}: {$code}. Expires in 10 minutes.";
+                $msg = "Royal Air cargo access code for {$awb}: {$code}. Expires in 10 minutes.";
                 $sentSms = $sms->send($phone, $msg);
             }
         }

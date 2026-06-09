@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `settings` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Inserting Estonian Bank Details for Mc Aviation / ESTBRAND AVIATORS OÜ
+-- Inserting Estonian Bank Details for Royal Air / ESTBRAND AVIATORS OÜ
 INSERT INTO `settings` (`setting_key`, `setting_value`, `group_name`, `description`) VALUES
 ('bank_beneficiary', 'ESTBRAND AVIATORS OÜ', 'payment', 'Company name for bank transfers'),
 ('bank_name', 'AS SEB PANK (Estonia)', 'payment', 'Bank provider name'),

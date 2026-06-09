@@ -72,6 +72,30 @@ final class StripePaymentController extends PaymentControllerBase
                 'payment_method' => 'stripe'
             ]);
 
+            // Issue a fresh guest access token to avoid mid-flow expiry
+            try {
+                $accessToken = $this->issueGuestAccessTokenForBooking($booking);
+            } catch (Throwable $t) {
+                $accessToken = null;
+                error_log('Failed to issue guest access token: ' . $t->getMessage());
+            }
+
+            try {
+                Observability::event('payment.stripe_initiated', [
+                    'booking_id' => $booking['id'],
+                    'booking_reference' => $booking['booking_reference'] ?? null,
+                    'session_id' => $response['session_id'] ?? null,
+                    'access_token_issued' => $accessToken !== null
+                ]);
+            } catch (Throwable $obsErr) {
+                error_log('Observability payment.stripe_initiated failed: ' . $obsErr->getMessage());
+            }
+
+            // Include fresh access token in response so frontend can set header for subsequent calls
+            if ($accessToken !== null) {
+                $response['access_token'] = $accessToken;
+            }
+
             Response::json($response);
             return;
         }
@@ -119,6 +143,15 @@ final class StripePaymentController extends PaymentControllerBase
         }
 
         $eventId = (string)($event['id'] ?? '');
+        try {
+            Observability::event('payment.stripe.webhook_received', [
+                'event_id' => $eventId,
+                'event_type' => $event['type'] ?? null,
+                'session_id' => $event['data']['object']['id'] ?? null
+            ]);
+        } catch (Throwable $obsWErr) {
+            error_log('Observability payment.stripe.webhook_received failed: ' . $obsWErr->getMessage());
+        }
         if ($eventId !== '' && Cache::get('stripe_webhook_event:' . $eventId) === true) {
             http_response_code(200);
             echo json_encode(['status' => 'success', 'duplicate' => true]);
@@ -133,6 +166,15 @@ final class StripePaymentController extends PaymentControllerBase
                 $booking = $this->bookingModel->getByReference($bookingReference);
                 if ($booking) {
                     $this->finalizeSuccessfulPayment($booking, 'stripe', $session['id'] ?? null, $session);
+                    try {
+                        Observability::event('payment.stripe.webhook.finalized', [
+                            'booking_id' => $booking['id'],
+                            'booking_reference' => $bookingReference,
+                            'session_id' => $session['id'] ?? null
+                        ]);
+                    } catch (Throwable $obsFErr) {
+                        error_log('Observability payment.stripe.webhook.finalized failed: ' . $obsFErr->getMessage());
+                    }
                 }
             }
         }

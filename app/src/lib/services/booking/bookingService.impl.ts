@@ -71,6 +71,13 @@ async function createBooking(payload: BookingPayload) {
       const meta = extractErrorMeta(result);
       throw classifyError(response.status, meta.message || 'Failed to create booking', meta.details, meta.code);
     }
+    try {
+      const token = (result.access_token || '') as string;
+      const ref = (result.reference || result.data?.reference || result.data?.booking_reference || '') as string;
+      if (token && ref) setAccessToken(String(ref).trim().toUpperCase(), token);
+    } catch {
+      // ignore storage errors
+    }
     return result;
   } catch (error) {
     console.error('Booking creation error:', error);
@@ -108,6 +115,13 @@ async function verifyBookingAccessCode(reference: string, email: string, code: s
     if (!response.ok || !result.status) {
       const meta = extractErrorMeta(result);
       throw classifyError(response.status, meta.message || 'Invalid or expired access code', meta.details, meta.code);
+    }
+    try {
+      const token = (result.access_token || '') as string;
+      const ref = (result.reference || result.data?.reference || result.data?.booking_reference || '') as string;
+      if (token && ref) setAccessToken(String(ref).trim().toUpperCase(), token);
+    } catch {
+      // ignore
     }
     return result;
   } catch (error) {
@@ -222,6 +236,15 @@ async function initiateMpesa(reference: string, phoneNumber: string, amount: num
     if (!response.ok || !result.status) {
       const meta = extractErrorMeta(result);
       throw classifyError(response.status, meta.message || 'Failed to initiate M-Pesa', meta.details, meta.code);
+    }
+    // Persist booking access token when provided by the API to avoid mid-flow expiry
+    try {
+      const token = (result.access_token || '') as string;
+      if (token && typeof token === 'string') {
+        setAccessToken(reference, token);
+      }
+    } catch {
+      // ignore storage errors
     }
     return result.data;
   } catch (error) {
@@ -474,6 +497,15 @@ async function initiateStripePayment(bookingReference: string, amount: number, e
     if (!response.ok || !result.status) {
       const meta = extractErrorMeta(result);
       throw classifyError(response.status, meta.message || 'Failed to initialize Stripe', meta.details, meta.code);
+    }
+    // Persist booking access token when provided by the API to avoid mid-flow expiry
+    try {
+      const token = (result.access_token || '') as string;
+      if (token && typeof token === 'string') {
+        setAccessToken(bookingReference, token);
+      }
+    } catch {
+      // ignore storage errors
     }
     return result.data;
   } catch (error) {

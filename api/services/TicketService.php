@@ -28,7 +28,7 @@ class TicketService {
 
         foreach ($passengers as $p) {
             if (empty($p['ticket_number'])) {
-                // Generate a 13-digit ticket number starting with 855 (Mc Aviation IATA prefix)
+                // Generate a 13-digit ticket number starting with 855 (Royal Air IATA prefix)
                 $ticketNumber = "855" . str_pad((string)mt_rand(0, 9999999999), 10, "0", STR_PAD_LEFT);
                 $passengerModel->updateTicket($p['id'], $ticketNumber, 'OPEN');
                 $issuedCount++;
@@ -759,7 +759,7 @@ class TicketService {
         }
 
         $config = [
-            'app_name' => env('APP_NAME', env('VITE_APP_NAME', 'Mc Aviation')),
+            'app_name' => env('APP_NAME', env('VITE_APP_NAME', 'Royal Air')),
             'logo_url' => env('APP_LOGO_URL', env('VITE_APP_IMAGE', env('VITE_APP_ICON', ''))),
             'primary_color' => env('APP_PRIMARY_COLOR', env('VITE_APP_THEME_COLOR', '#D71921')),
             'secondary_color' => env('APP_SECONDARY_COLOR', env('VITE_APP_SECONDARY_COLOR', '#CC9933')),

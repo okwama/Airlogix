@@ -36,6 +36,26 @@ class Observability
         );
     }
 
+    public static function sanitiseError(Throwable $e): string
+    {
+        $class = get_class($e);
+        $msg = $e->getMessage();
+
+        // Database errors often include SQL and schema details — redact them
+        if (stripos($class, 'PDOException') !== false || stripos($msg, 'SQLSTATE') !== false || preg_match('/SELECT|INSERT|UPDATE|DELETE|FROM|JOIN/i', $msg)) {
+            return "Database error during operation ({$class})";
+        }
+
+        // Remove file paths and limit length
+        $sanitised = preg_replace('/\/[A-Za-z0-9_\-\.\/\\]+/', '', $msg);
+        $sanitised = preg_replace('/\s+\bline\b\s*\d+/i', '', $sanitised);
+        $sanitised = trim($sanitised);
+        if (strlen($sanitised) > 200) {
+            $sanitised = substr($sanitised, 0, 197) . '...';
+        }
+        return $sanitised . ' (' . $class . ')';
+    }
+
     private static function requestId(): string
     {
         if (class_exists('Response') && method_exists('Response', 'requestId')) {

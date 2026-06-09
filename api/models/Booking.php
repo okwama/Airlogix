@@ -70,8 +70,17 @@ class Booking {
     }
 
     public function create($data) {
-        // Generate unique 6-character alphanumeric booking reference (IATA style)
-        $ref = strtoupper(substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 6));
+        // Generate unique 10-character alphanumeric booking reference (IATA style)
+        $ref = strtoupper(substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 10));
+
+        // Note: At creation time we persist a safe `payment_method` value to
+        // satisfy existing DB constraints. The canonical source of truth for
+        // payment status and the final `payment_method` is the payment
+        // controllers / gateway callbacks which should call
+        // `updatePaymentStatus(..., 'paid', $method, $gatewayRef, $account)`
+        // after verifying the gateway notification. Frontend flows may mark
+        // a booking as `pending` via the public booking update route, but
+        // only server-side callbacks should mark a booking as `paid`.
 
         $columns = [
             'booking_reference' => ':ref',
@@ -106,7 +115,7 @@ class Booking {
             ':passenger_phone' => $data['passenger_phone'] ?? null,
             ':passenger_type' => $data['passenger_type'] ?? 'adult',
             ':num_passengers' => $data['number_of_passengers'] ?? 1,
-            ':fare_per_passenger' => $data['fare_per_passenger'],
+            ':fare_per_passenger' => isset($data['fare_per_passenger']) ? $data['fare_per_passenger'] : (isset($data['total_amount']) ? round($data['total_amount'] / max(1, ($data['number_of_passengers'] ?? 1)), 2) : null),
             ':base_fare' => $data['base_fare'] ?? null,
             ':taxes_amount' => $data['taxes_amount'] ?? null,
             ':total_amount' => $data['total_amount'],
@@ -117,27 +126,21 @@ class Booking {
             ':user_id' => $data['user_id'] ?? null
         ];
 
-        if ($this->hasColumn('is_return_trip')) {
-            $columns['is_return_trip'] = ':is_return_trip';
-            $params[':is_return_trip'] = $data['is_return_trip'] ?? 0;
-        }
-        if ($this->hasColumn('return_date')) {
-            $columns['return_date'] = ':return_date';
-            $params[':return_date'] = $data['return_date'] ?? null;
-        }
-        if ($this->hasColumn('return_flight_series_id')) {
-            $columns['return_flight_series_id'] = ':return_flight_series_id';
-            $params[':return_flight_series_id'] = $data['return_flight_series_id'] ?? null;
-        }
+        // Known return/expiry columns are persisted unconditionally
+        $columns['is_return_trip'] = ':is_return_trip';
+        $params[':is_return_trip'] = $data['is_return_trip'] ?? 0;
 
-        if ($this->hasColumn('reservation_expires_at')) {
-            $columns['reservation_expires_at'] = ':reservation_expires_at';
-            $params[':reservation_expires_at'] = $data['reservation_expires_at'] ?? $this->reservationExpiresAt();
-        }
-        if ($this->hasColumn('expired_at')) {
-            $columns['expired_at'] = ':expired_at';
-            $params[':expired_at'] = null;
-        }
+        $columns['return_date'] = ':return_date';
+        $params[':return_date'] = $data['return_date'] ?? null;
+
+        $columns['return_flight_series_id'] = ':return_flight_series_id';
+        $params[':return_flight_series_id'] = $data['return_flight_series_id'] ?? null;
+
+        $columns['reservation_expires_at'] = ':reservation_expires_at';
+        $params[':reservation_expires_at'] = $data['reservation_expires_at'] ?? $this->reservationExpiresAt();
+
+        $columns['expired_at'] = ':expired_at';
+        $params[':expired_at'] = null;
 
         $query = "INSERT INTO " . $this->table_name . " (" . implode(', ', array_keys($columns)) . ")
                   VALUES (" . implode(', ', array_values($columns)) . ")";
@@ -147,10 +150,7 @@ class Booking {
         if ($stmt->execute($params)) {
             $booking_id = $this->conn->lastInsertId();
             
-            // Add additional passengers if provided
-            if (!empty($data['passengers']) && is_array($data['passengers'])) {
-                $this->addPassengers($booking_id, $data['passengers']);
-            }
+            // Additional passenger linking is handled at controller level (booking_passengers)
 
             return [
                 'status' => true, 
@@ -164,20 +164,7 @@ class Booking {
         return ['status' => false, 'message' => 'Booking creation failed'];
     }
 
-    private function addPassengers($booking_id, $passengers) {
-        $query = "INSERT INTO booking_passengers (booking_id, passenger_id, passenger_type, fare_amount) 
-                  VALUES (:booking_id, :passenger_id, :passenger_type, :fare_amount)";
-        $stmt = $this->conn->prepare($query);
 
-        foreach ($passengers as $p) {
-            $stmt->execute([
-                ':booking_id' => $booking_id,
-                ':passenger_id' => $p['passenger_id'],
-                ':passenger_type' => $p['passenger_type'] ?? 'adult',
-                ':fare_amount' => $p['fare_amount']
-            ]);
-        }
-    }
 
     public function getById($id) {
         $query = "SELECT b.*, fs.flt as flight_number, 
@@ -233,6 +220,11 @@ class Booking {
     }
 
     public function updatePaymentStatus($booking_id, $status, $method = null, $reference = null, $account = null) {
+        // updatePaymentStatus is the unified method for changing a booking's
+        // payment lifecycle state. Use this from:
+        // - frontend-initiated flows to set 'pending' and a provisional method
+        // - payment initialization endpoints (Stripe/M-Pesa) to set 'pending'
+        // - gateway webhooks/callbacks to set 'paid' (this is authoritative)
         $setParams = ['payment_status = :status', 'updated_at = NOW()'];
         $executeParams = [':status' => $status, ':id' => $booking_id];
 
@@ -256,7 +248,11 @@ class Booking {
                   WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute($executeParams);
+        $ok = $stmt->execute($executeParams);
+        if ($ok) {
+            return $stmt->rowCount();
+        }
+        return 0;
     }
 
     public function expireBooking(int $bookingId): bool

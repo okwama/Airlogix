@@ -49,11 +49,20 @@ final class OnafriqPaymentController extends PaymentControllerBase
         );
 
         if ($response['status']) {
-            Response::json([
+            try {
+                $accessToken = $this->issueGuestAccessTokenForBooking($booking);
+            } catch (Throwable $t) {
+                $accessToken = null;
+                error_log('Failed to issue guest access token for Onafriq init: ' . $t->getMessage());
+            }
+
+            $out = [
                 'status' => true,
                 'data' => $response['data'],
                 'message' => $response['message']
-            ]);
+            ];
+            if ($accessToken !== null) $out['access_token'] = $accessToken;
+            Response::json($out);
         } else {
             Response::fail(
                 502,

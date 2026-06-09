@@ -5,7 +5,7 @@ require_once __DIR__ . '/../models/Passenger.php';
 require_once __DIR__ . '/../models/BookingPassenger.php';
 require_once __DIR__ . '/../models/AirlineUser.php'; // For token validation
 require_once __DIR__ . '/../models/Loyalty.php';
-require_once __DIR__ . '/../models/Setting.php';
+require_once __DIR__ . '/../utils/FlightResolver.php';
 require_once __DIR__ . '/../utils/Response.php';
 require_once __DIR__ . '/../utils/Cache.php';
 require_once __DIR__ . '/../utils/Observability.php';
@@ -118,6 +118,15 @@ class BookingController {
         // Authentication optional for bookings (guests can book)
         // $user_id = $this->authenticate();
         $data = request_json();
+        try {
+            Observability::event('booking.create.started', [
+                'flight_series_id' => $data['flight_series_id'] ?? null,
+                'passengers_provided' => isset($data['passengers']) ? count($data['passengers']) : (isset($data['passenger_name']) ? 1 : 0),
+                'client_total' => $data['total_amount'] ?? null
+            ]);
+        } catch (Throwable $obsStartErr) {
+            error_log('Observability booking.create.started failed: ' . $obsStartErr->getMessage());
+        }
 
         // Support both old single-passenger and new multi-passenger formats
         $passengers = [];
@@ -158,35 +167,56 @@ class BookingController {
                 return;
             }
         }
+        // validation completed - detailed validated event will be emitted after totals computed
 
         // Securely fetch fares from DB to ensure integrity
         require_once __DIR__ . '/../models/Flight.php';
         $flightModel = new Flight(db());
-        $settingModel = new Setting(db());
         $flight = $flightModel->getById($data['flight_series_id']);
+        try {
+            Observability::event('booking.flight_resolved', [
+                'flight_series_id' => $data['flight_series_id'] ?? null,
+                'flight' => $flight ? ['id' => $flight['id'] ?? null, 'flt' => $flight['flt'] ?? null] : null
+            ]);
+        } catch (Throwable $obsFlightErr) {
+            error_log('Observability booking.flight_resolved failed: ' . $obsFlightErr->getMessage());
+        }
         
         if (!$flight) {
             Response::fail(404, 'Flight not found', 'FLIGHT_NOT_FOUND');
             return;
         }
 
-        // Compute expected total server-side from DB values
-        $expectedTotal = 0;
-        foreach ($passengers as $p) {
-            $type = strtolower($p['passenger_type'] ?? 'adult');
-            $fare = (float)($flight[$type . '_fare'] ?? $flight['adult_fare']);
-            $expectedTotal += $fare;
-        }
+        // Compute expected total server-side from DB values using per-leg fares
+        $expectedTotal = 0.00;
+        $outboundFares = [
+            'adult' => (float)($flight['adult_fare'] ?? 0.00),
+            'child' => (float)($flight['child_fare'] ?? ($flight['adult_fare'] ?? 0.00)),
+            'infant' => (float)($flight['infant_fare'] ?? ($flight['adult_fare'] ?? 0.00))
+        ];
 
-        // Add return flight fares if applicable
-        if (!empty($data['is_return_trip']) && !empty($data['return_flight_series_id'])) {
+        $isReturn = !empty($data['is_return_trip']) ? 1 : 0;
+        $returnFlightSeries = null;
+        $returnFares = [];
+        if ($isReturn && !empty($data['return_flight_series_id'])) {
             $returnFlightSeries = $flightModel->getById($data['return_flight_series_id']);
             if ($returnFlightSeries) {
-                foreach ($passengers as $p) {
-                    $type = strtolower($p['passenger_type'] ?? 'adult');
-                    $fare = (float)($returnFlightSeries[$type . '_fare'] ?? $returnFlightSeries['adult_fare']);
-                    $expectedTotal += $fare;
-                }
+                $returnFares = [
+                    'adult' => (float)($returnFlightSeries['adult_return_fare'] ?? $returnFlightSeries['adult_fare'] ?? $outboundFares['adult']),
+                    'child' => (float)($returnFlightSeries['child_return_fare'] ?? $returnFlightSeries['child_fare'] ?? $outboundFares['child']),
+                    'infant' => (float)($returnFlightSeries['infant_return_fare'] ?? $returnFlightSeries['infant_fare'] ?? $outboundFares['infant'])
+                ];
+            }
+        }
+
+        // Sum per-passenger totals using per-leg fares
+        foreach ($passengers as $p) {
+            $type = strtolower($p['passenger_type'] ?? 'adult');
+            $oFare = $outboundFares[$type] ?? $outboundFares['adult'];
+            $expectedTotal += (float)$oFare;
+            if ($isReturn && !empty($returnFares)) {
+                $rFare = $returnFares[$type] ?? $returnFares['adult'];
+                $expectedTotal += (float)$rFare;
             }
         }
 
@@ -207,22 +237,32 @@ class BookingController {
             return;
         }
 
+        try {
+            Observability::event('booking.create.validated', [
+                'flight_series_id' => $data['flight_series_id'] ?? null,
+                'num_passengers' => count($passengers),
+                'expected_total' => $expectedTotal,
+                'client_total' => $clientTotal
+            ]);
+        } catch (Throwable $obsValErr) {
+            error_log('Observability booking.create.validated failed: ' . $obsValErr->getMessage());
+        }
+
         // Use server-validated fare for passenger line-items only.
-        $farePerPassenger = $expectedTotal / count($passengers);
         $numPassengers = count($passengers);
 
-        // Fetch dynamic tax rate or fallback to 10%
-        $taxRateStr = $settingModel->getByKey('default_tax_rate') ?? '10';
-        $taxRateMultiplier = (float)$taxRateStr / 100;
-        
-        $baseFare = round($expectedTotal / (1 + $taxRateMultiplier), 2);
-        $taxesAmount = round($expectedTotal - $baseFare, 2);
+        // No tax calculation here; base_fare is full expected total and taxes set to 0.00
+        $baseFare = $expectedTotal;
+        $taxesAmount = 0.00;
 
         // Start transaction
         $db = db();
         $db->beginTransaction();
 
         try {
+            // Controller-level expiry sweep to release stale holds before locking inventory
+            $this->bookingModel->expireStaleReservations();
+
             // Securely set user_id if token is present
             $headers = $this->readRequestHeaders();
             $token = isset($headers['Authorization']) ? str_replace('Bearer ', '', $headers['Authorization']) : '';
@@ -232,62 +272,74 @@ class BookingController {
             $primaryPassenger = $passengers[0];
             $primaryPassengerContact = $primaryPassenger['contact'] ?? ($primaryPassenger['phone'] ?? null);
 
-            // Query flights table to find matching individual dated occurrence (outbound)
-            $flightId = null;
+            // Resolve flight occurrence and aircraft using FlightResolver
+            require_once __DIR__ . '/../utils/FlightResolver.php';
             $travelDate = $data['booking_date'] ?? date('Y-m-d');
-            try {
-                $stmt = $db->prepare("SELECT id FROM flights WHERE series_id = ? AND flight_date = ? LIMIT 1");
-                $stmt->execute([$data['flight_series_id'], $travelDate]);
-                $flightRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                if ($flightRow) {
-                    $flightId = (int)$flightRow['id'];
-                }
-            } catch (Throwable $fe) {
-                error_log("Failed to query flight occurrence: " . $fe->getMessage());
+            $flightResolved = FlightResolver::resolveFlightAndAircraft($db, $data['flight_id'] ?? null, $data['flight_series_id'] ?? null, $travelDate);
+            $flightId = $flightResolved['flight_id'] ?? null;
+
+            $returnFlightId = null;
+            $returnFlightSeriesId = $data['return_flight_series_id'] ?? null;
+            $returnDate = $data['return_date'] ?? null;
+            if ($isReturn && $returnFlightSeriesId && $returnDate) {
+                $returnResolved = FlightResolver::resolveFlightAndAircraft($db, null, $returnFlightSeriesId, $returnDate);
+                $returnFlightId = $returnResolved['flight_id'] ?? null;
             }
 
-            // Do the same for return flight if is_return_trip is true
-            $returnFlightId = null;
-            $isReturn = !empty($data['is_return_trip']) ? 1 : 0;
-            $returnDate = $data['return_date'] ?? null;
-            $returnFlightSeriesId = $data['return_flight_series_id'] ?? null;
-            if ($isReturn && $returnFlightSeriesId && $returnDate) {
-                try {
-                    $stmt = $db->prepare("SELECT id FROM flights WHERE series_id = ? AND flight_date = ? LIMIT 1");
-                    $stmt->execute([$returnFlightSeriesId, $returnDate]);
-                    $returnFlightRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                    if ($returnFlightRow) {
-                        $returnFlightId = (int)$returnFlightRow['id'];
-                    }
-                } catch (Throwable $fe) {
-                    error_log("Failed to query return flight occurrence: " . $fe->getMessage());
-                }
+            // Lock inventory row for this flight_series to avoid race conditions
+            $lockStmt = $db->prepare('SELECT number_of_seats FROM flight_series WHERE id = ? FOR UPDATE');
+            $lockStmt->execute([$data['flight_series_id']]);
+            $fsRow = $lockStmt->fetch(PDO::FETCH_ASSOC);
+            try {
+                Observability::event('booking.lock_acquired', [
+                    'flight_series_id' => $data['flight_series_id'] ?? null,
+                    'number_of_seats' => (int)($fsRow['number_of_seats'] ?? 0)
+                ]);
+            } catch (Throwable $obsLockErr) {
+                error_log('Observability booking.lock_acquired failed: ' . $obsLockErr->getMessage());
+            }
+            $totalSeats = (int)($fsRow['number_of_seats'] ?? 0);
+
+            // Resolve source (X-Client-Channel header or data.source)
+            $resolvedSource = 'web';
+            $sourceHint = $this->readRequestHeaders()['X-Client-Channel'] ?? ($data['source'] ?? null);
+            if ($sourceHint) {
+                $s = strtolower(trim((string)$sourceHint));
+                if (in_array($s, ['mobile', 'android', 'ios'])) $resolvedSource = 'mobile';
+                elseif ($s === 'portal') $resolvedSource = 'portal';
             }
 
             $bookingData = [
                 'flight_series_id' => $data['flight_series_id'],
                 'flight_id' => $flightId,
-                'cabin_class_id' => $data['cabin_class_id'] ?? 1, // Defaulting to Economy if not provided
+                'cabin_class_id' => $data['cabin_class_id'] ?? 1,
                 'passenger_name' => $primaryPassenger['name'],
                 'passenger_email' => $primaryPassenger['email'] ?? null,
                 'passenger_phone' => $primaryPassengerContact,
                 'passenger_type' => $primaryPassenger['passenger_type'] ?? 'adult',
                 'number_of_passengers' => $numPassengers,
-                'fare_per_passenger' => $farePerPassenger,
-                // Persist the server-computed canonical total, not arbitrary client value
+                // Persist the server-computed canonical total
                 'base_fare' => $baseFare,
                 'taxes_amount' => $taxesAmount,
                 'total_amount' => $expectedTotal,
-                'payment_method' => $data['payment_method'] ?? 'pending',
                 'reservation_expires_at' => $this->bookingModel->reservationExpiresAt(),
                 'notes' => $data['notes'] ?? null,
                 'user_id' => $userId,
                 'is_return_trip' => $isReturn,
                 'return_date' => $returnDate,
-                'return_flight_series_id' => $returnFlightSeriesId
+                'return_flight_series_id' => $returnFlightSeriesId,
+                'source' => $resolvedSource
             ];
 
             $bookingResponse = $this->bookingModel->create($bookingData);
+            try {
+                Observability::event('booking.model.create_called', [
+                    'flight_series_id' => $bookingData['flight_series_id'],
+                    'user_id' => $bookingData['user_id'] ?? null
+                ]);
+            } catch (Throwable $obsBErr) {
+                error_log('Observability booking.model.create_called failed: ' . $obsBErr->getMessage());
+            }
             
             if (!$bookingResponse['status']) {
                 throw new Exception($bookingResponse['message'] ?? 'Failed to create booking');
@@ -295,6 +347,14 @@ class BookingController {
 
             $bookingId = $bookingResponse['booking_id'];
             $bookingReference = $bookingResponse['reference'];
+            try {
+                Observability::event('booking.created', [
+                    'booking_id' => (int)$bookingId,
+                    'booking_reference' => (string)$bookingReference
+                ]);
+            } catch (Throwable $obsCreatedErr) {
+                error_log('Observability booking.created failed: ' . $obsCreatedErr->getMessage());
+            }
 
             // Create passengers and link to booking
             $createdPassengers = [];
@@ -325,15 +385,14 @@ class BookingController {
                     throw new Exception('Failed to create passenger');
                 }
 
-                // Link passenger to booking
-                $fareAmount = $passengerData['fare_amount'] ?? $bookingData['fare_per_passenger'];
+                // Link passenger to booking using per-leg fares
                 $passengerType = $passengerData['passenger_type'] ?? 'adult';
-                
+                $oFare = $outboundFares[strtolower($passengerType)] ?? $outboundFares['adult'];
                 $linkCreated = $this->bookingPassengerModel->create(
                     $bookingId,
                     $passenger['id'],
                     $passengerType,
-                    $fareAmount,
+                    $oFare,
                     $bookingData['flight_series_id'],
                     $bookingData['flight_id'],
                     $travelDate,
@@ -343,14 +402,24 @@ class BookingController {
                 if (!$linkCreated) {
                     throw new Exception('Failed to link passenger to booking');
                 }
+                try {
+                    Observability::event('booking.passenger.linked', [
+                        'booking_id' => (int)$bookingId,
+                        'passenger_id' => (int)$passenger['id'],
+                        'passenger_name' => $passenger['name'] ?? null
+                    ]);
+                } catch (Throwable $obsPErr) {
+                    error_log('Observability booking.passenger.linked failed: ' . $obsPErr->getMessage());
+                }
 
-                // If return trip, create return link
+                // If return trip, create return link using return fares map
                 if ($isReturn && $returnFlightSeriesId) {
+                    $rFare = $returnFares[strtolower($passengerType)] ?? $oFare;
                     $returnLinkCreated = $this->bookingPassengerModel->create(
                         $bookingId,
                         $passenger['id'],
                         $passengerType,
-                        $fareAmount,
+                        $rFare,
                         $returnFlightSeriesId,
                         $returnFlightId,
                         $returnDate,
@@ -371,12 +440,34 @@ class BookingController {
                 ];
             }
 
-            // Create seat reservation (status 'reserved', payment_status 'unpaid')
-            $seatReservationStmt = $db->prepare("
-                INSERT INTO seat_reservations 
-                (flight_series_id, flight_id, number_of_seats, passenger_id, passenger_name, passenger_title, passenger_email, passenger_phone, booking_reference, status, reservation_date, trip_type, return_flight_series_id, return_date, fare_amount, payment_status, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?, ?, ?, ?, 'unpaid', NOW(), NOW())
-            ");
+            // Resolve primary passenger nationality -> country_id (non-blocking)
+            $countryId = null;
+            try {
+                $primaryNat = $primaryPassenger['nationality'] ?? null;
+                if (!empty($primaryNat)) {
+                    $cstmt = $db->prepare('SELECT id FROM Country WHERE name = ? LIMIT 1');
+                    $cstmt->execute([trim($primaryNat)]);
+                    $crow = $cstmt->fetch(PDO::FETCH_ASSOC);
+                    if ($crow && !empty($crow['id'])) $countryId = (int)$crow['id'];
+                }
+            } catch (Throwable $cErr) {
+                // Do not block booking on country lookup failure
+                error_log('Country lookup failed: ' . $cErr->getMessage());
+                $countryId = null;
+            }
+
+            // Ensure availability: compute booked seats for this series and date (respecting expired reservations)
+            $bookedStmt = $db->prepare("SELECT COALESCE(SUM(number_of_passengers),0) as booked_seats FROM bookings WHERE flight_series_id = ? AND booking_date = ? AND (LOWER(payment_status) = 'paid' OR (LOWER(payment_status) = 'pending' AND (reservation_expires_at IS NULL OR reservation_expires_at > NOW())))");
+            $bookedStmt->execute([$bookingData['flight_series_id'], $travelDate]);
+            $brow = $bookedStmt->fetch(PDO::FETCH_ASSOC);
+            $bookedSeats = (int)($brow['booked_seats'] ?? 0);
+            $available = max(0, $totalSeats - $bookedSeats);
+            if ($available < $numPassengers) {
+                throw new Exception('Not enough seats available');
+            }
+
+            // Create seat reservation (status 'reserved', payment_status 'unpaid') with amount_paid and country_id
+            $seatReservationStmt = $db->prepare("\n                INSERT INTO seat_reservations \n                (flight_series_id, flight_id, number_of_seats, passenger_id, passenger_name, passenger_title, passenger_email, passenger_phone, booking_reference, status, reservation_date, trip_type, return_flight_series_id, return_date, fare_amount, payment_status, amount_paid, country_id, created_at, updated_at)\n                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'reserved', ?, ?, ?, ?, ?, 'unpaid', ?, ?, NOW(), NOW())\n            ");
             $seatReservationStmt->execute([
                 $bookingData['flight_series_id'],
                 $bookingData['flight_id'],
@@ -391,11 +482,33 @@ class BookingController {
                 $isReturn ? 'return' : 'one_way',
                 $returnFlightSeriesId,
                 $returnDate,
-                $bookingData['total_amount']
+                $bookingData['total_amount'],
+                0.00, // amount_paid
+                $countryId
             ]);
+            try {
+                $rows = $seatReservationStmt->rowCount();
+                Observability::event('booking.seat_reservation_insert', [
+                    'booking_id' => (int)$bookingId,
+                    'booking_reference' => (string)$bookingReference,
+                    'rows_affected' => $rows
+                ]);
+            } catch (Throwable $obsSR) {
+                error_log('Observability booking.seat_reservation_insert failed: ' . $obsSR->getMessage());
+            }
 
+            try {
+                Observability::event('booking.create.committing', ['booking_id' => (int)$bookingId]);
+            } catch (Throwable $obsComErr) {
+                error_log('Observability booking.create.committing failed: ' . $obsComErr->getMessage());
+            }
             // Commit transaction
             $db->commit();
+            try {
+                Observability::event('booking.create.completed', ['booking_id' => (int)$bookingId, 'booking_reference' => (string)$bookingReference]);
+            } catch (Throwable $obsCompErr) {
+                error_log('Observability booking.create.completed failed: ' . $obsCompErr->getMessage());
+            }
 
             $bookingSnapshot = $this->bookingModel->getById((int)$bookingId);
             if ($bookingSnapshot) {
@@ -450,7 +563,7 @@ class BookingController {
             try {
                 Observability::event('booking.hold_create_failed', [
                     'flight_series_id' => $data['flight_series_id'] ?? null,
-                    'error_message' => $e->getMessage()
+                    'error_message' => Observability::sanitiseError($e)
                 ]);
             } catch (Throwable $obsError) {
                 error_log('Booking failure observability emit failed: ' . $obsError->getMessage());
@@ -759,6 +872,11 @@ class BookingController {
         // This route is only for traveler-facing "payment initiated / pending" flows
         // such as bank transfer instructions. Paid status must only come from a verified
         // gateway callback or an internal/admin settlement flow.
+        //
+        // Rationale: marking a booking as 'pending' signals a user-driven intent
+        // to pay (e.g., they selected bank transfer). The system relies on
+        // provider callbacks to mark the booking 'paid' and record the
+        // definitive `payment_method`, `payment_reference` and `payment_account`.
         if ($normalizedStatus !== 'pending') {
             Response::fail(
                 403,

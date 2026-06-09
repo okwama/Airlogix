@@ -120,8 +120,37 @@ class Payment {
         } catch (\PDOException $e) {
             // Catch Integrity Constraint Violation (23000) e.g., duplicate webhook
             if ($e->getCode() == 23000) {
-                error_log("PaymentTrace: Ignored duplicate trace creation for transaction_id=" . ($data['transaction_id'] ?? 'unknown'));
-                // Return success so the gateway webhook controller doesn't fail
+                error_log("PaymentTrace: Duplicate trace detected for transaction_id=" . ($data['transaction_id'] ?? 'unknown'));
+                // Try to locate the existing trace and return its id so callers can update status
+                try {
+                    if (!empty($data['transaction_id'])) {
+                        $q = "SELECT id FROM " . $this->table_name . " WHERE transaction_id = :tx AND LOWER(payment_method) = LOWER(:method) ORDER BY id DESC LIMIT 1";
+                        $s = $this->conn->prepare($q);
+                        $s->execute([':tx' => $data['transaction_id'], ':method' => $data['payment_method']]);
+                        $r = $s->fetch(PDO::FETCH_ASSOC);
+                        if ($r && !empty($r['id'])) {
+                            return ['status' => true, 'transaction_id' => (int)$r['id'], 'message' => 'Duplicate resolved'];
+                        }
+                    }
+
+                    // Fallback: try to find by booking_id + payment_reference + method
+                    $q2 = "SELECT id FROM " . $this->table_name . " WHERE booking_id = :booking_id AND LOWER(payment_method) = LOWER(:method) AND (payment_reference = :pref OR transaction_id = :tx) ORDER BY id DESC LIMIT 1";
+                    $s2 = $this->conn->prepare($q2);
+                    $s2->execute([
+                        ':booking_id' => $data['booking_id'],
+                        ':method' => $data['payment_method'],
+                        ':pref' => $data['payment_reference'] ?? null,
+                        ':tx' => $data['transaction_id'] ?? null
+                    ]);
+                    $r2 = $s2->fetch(PDO::FETCH_ASSOC);
+                    if ($r2 && !empty($r2['id'])) {
+                        return ['status' => true, 'transaction_id' => (int)$r2['id'], 'message' => 'Duplicate resolved'];
+                    }
+                } catch (\Throwable $lookupErr) {
+                    error_log('PaymentTrace duplicate lookup failed: ' . $lookupErr->getMessage());
+                }
+
+                // Return success so the gateway webhook controller doesn't fail if we couldn't find the existing id
                 return ['status' => true, 'transaction_id' => null, 'message' => 'Duplicate ignored'];
             }
             error_log("PaymentTrace Error: " . $e->getMessage());

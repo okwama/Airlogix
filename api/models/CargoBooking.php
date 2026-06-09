@@ -300,7 +300,7 @@ class CargoBooking {
         $query = "
             SELECT
                 fs.id AS id,
-                'Mc Aviation' AS airline,
+                'Royal Air' AS airline,
                 CONCAT(fs.flt, 'C') AS flight_no,
                 d1.code AS origin,
                 d2.code AS destination,

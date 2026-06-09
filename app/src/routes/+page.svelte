@@ -65,20 +65,20 @@
 
 <main class="pb-20">
   <section class="relative overflow-hidden pt-3 sm:pt-4">
-    <div class="absolute inset-x-0 top-0 h-[220px] sm:h-[260px]">
+    <div class="absolute inset-x-0 top-0 h-[420px] sm:h-[520px]">
       <img
-        src="https://images.unsplash.com/photo-1517479149777-5f3b1511d5ad?auto=format&fit=crop&w=1800&q=80"
+        src="/hero.png"
         alt="Premium aircraft cabin"
         class="h-full w-full object-cover"
       />
       <div
-        class="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,11,96,0.18),rgba(0,11,96,0.08),rgba(250,249,245,1))]"
+        class="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,47,155,0.35),rgba(10,47,155,0.18),rgba(250,249,245,1))]"
       ></div>
     </div>
 
     <div class="page-shell relative z-10">
       <div class="page-width space-y-6">
-        <div class="mx-auto max-w-[980px] pt-8 sm:pt-14">
+        <div class="mx-auto max-w-[980px] pt-20 sm:pt-28">
           <Card tone="ghost" class="overflow-visible p-0">
             <div
               class="rounded-[22px] bg-[color:var(--color-surface-lowest)] text-[color:var(--color-text-heading)] shadow-[0_24px_70px_rgba(26,28,26,0.12)]"

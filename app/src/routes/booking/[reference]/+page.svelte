@@ -103,7 +103,6 @@
         flight_series_id: Number(booking.id),
         cabin_class_id: bookingStore.cabinClassId,
         passengers: bookingStore.passengers,
-        payment_method: 'pending',
         total_amount: payableTotal,
         booking_date: bookingStore.outboundDate || null,
         contact_email: contactEmail || undefined,

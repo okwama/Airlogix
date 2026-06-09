@@ -121,7 +121,7 @@ class StripeService {
                         'currency' => strtolower($currency),
                         'product_data' => [
                             'name' => 'Flight Booking: ' . $bookingReference,
-                            'description' => 'Travel booking via Mc Aviation / AirLogix'
+                            'description' => 'Travel booking via Royal Air / AirLogix'
                         ],
                         'unit_amount' => $amountInCents,
                     ],

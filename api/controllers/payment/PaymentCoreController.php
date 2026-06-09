@@ -173,12 +173,21 @@ final class PaymentCoreController extends PaymentControllerBase
                     'payment_method' => 'mpesa'
                 ]);
 
-                Response::json([
+                try {
+                    $accessToken = $this->issueGuestAccessTokenForBooking($booking);
+                } catch (Throwable $t) {
+                    $accessToken = null;
+                    error_log('Failed to issue guest access token for PaymentCore MPesa init: ' . $t->getMessage());
+                }
+
+                $out = [
                     'status' => true,
                     'message' => $response['message'],
                     'payment_method' => 'mpesa',
                     'data' => $response['data']
-                ]);
+                ];
+                if ($accessToken !== null) $out['access_token'] = $accessToken;
+                Response::json($out);
             } else {
                 Response::fail(
                     502,
@@ -224,12 +233,21 @@ final class PaymentCoreController extends PaymentControllerBase
                     'payment_method' => 'stripe'
                 ]);
 
-                Response::json([
+                try {
+                    $accessToken = $this->issueGuestAccessTokenForBooking($booking);
+                } catch (Throwable $t) {
+                    $accessToken = null;
+                    error_log('Failed to issue guest access token for PaymentCore Stripe init: ' . $t->getMessage());
+                }
+
+                $out = [
                     'status' => true,
                     'message' => 'Stripe Session created',
                     'payment_method' => 'stripe',
                     'data' => $response['data']
-                ]);
+                ];
+                if ($accessToken !== null) $out['access_token'] = $accessToken;
+                Response::json($out);
             } else {
                 Response::fail(
                     502,

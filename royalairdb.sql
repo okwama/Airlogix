@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 06, 2026 at 04:32 PM
+-- Generation Time: Jun 09, 2026 at 02:21 AM
 -- Server version: 10.6.25-MariaDB-cll-lve
 -- PHP Version: 8.4.21
 
@@ -618,7 +618,7 @@ CREATE TABLE `agencies` (
 --
 
 INSERT INTO `agencies` (`id`, `name`, `contact`, `city`, `country`, `password_hash`, `email`, `booking_limit`, `credit_limit`, `max_pax_per_booking`, `default_currency`, `credit_days`, `payment_limit`, `balance`, `commission_percentage`, `status`, `logo_url`, `min_float_threshold`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 'PAGF-SI', '9999', 'Nairobi', 'Comoros', NULL, '', 8000, 900000.00, 34, 'KMF', 365, 9000000.00, 493277.00, 3.00, 'active', NULL, 50000.00, NULL, '2025-12-04 18:28:30', '2026-06-01 13:06:42'),
+(1, 'PAGF-SI', '9999', 'Nairobi', 'Comoros', NULL, '', 8000, 900000.00, 34, 'KMF', 365, 9000000.00, 492577.00, 3.00, 'active', NULL, 50000.00, NULL, '2025-12-04 18:28:30', '2026-06-06 20:03:13'),
 (2, 'ROYAL PACK ', 'SLIM MOURID', 'Comoros', 'Comoros', NULL, '', 9000000, 9000000.00, 34, 'KMF', 365, 9000000.00, 5140.00, 3.00, 'active', NULL, 50000.00, NULL, '2025-12-05 19:57:56', '2026-05-31 06:14:02'),
 (3, 'THOMAS MURIANYI', '0706166875', 'Nairobi', 'Kenya', NULL, '', NULL, 60000.00, NULL, 'USD', 1, 6000.00, 3000.00, 3.00, 'active', NULL, 50000.00, NULL, '2026-05-28 08:59:40', '2026-05-31 06:14:15');
 
@@ -728,7 +728,9 @@ INSERT INTO `agency_ledger` (`id`, `agency_id`, `transaction_type`, `transaction
 (46, 1, 'manual_adjustment', '2026-06-01', 'Booking payment - BKMPUYM4NM0ZZ6', 0.00, 350.00, 43877.00, NULL, NULL, 'BKMPUYM4NM0ZZ6', '2026-06-01 08:41:33', '2026-06-01 08:41:33'),
 (47, 1, 'manual_adjustment', '2026-06-01', 'Booking payment - BKMPUZ6LUSRNJ7', 0.00, 500.00, 43377.00, NULL, NULL, 'BKMPUZ6LUSRNJ7', '2026-06-01 08:57:28', '2026-06-01 08:57:28'),
 (48, 1, 'manual_adjustment', '2026-06-01', 'Booking payment - BKMPUZFOK1VJJ7', 0.00, 500.00, 42877.00, NULL, NULL, 'BKMPUZFOK1VJJ7', '2026-06-01 09:04:32', '2026-06-01 09:04:32'),
-(49, 1, 'manual_adjustment', '2026-06-01', 'Booking payment - BKMPUZPSBHUZIG', 0.00, 500.00, 42377.00, NULL, NULL, 'BKMPUZPSBHUZIG', '2026-06-01 09:12:23', '2026-06-01 09:12:23');
+(49, 1, 'manual_adjustment', '2026-06-01', 'Booking payment - BKMPUZPSBHUZIG', 0.00, 500.00, 42377.00, NULL, NULL, 'BKMPUZPSBHUZIG', '2026-06-01 09:12:23', '2026-06-01 09:12:23'),
+(50, 1, 'manual_adjustment', '2026-06-06', 'Booking payment - BKMQ2NO8HR9XAU', 0.00, 350.00, 42027.00, NULL, NULL, 'BKMQ2NO8HR9XAU', '2026-06-06 17:57:24', '2026-06-06 17:57:24'),
+(51, 1, 'manual_adjustment', '2026-06-06', 'Booking payment - BKMQ2S61T96PA0', 0.00, 350.00, 41677.00, NULL, NULL, 'BKMQ2S61T96PA0', '2026-06-06 20:03:14', '2026-06-06 20:03:14');
 
 -- --------------------------------------------------------
 
@@ -903,12 +905,12 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `booking_reference`, `pnr`, `source`, `flight_series_id`, `flight_id`, `cabin_class_id`, `passenger_id`, `passenger_name`, `passenger_email`, `passenger_phone`, `passenger_type`, `number_of_passengers`, `fare_per_passenger`, `base_fare`, `taxes_amount`, `revenue_recognized`, `total_amount`, `payment_method`, `payment_status`, `payment_reference`, `payment_account`, `status`, `booking_date`, `reservation_expires_at`, `expired_at`, `notes`, `is_return_trip`, `return_date`, `return_flight_series_id`, `user_id`, `agent_id`, `agency_id`, `markup_amount`, `created_at`, `updated_at`) VALUES
-(148, 'BKMPUYD8T9HUSL', NULL, 'web', 38, NULL, NULL, 196, 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 1, 0.00, '2026-06-01 08:34:37', '2026-06-01 08:34:37'),
-(149, 'BKMPUYM4NM0ZZ6', NULL, 'web', 38, NULL, NULL, 198, 'JOSEPH G NJUGUNA', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 1, 0.00, '2026-06-01 08:41:32', '2026-06-01 08:41:32'),
-(150, 'BKMPUZ6LUSRNJ7', NULL, 'web', 38, NULL, NULL, 200, 'FREDRICK O ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 250.00, NULL, NULL, 0, 500.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 1, '2026-06-14', 37, NULL, NULL, 1, 0.00, '2026-06-01 08:57:27', '2026-06-01 08:57:27'),
-(151, 'BKMPUZFOK1VJJ7', NULL, 'web', 38, NULL, NULL, 202, 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 250.00, NULL, NULL, 0, 500.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 1, '2026-06-14', 37, NULL, NULL, 1, 0.00, '2026-06-01 09:04:30', '2026-06-01 09:04:30'),
-(152, 'BKMPUZOCUC29W5', NULL, 'web', 38, NULL, NULL, 204, 'ARNOLD BONYO ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 250.00, NULL, NULL, 0, 500.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 1, '2026-06-14', 37, NULL, NULL, 1, 0.00, '2026-06-01 09:11:15', '2026-06-01 09:11:15'),
-(153, 'BKMPUZPSBHUZIG', NULL, 'web', 38, NULL, NULL, 205, 'ARNOLD BONYO ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 250.00, NULL, NULL, 0, 500.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 1, '2026-06-14', 37, NULL, NULL, 1, 0.00, '2026-06-01 09:12:22', '2026-06-01 09:12:22'),
+(148, 'BKMPUYD8T9HUSL', NULL, 'web', 38, NULL, NULL, 196, 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, 1, 0.00, '2026-06-01 08:34:37', '2026-06-06 20:07:28'),
+(149, 'BKMPUYM4NM0ZZ6', NULL, 'web', 38, NULL, NULL, 198, 'JOSEPH G NJUGUNA', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, 1, 0.00, '2026-06-01 08:41:32', '2026-06-06 20:07:28'),
+(150, 'BKMPUZ6LUSRNJ7', NULL, 'web', 38, NULL, NULL, 200, 'FREDRICK O ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 250.00, NULL, NULL, 0, 500.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 1, '2026-06-14', 37, NULL, 1, 1, 0.00, '2026-06-01 08:57:27', '2026-06-06 20:07:28'),
+(151, 'BKMPUZFOK1VJJ7', NULL, 'web', 38, NULL, NULL, 202, 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 250.00, NULL, NULL, 0, 500.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 1, '2026-06-14', 37, NULL, 1, 1, 0.00, '2026-06-01 09:04:30', '2026-06-06 20:07:28'),
+(152, 'BKMPUZOCUC29W5', NULL, 'web', 38, NULL, NULL, 204, 'ARNOLD BONYO ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 250.00, NULL, NULL, 0, 500.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 1, '2026-06-14', 37, NULL, 1, 1, 0.00, '2026-06-01 09:11:15', '2026-06-06 20:07:28'),
+(153, 'BKMPUZPSBHUZIG', NULL, 'web', 38, NULL, NULL, 205, 'ARNOLD BONYO ONYANGO', 'bryanotieno09@gmail.com', '0790193625', 'adult', 1, 250.00, NULL, NULL, 0, 500.00, 'agency_balance', 'paid', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 1, '2026-06-14', 37, NULL, 1, 1, 0.00, '2026-06-01 09:12:22', '2026-06-06 20:07:28'),
 (154, 'BKMPV77LLNG1JM', NULL, 'web', 36, NULL, NULL, 207, 'JOSEPH G NJUGUNA', 'bo9511221@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', NULL, NULL, 0, '2026-06-01', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-01 12:42:10', '2026-06-01 12:42:10'),
 (155, 'BKMPWWS501RTLY', NULL, 'web', 44, NULL, NULL, 208, 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', NULL, NULL, 0, '2026-06-02', NULL, NULL, 'test', 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-02 17:25:45', '2026-06-02 17:25:45'),
 (156, 'BKMPWXMDPZKJR5', NULL, 'web', 44, NULL, NULL, 209, 'Bryan Otieno', 'bo9511221@gmail.com', '99', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', NULL, NULL, 0, '2026-06-02', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-02 17:49:16', '2026-06-02 17:49:16'),
@@ -917,11 +919,15 @@ INSERT INTO `bookings` (`id`, `booking_reference`, `pnr`, `source`, `flight_seri
 (159, 'BKMPXLQLCVQYLZ', NULL, 'web', 47, 23, NULL, 212, 'FREDRICK O ONYANGO', 'bo9511221@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', NULL, NULL, 0, '2026-06-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-03 05:04:23', '2026-06-03 05:07:11'),
 (160, 'BKMPXM4YOB0TYU', NULL, 'web', 47, NULL, NULL, 213, 'ARNOLD BONYO ONYANGO', 'bo9511221@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', NULL, NULL, 0, '2026-06-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-03 05:15:34', '2026-06-03 05:15:34'),
 (161, 'BKMPY9T4858AW0', NULL, 'web', 49, NULL, NULL, 213, 'JOSEPH G NJUGUNA', 'bryanotieno09@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', NULL, NULL, 0, '2026-06-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-03 16:18:11', '2026-06-03 16:18:11'),
-(162, 'BKMPYA1BV5FWZU', NULL, 'web', 49, NULL, NULL, 212, 'FREDRICK O ONYANGO', 'bryanotieno09@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', NULL, NULL, 0, '2026-06-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 1, 0.00, '2026-06-03 16:24:34', '2026-06-03 16:26:44'),
+(162, 'BKMPYA1BV5FWZU', NULL, 'web', 49, NULL, NULL, 212, 'FREDRICK O ONYANGO', 'bryanotieno09@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', NULL, NULL, 0, '2026-06-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, 1, 0.00, '2026-06-03 16:24:34', '2026-06-06 20:07:28'),
 (163, 'BKMPYA8Y11PZ25', NULL, 'web', 49, NULL, NULL, 214, 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', NULL, NULL, 0, '2026-06-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-03 16:30:30', '2026-06-03 16:30:30'),
 (164, 'BKMPYAL692VIQN', NULL, 'web', 49, 28, NULL, 215, 'bba', 'bryanotieno09@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'cash', 'pending', 'teee', NULL, 0, '2026-06-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-03 16:40:00', '2026-06-04 12:50:00'),
 (165, 'FLS1BP', NULL, 'web', 50, 31, 1, 214, 'THOMAS MURIANYI', 'gizmojunction@outlook.com', '0706166875', 'adult', 1, 350.00, 318.18, 31.82, 0, 350.00, 'cash', 'cancelled', NULL, NULL, 2, '2026-06-06', '2026-06-06 14:13:20', '2026-06-06 17:26:32', NULL, 0, NULL, NULL, 1, NULL, NULL, 0.00, '2026-06-06 10:43:20', '2026-06-06 14:26:32'),
-(166, '681E0K', NULL, 'web', 50, 31, 1, 214, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'adult', 1, 350.00, 318.18, 31.82, 0, 350.00, 'cash', 'cancelled', NULL, NULL, 2, '2026-06-06', '2026-06-06 14:50:05', '2026-06-06 17:26:05', NULL, 0, NULL, NULL, 1, NULL, NULL, 0.00, '2026-06-06 11:20:05', '2026-06-06 14:26:05');
+(166, '681E0K', NULL, 'web', 50, 31, 1, 214, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'adult', 1, 350.00, 318.18, 31.82, 0, 350.00, 'cash', 'cancelled', NULL, NULL, 2, '2026-06-06', '2026-06-06 14:50:05', '2026-06-06 17:26:05', NULL, 0, NULL, NULL, 1, NULL, NULL, 0.00, '2026-06-06 11:20:05', '2026-06-06 14:39:37'),
+(167, 'BKMQ2NO8HR9XAU', NULL, 'web', 48, 25, NULL, 218, 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'agency_balance', 'paid', 'yyvvv', 'Agency Balance', 0, '2026-06-06', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, 1, 0.00, '2026-06-06 17:57:23', '2026-06-06 20:07:28'),
+(168, 'BKMQ2S61T96PA0', NULL, 'web', 48, 25, NULL, 220, 'JOSEPH G NJUGUNA', 'bryanotieno09@gmail.com', '+254790193625', 'adult', 1, 350.00, NULL, NULL, 0, 350.00, 'agency_balance', 'paid', NULL, 'Agency Balance', 0, '2026-06-06', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, 1, 0.00, '2026-06-06 20:03:13', '2026-06-06 20:07:28'),
+(169, 'R6TOKXED43', NULL, 'web', 50, 31, 1, NULL, 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'adult', 1, 350.00, 350.00, 0.00, 0, 350.00, 'stripe', 'pending', NULL, NULL, 0, '2026-06-09', '2026-06-09 03:34:45', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-09 00:04:45', '2026-06-09 00:05:09'),
+(170, 'QZBTD4CVFN', NULL, 'web', 50, 31, 1, NULL, 'EMMANUEL OKWAMA', 'JOSEVALUER23@GMAIL.COM', '0711376366', 'adult', 1, 350.00, 350.00, 0.00, 0, 350.00, 'stripe', 'pending', NULL, NULL, 0, '2026-06-09', '2026-06-09 03:47:06', NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 0.00, '2026-06-09 00:17:06', '2026-06-09 00:17:17');
 
 -- --------------------------------------------------------
 
@@ -987,7 +993,11 @@ INSERT INTO `booking_passengers` (`id`, `booking_id`, `flight_series_id`, `fligh
 (180, 163, 49, 28, 214, 'adult', 350.00, '2026-06-05', 'outbound', NULL, NULL, NULL, 'OPEN', 'confirmed', NULL, NULL, NULL, '2026-06-03 16:30:30'),
 (181, 164, 49, 28, 215, 'adult', 350.00, '2026-06-05', 'outbound', NULL, NULL, NULL, 'OPEN', 'confirmed', 'teee', NULL, NULL, '2026-06-03 16:40:00'),
 (182, 165, 50, 31, 216, 'adult', 350.00, '2026-06-09', 'outbound', NULL, NULL, NULL, 'OPEN', 'confirmed', NULL, NULL, NULL, '2026-06-06 10:43:20'),
-(183, 166, 50, 31, 217, 'adult', 350.00, '2026-06-06', 'outbound', NULL, NULL, NULL, 'OPEN', 'confirmed', NULL, NULL, NULL, '2026-06-06 11:20:05');
+(183, 166, 50, 31, 217, 'adult', 350.00, '2026-06-06', 'outbound', NULL, NULL, NULL, 'OPEN', 'confirmed', NULL, NULL, NULL, '2026-06-06 11:20:05'),
+(184, 167, 48, 25, 218, 'adult', 350.00, '2026-06-09', 'outbound', NULL, NULL, NULL, 'OPEN', 'confirmed', 'yyvvv', 'Agency Balance', NULL, '2026-06-06 17:57:23'),
+(185, 168, 48, 25, 220, 'adult', 350.00, '2026-06-09', 'outbound', NULL, NULL, NULL, 'OPEN', 'confirmed', NULL, 'Agency Balance', NULL, '2026-06-06 20:03:13'),
+(186, 169, 50, 31, 222, 'adult', 350.00, '2026-06-09', 'outbound', NULL, NULL, NULL, 'OPEN', 'confirmed', NULL, NULL, NULL, '2026-06-09 00:04:45'),
+(187, 170, 50, 31, 223, 'adult', 350.00, '2026-06-09', 'outbound', NULL, NULL, NULL, 'OPEN', 'confirmed', NULL, NULL, NULL, '2026-06-09 00:17:06');
 
 -- --------------------------------------------------------
 
@@ -7044,7 +7054,13 @@ INSERT INTO `passengers` (`id`, `pnr`, `name`, `email`, `contact`, `nationality`
 (214, '894SNMV4K9', 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '+254790193625', 'Kenya', 'national_id', '23444', 23, 'Mr', NULL, '2026-06-03 16:30:29', '2026-06-03 16:30:29'),
 (215, 'Y34PO9KDRZ', 'bba', 'bryanotieno09@gmail.com', '+254790193625', 'Kenya', 'national_id', '554', 33, 'Mr', 'Boarded', '2026-06-03 16:39:59', '2026-06-03 17:09:01'),
 (216, 'FPTN7FRK', 'THOMAS MURIANYI', 'gizmojunction@outlook.com', '0706166875', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-06 10:43:20', '2026-06-06 10:43:20'),
-(217, 'RUQSC98Q', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Kenyan', NULL, '349200bk', 29, NULL, NULL, '2026-06-06 11:20:05', '2026-06-06 11:20:05');
+(217, 'RUQSC98Q', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Kenyan', NULL, '349200bk', 29, NULL, NULL, '2026-06-06 11:20:05', '2026-06-06 11:20:05'),
+(218, 'DJDCBPALWV', 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '+254790193625', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-06 17:57:23', '2026-06-06 17:57:23'),
+(219, 'MFVCGNUTFA', 'BENJAMIN OKWAMA', 'bryanotieno09@gmail.com', '+254790193625', NULL, 'national_id', '23444', NULL, NULL, NULL, '2026-06-06 17:57:26', '2026-06-06 17:57:26'),
+(220, '66TOZJGWX4', 'JOSEPH G NJUGUNA', 'bryanotieno09@gmail.com', '+254790193625', NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-06 20:03:12', '2026-06-06 20:03:12'),
+(221, 'C4QJVR5KM9', 'JOSEPH G NJUGUNA', 'bryanotieno09@gmail.com', '+254790193625', NULL, 'national_id', '123', NULL, NULL, NULL, '2026-06-06 20:03:16', '2026-06-06 20:03:16'),
+(222, '72JZXCLK', 'Benjamin Okwama', 'bennjiokwama@gmail.com', '0706166875', 'Kenyan', NULL, '0000000', 29, NULL, NULL, '2026-06-09 00:04:45', '2026-06-09 00:04:45'),
+(223, 'PPF6X228', 'EMMANUEL OKWAMA', 'JOSEVALUER23@GMAIL.COM', '0711376366', 'Kenyan', NULL, '12345566', 33, NULL, NULL, '2026-06-09 00:17:06', '2026-06-09 00:17:06');
 
 -- --------------------------------------------------------
 
@@ -7108,7 +7124,9 @@ INSERT INTO `payment_transactions` (`id`, `booking_id`, `user_id`, `amount`, `cu
 (3, 103, 1, 220.00, 'KES', 'M-Pesa', 'HGETYJ', 'ws_CO_11042026061711365706166875', 'failed', '2026-04-11 06:17:20', '{\"merchant_request_id\":\"028a-4c3d-8886-33a52401964f20280\",\"checkout_request_id\":\"ws_CO_11042026061711365706166875\",\"result_code\":1032,\"result_desc\":\"Request Cancelled by user.\",\"booking_reference\":null,\"status\":\"failed\"}', '2026-04-11 03:17:10', '2026-04-11 03:17:20'),
 (4, 104, 1, 220.00, 'KES', 'M-Pesa', 'AFUWRT', 'ws_CO_11042026062129269706166875', 'failed', '2026-04-11 06:21:33', '{\"merchant_request_id\":\"dd72-4283-9465-5ca58225c47031804\",\"checkout_request_id\":\"ws_CO_11042026062129269706166875\",\"result_code\":1032,\"result_desc\":\"Request Cancelled by user.\",\"booking_reference\":null,\"status\":\"failed\"}', '2026-04-11 03:21:28', '2026-04-11 03:21:33'),
 (5, 105, 1, 220.00, 'KES', 'M-Pesa', 'N2JQ6T', 'ws_CO_11042026064038396706166875', 'failed', '2026-04-11 06:40:50', '{\"merchant_request_id\":\"e5cd-4f7a-8719-82ad3d58f54a9783\",\"checkout_request_id\":\"ws_CO_11042026064038396706166875\",\"result_code\":1,\"result_desc\":\"The balance is insufficient for the transaction.\",\"booking_reference\":null,\"status\":\"failed\"}', '2026-04-11 03:40:37', '2026-04-11 03:40:50'),
-(6, 106, 1, 220.00, 'KES', 'M-Pesa', 'ULTQOI', 'ws_CO_11042026074025430706166875', 'failed', '2026-04-11 07:40:28', '{\"merchant_request_id\":\"028a-4c3d-8886-33a52401964f22601\",\"checkout_request_id\":\"ws_CO_11042026074025430706166875\",\"result_code\":1032,\"result_desc\":\"Request Cancelled by user.\",\"booking_reference\":null,\"status\":\"failed\"}', '2026-04-11 04:40:24', '2026-04-11 04:40:28');
+(6, 106, 1, 220.00, 'KES', 'M-Pesa', 'ULTQOI', 'ws_CO_11042026074025430706166875', 'failed', '2026-04-11 07:40:28', '{\"merchant_request_id\":\"028a-4c3d-8886-33a52401964f22601\",\"checkout_request_id\":\"ws_CO_11042026074025430706166875\",\"result_code\":1032,\"result_desc\":\"Request Cancelled by user.\",\"booking_reference\":null,\"status\":\"failed\"}', '2026-04-11 04:40:24', '2026-04-11 04:40:28'),
+(7, 169, NULL, 350.00, 'USD', 'stripe', NULL, NULL, 'pending', NULL, NULL, '2026-06-09 00:05:09', '2026-06-09 00:05:09'),
+(8, 170, NULL, 350.00, 'USD', 'stripe', NULL, NULL, 'pending', NULL, NULL, '2026-06-09 00:17:17', '2026-06-09 00:17:17');
 
 -- --------------------------------------------------------
 
@@ -7299,7 +7317,14 @@ INSERT INTO `seat_reservations` (`id`, `flight_series_id`, `flight_id`, `number_
 (95, 48, 25, 1, NULL, 'bba', 'Mr.', 'bryanotieno09@gmail.com', '+254790193625', 'ZIG6HB', 'reserved', '2026-06-09', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'unpaid', 0.00, NULL, '2026-06-04 07:15:41', '2026-06-04 07:15:41', 1, 'national_id', '554', NULL, NULL),
 (96, 49, 28, 1, NULL, 'JOSEPH G NJUGUNA', 'Mr.', 'bryanotieno09@gmail.com', '+254790193625', 'HJA67M', 'reserved', '2026-06-05', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'unpaid', 0.00, NULL, '2026-06-04 07:18:09', '2026-06-04 07:18:09', 1, 'national_id', '123', NULL, NULL),
 (97, 50, 31, 1, 216, 'THOMAS MURIANYI', NULL, 'gizmojunction@outlook.com', '0706166875', 'FLS1BP', 'reserved', '2026-06-09', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'unpaid', 0.00, NULL, '2026-06-06 10:43:20', '2026-06-06 10:43:20', NULL, NULL, NULL, NULL, NULL),
-(98, 50, NULL, 1, 217, 'Benjamin Okwama', NULL, 'bennjiokwama@gmail.com', '0706166875', '681E0K', 'reserved', '2026-06-06', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'unpaid', 0.00, NULL, '2026-06-06 11:20:05', '2026-06-06 11:20:05', NULL, NULL, NULL, NULL, NULL);
+(98, 50, NULL, 1, 217, 'Benjamin Okwama', NULL, 'bennjiokwama@gmail.com', '0706166875', '681E0K', 'reserved', '2026-06-06', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'unpaid', 0.00, NULL, '2026-06-06 11:20:05', '2026-06-06 11:20:05', NULL, NULL, NULL, NULL, NULL),
+(99, 48, 25, 1, 217, 'JOSEPH G NJUGUNA', 'Mr.', 'bryanotieno09@gmail.com', '+254790193625', 'AJD8SV', 'reserved', '2026-06-09', NULL, 'return', 50, '2026-06-09', NULL, 500.00, 'unpaid', 0.00, 1, '2026-06-06 15:43:57', '2026-06-06 15:46:19', NULL, 'national_id', '123', NULL, NULL),
+(100, 48, 25, 1, NULL, 'FREDRICK O ONYANGO', 'Mr.', 'bryanotieno09@gmail.com', '+254790193625', 'A8ZRNE', 'reserved', '2026-06-09', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'unpaid', 0.00, 1, '2026-06-06 15:58:44', '2026-06-06 15:58:44', NULL, 'national_id', '1112', NULL, NULL),
+(101, 48, 25, 1, NULL, 'bba', 'Mr.', 'bryanotieno09@gmail.com', '+254790193625', 'X3T2KR', 'reserved', '2026-06-09', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'unpaid', 0.00, 1, '2026-06-06 17:33:05', '2026-06-06 17:33:05', NULL, 'national_id', '554', NULL, NULL),
+(102, 48, 25, 1, 221, 'JOSEPH G NJUGUNA', 'Mr.', 'bryanotieno09@gmail.com', '+254790193625', 'CDL7QH', 'confirmed', '2026-06-09', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'paid', 350.00, 1, '2026-06-06 17:44:41', '2026-06-06 20:03:16', NULL, 'national_id', '123', NULL, NULL),
+(103, 48, 25, 1, 219, 'BENJAMIN OKWAMA', 'Mr.', 'bryanotieno09@gmail.com', '+254790193625', 'M5LSZT', 'confirmed', '2026-06-09', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'paid', 350.00, 1, '2026-06-06 17:50:38', '2026-06-06 17:57:26', NULL, 'national_id', '23444', NULL, NULL),
+(104, 50, 31, 1, 222, 'Benjamin Okwama', NULL, 'bennjiokwama@gmail.com', '0706166875', 'R6TOKXED43', 'reserved', '2026-06-09', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'unpaid', 0.00, NULL, '2026-06-09 00:04:45', '2026-06-09 00:04:45', NULL, NULL, NULL, NULL, NULL),
+(105, 50, 31, 1, 223, 'EMMANUEL OKWAMA', NULL, 'JOSEVALUER23@GMAIL.COM', '0711376366', 'QZBTD4CVFN', 'reserved', '2026-06-09', NULL, 'one_way', NULL, NULL, NULL, 350.00, 'unpaid', 0.00, NULL, '2026-06-09 00:17:06', '2026-06-09 00:17:06', NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -7388,7 +7413,7 @@ CREATE TABLE `staff` (
 INSERT INTO `staff` (`id`, `name`, `photo_url`, `empl_no`, `id_no`, `role`, `designation`, `phone_number`, `password`, `department`, `department_id`, `manager_id`, `business_email`, `department_email`, `salary`, `employment_type`, `gender`, `created_at`, `updated_at`, `is_active`, `avatar_url`, `status`, `my_password`, `wifi_ip`, `shift`, `offer_date`, `start_date`, `date_of_birth`, `marital_status`, `nationality`, `address`, `nhif_number`, `nssf_number`, `kra_pin`, `passport_number`, `bank_name`, `bank_branch`, `account_number`, `account_name`, `swift_code`, `benefits`) VALUES
 (9, 'admins', 'https://res.cloudinary.com/otienobryan/image/upload/v1757252591/uploads/wsxidqwfmgy8ib5tic1m.jpg', '123355', '9', 'executive', 'Staff Member', '55', '$2a$10$me0dzhAfGglEGPhcK/34BuWmhYW3USYy3SeMbe46CQop102Yq./1S', 'Executive', 3, NULL, 'admin@royal.com', 'admin@royal.com', 40000.00, 'Permanent', 'Male', '2025-07-19 12:38:19', '2025-11-28 13:09:35', 1, '', 1, '', '', 0, NULL, NULL, NULL, NULL, NULL, NULL, 'jjj', NULL, NULL, NULL, 'nnmm', 'nn', 'nn', NULL, NULL, NULL),
 (21, 'test', 'https://res.cloudinary.com/otienobryan/image/upload/v1765005297/staff/plpal99p6ayv4juqbclt.png', 't', '44', '', '', '', '$2a$10$me0dzhAfGglEGPhcK/34BuWmhYW3USYy3SeMbe46CQop102Yq./1S', 'Reservations', 3, NULL, '', '', 3000.00, 'Contract', 'Male', '2025-12-03 11:54:48', '2026-02-04 05:35:41', 1, 'https://res.cloudinary.com/otienobryan/image/upload/v1765005297/staff/plpal99p6ayv4juqbclt.png', 1, '', '', 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(22, 'Benjamin Okwama', 'https://res.cloudinary.com/otienobryan/image/upload/v1764762270/staff/mslbalzdvw4uznscynol.jpg', '2', '3', 'executive', 'Staff Member', '0706166875', '$2a$10$me0dzhAfGglEGPhcK/34BuWmhYW3USYy3SeMbe46CQop102Yq./1S', 'Cargo Operations', 2, NULL, 'cargo@royalair.com', 'cargo@royalair.com', 0.00, 'Contract', 'Male', '2025-12-03 11:44:31', '2026-04-29 17:16:38', 1, 'https://res.cloudinary.com/otienobryan/image/upload/v1764762270/staff/mslbalzdvw4uznscynol.jpg', 1, '', '', 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+(22, 'Benjamin Okwama', 'https://res.cloudinary.com/otienobryan/image/upload/v1764762270/staff/mslbalzdvw4uznscynol.jpg', '2', '3', 'executive', 'Staff Member', '0706166875', '$2a$10$me0dzhAfGglEGPhcK/34BuWmhYW3USYy3SeMbe46CQop102Yq./1S', 'Cargo Operations', 2, NULL, 'cargo@mcaviation.com', 'cargo@mcaviation.com', 0.00, 'Contract', 'Male', '2025-12-03 11:44:31', '2026-04-29 17:16:38', 1, 'https://res.cloudinary.com/otienobryan/image/upload/v1764762270/staff/mslbalzdvw4uznscynol.jpg', 1, '', '', 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -8188,7 +8213,7 @@ ALTER TABLE `agency_deposits`
 -- AUTO_INCREMENT for table `agency_ledger`
 --
 ALTER TABLE `agency_ledger`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `agents`
@@ -8218,7 +8243,7 @@ ALTER TABLE `airline_users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=167;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=171;
 
 --
 -- AUTO_INCREMENT for table `booking_amendments`
@@ -8230,7 +8255,7 @@ ALTER TABLE `booking_amendments`
 -- AUTO_INCREMENT for table `booking_passengers`
 --
 ALTER TABLE `booking_passengers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=184;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=188;
 
 --
 -- AUTO_INCREMENT for table `booking_status_history`
@@ -8512,7 +8537,7 @@ ALTER TABLE `offers`
 -- AUTO_INCREMENT for table `passengers`
 --
 ALTER TABLE `passengers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=218;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=224;
 
 --
 -- AUTO_INCREMENT for table `passenger_disruptions`
@@ -8530,7 +8555,7 @@ ALTER TABLE `password_resets`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `payroll`
@@ -8572,7 +8597,7 @@ ALTER TABLE `saved_passenger_profiles`
 -- AUTO_INCREMENT for table `seat_reservations`
 --
 ALTER TABLE `seat_reservations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
 
 --
 -- AUTO_INCREMENT for table `settings`

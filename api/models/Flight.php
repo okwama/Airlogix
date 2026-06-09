@@ -165,7 +165,8 @@ class Flight {
         $query = "SELECT 
                     fs.id, fs.flt as flight_number, 
                     fs.std as departure_time, fs.sta as arrival_time,
-                    fs.adult_fare, fs.child_fare, fs.infant_fare,
+                                        fs.adult_fare, fs.child_fare, fs.infant_fare,
+                                        fs.adult_return_fare, fs.child_return_fare, fs.infant_return_fare,
                     fs.number_of_seats, fs.flight_type,
                     fs.from_destination_id, fs.to_destination_id, fs.via_destination_id,
                     d1.name as departure_city, d1.code as departure_code,
@@ -215,11 +216,8 @@ class Flight {
 
         $total_seats = $flight['number_of_seats'] ?? 0;
 
-        // Release stale holds before calculating availability so abandoned bookings
-        // stop blocking inventory.
-        require_once __DIR__ . '/Booking.php';
-        $bookingModel = new Booking($this->conn);
-        $bookingModel->expireStaleReservations();
+        // NOTE: expireStaleReservations() moved out of model to avoid mutating booking state from the Flight model.
+        // Controllers should call Booking::expireStaleReservations() before invoking getAvailableSeats().
 
         if ($this->bookingHasReservationExpiry === null) {
             $check = $this->conn->query("SHOW COLUMNS FROM bookings LIKE 'reservation_expires_at'");
