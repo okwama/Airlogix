@@ -168,6 +168,31 @@ abstract class PaymentControllerBase
         return $token;
     }
 
+    protected function getGuestAccessTokenTtlSeconds(array $booking): int
+    {
+        $defaultTtl = (int)env('BOOKING_ACCESS_TOKEN_TTL_SECONDS', 1800);
+        if ($defaultTtl <= 0) {
+            $defaultTtl = 1800;
+        }
+
+        $paymentStatus = strtolower((string)($booking['payment_status'] ?? 'pending'));
+        if ($paymentStatus === 'paid' || $paymentStatus === 'completed') {
+            return $defaultTtl;
+        }
+
+        $expiresAt = $booking['reservation_expires_at'] ?? null;
+        if (empty($expiresAt)) {
+            return $defaultTtl;
+        }
+
+        $remaining = strtotime((string)$expiresAt) - time();
+        if ($remaining <= 0) {
+            return 60;
+        }
+
+        return min($defaultTtl, $remaining);
+    }
+
     protected function finalizeSuccessfulPayment(array $booking, string $method, ?string $gatewayReference = null, array $gatewayPayload = []): void
     {
         if (empty($booking['id'])) {
