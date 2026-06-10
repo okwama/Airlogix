@@ -65,7 +65,7 @@
   <Navbar />
   {#if !isOnline}
     <div class="offline-banner" role="status" aria-live="polite">
-      You're offline. Some actions may fail - we'll keep trying when the network returns.
+      You're offline. Some actions may fail - we'll keep trying when the network returns...
     </div>
   {/if}
   <main>
