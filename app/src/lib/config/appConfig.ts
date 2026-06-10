@@ -15,7 +15,7 @@ export const appConfig = {
   icon: env.VITE_APP_ICON || env.VITE_APP_IMAGE || '/favicon.png',
   favicon: env.VITE_APP_FAVICON || env.VITE_APP_ICON || '/favicon.png',
   themeColor: env.VITE_APP_THEME_COLOR || '#282F7E',
-  backgroundColor: env.VITE_APP_BACKGROUND_COLOR || '#F5F7FA',
+  backgroundColor: env.VITE_APP_BACKGROUND_COLOR || '#f5f5fa',
   textColor: env.VITE_APP_TEXT_COLOR || '#121212',
   secondaryColor: env.VITE_APP_SECONDARY_COLOR || '#666666',
   borderColor: env.VITE_APP_BORDER_COLOR || '#E0E0E0',

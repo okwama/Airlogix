@@ -133,7 +133,7 @@
             <h1
               class="max-w-[620px] text-[clamp(2.35rem,4.4vw,3.8rem)] font-extrabold leading-[0.97] tracking-[-0.045em] text-[color:var(--color-text-heading)]"
             >
-              Fly Congo and beyond with confidence, calm, and regional
+              Fly Royal Air and beyond with confidence, calm, and regional
               precision.
             </h1>
             <p
