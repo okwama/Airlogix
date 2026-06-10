@@ -5,14 +5,13 @@
   import { Loader2, Search, Users, Info } from 'lucide-svelte';
   import { clickOutside } from '../../utils/clickOutside';
   import { slide } from 'svelte/transition';
-  import { flightService } from '$lib/services/flightService';
+  import { flightService as flightSvc } from '$lib/services/flightService';
 
   /**
    * Destination shape returned from the API
    * @typedef {{ code: string, name: string, city?: string, country?: string, destination_type?: string }} Destination
    */
 
-  import { flightService } from '$lib/services/flightService';
   const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
 
   // Dynamic dates: today + 7 days
@@ -115,7 +114,8 @@
   onMount(async () => {
     const fetchDestinations = async () => {
       try {
-        const data = await flightService.getDestinations();
+        /** @type {Destination[]} */
+        const data = /** @type {Destination[]} */ (await flightSvc.getDestinations());
         if (Array.isArray(data) && data.length > 0) {
           // @ts-ignore
           allDestinations = data.map(d => ({

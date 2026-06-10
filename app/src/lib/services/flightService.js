@@ -3,75 +3,20 @@ import { appConfig } from '$lib/config/appConfig';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
 const ENABLE_MOCKS = import.meta.env.VITE_ENABLE_MOCKS === 'true';
 
-/** @type {any[]} */
+/** @type {Array<Object>} */
 const MOCK_FLIGHTS_DATA = [
-  { 
-    id: 1, 
-    flight_number: 'MC101', 
-    origin_iata: 'NBO', 
-    destination_iata: 'MBA', 
-    departure_time: '08:00', 
-    arrival_time: '09:00', 
-    duration: '1h 00m', 
-    base_fare: 8500, 
-    airline_name: appConfig.name
-  },
-  { 
-    id: 2, 
-    flight_number: 'MC102', 
-    origin_iata: 'MBA', 
-    destination_iata: 'NBO', 
-    departure_time: '11:00', 
-    arrival_time: '12:00', 
-    duration: '1h 00m', 
-    base_fare: 9200, 
-    airline_name: appConfig.name
-  },
-  { 
-    id: 3, 
-    flight_number: 'MC201', 
-    origin_iata: 'NBO', 
-    destination_iata: 'DAR', 
-    departure_time: '14:00', 
-    arrival_time: '15:30', 
-    duration: '1h 30m', 
-    base_fare: 18500, 
-    airline_name: appConfig.name
-  },
-  { 
-    id: 4, 
-    flight_number: 'MC202', 
-    origin_iata: 'DAR', 
-    destination_iata: 'NBO', 
-    departure_time: '17:00', 
-    arrival_time: '18:30', 
-    duration: '1h 30m', 
-    base_fare: 19800, 
-    airline_name: appConfig.name
-  },
-  { 
-    id: 5, 
-    flight_number: 'MC301', 
-    origin_iata: 'NBO', 
-    destination_iata: 'EBB', 
-    departure_time: '10:00', 
-    arrival_time: '11:15', 
-    duration: '1h 15m', 
-    base_fare: 16400, 
-    airline_name: appConfig.name
-  },
-  { 
-    id: 6, 
-    flight_number: 'MC302', 
-    origin_iata: 'EBB', 
-    destination_iata: 'NBO', 
-    departure_time: '13:00', 
-    arrival_time: '14:15', 
-    duration: '1h 15m', 
-    base_fare: 17200, 
-    airline_name: appConfig.name
-  }
+  { id: 1, flight_number: 'MC101', origin_iata: 'NBO', destination_iata: 'MBA', departure_time: '08:00', arrival_time: '09:00', duration: '1h 00m', base_fare: 8500, airline_name: appConfig.name },
+  { id: 2, flight_number: 'MC102', origin_iata: 'MBA', destination_iata: 'NBO', departure_time: '11:00', arrival_time: '12:00', duration: '1h 00m', base_fare: 9200, airline_name: appConfig.name },
+  { id: 3, flight_number: 'MC201', origin_iata: 'NBO', destination_iata: 'DAR', departure_time: '14:00', arrival_time: '15:30', duration: '1h 30m', base_fare: 18500, airline_name: appConfig.name },
+  { id: 4, flight_number: 'MC202', origin_iata: 'DAR', destination_iata: 'NBO', departure_time: '17:00', arrival_time: '18:30', duration: '1h 30m', base_fare: 19800, airline_name: appConfig.name },
+  { id: 5, flight_number: 'MC301', origin_iata: 'NBO', destination_iata: 'EBB', departure_time: '10:00', arrival_time: '11:15', duration: '1h 15m', base_fare: 16400, airline_name: appConfig.name },
+  { id: 6, flight_number: 'MC302', origin_iata: 'EBB', destination_iata: 'NBO', departure_time: '13:00', arrival_time: '14:15', duration: '1h 15m', base_fare: 17200, airline_name: appConfig.name }
 ];
+
+/**
+ * @typedef {{ id?: number, flight_number?: string, origin_iata?: string, destination_iata?: string, departure_time?: string, arrival_time?: string, base_fare?: number, adult_fare?: number, child_fare?: number, infant_fare?: number, airline_name?: string }} Flight
+ * @typedef {{ code: string, name: string, city?: string, country?: string, destination_type?: string }} Destination
+ */
 
 /**
  * @typedef {Object} FlightSearchQuery
@@ -185,6 +130,7 @@ export const flightService = {
    */
   getMockFlights(query) {
     // Generate a few variations for the route
+    // @ts-ignore
     const matching = MOCK_FLIGHTS_DATA.filter(f => f.origin_iata === query.from && f.destination_iata === query.to);
     
     if (matching.length > 0) return matching;
@@ -217,10 +163,12 @@ export const flightService = {
   },
 
   /**
-   * Get all available destinations.
+   * Get all available destinations (DB-first, localStorage fallback).
+   * @returns {Promise<Destination[]>}
    */
   async getDestinations() {
     const cacheKey = 'destinations_all';
+    /** @returns {Destination[]|null} */
     const readCache = () => {
       try {
         if (typeof localStorage === 'undefined') return null;
@@ -231,6 +179,7 @@ export const flightService = {
         return null;
       }
     };
+    /** @param {Destination[]} data */
     const writeCache = (data) => {
       try {
         if (typeof localStorage === 'undefined') return;
@@ -270,6 +219,7 @@ export const flightService = {
       if (result.status) return result.data;
 
       if (ENABLE_MOCKS) {
+        // @ts-ignore
         const mock = MOCK_FLIGHTS_DATA.find(f => f.id == id);
         return mock || null;
       }
