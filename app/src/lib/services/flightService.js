@@ -220,14 +220,40 @@ export const flightService = {
    * Get all available destinations.
    */
   async getDestinations() {
+    const cacheKey = 'destinations_all';
+    const readCache = () => {
+      try {
+        if (typeof localStorage === 'undefined') return null;
+        const raw = localStorage.getItem(cacheKey);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    };
+    const writeCache = (data) => {
+      try {
+        if (typeof localStorage === 'undefined') return;
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+      } catch {
+        // ignore
+      }
+    };
+
     try {
-      const response = await fetch(`${BASE_URL}/destinations`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const response = await fetch(`${BASE_URL}/destinations`, { signal: controller.signal });
+      clearTimeout(timeoutId);
       if (!response.ok) throw new Error('Failed to fetch destinations');
       const result = await response.json();
-      return result.status ? result.data : [];
+      const data = result.status ? result.data : [];
+      if (Array.isArray(data) && data.length > 0) writeCache(data);
+      return data;
     } catch (error) {
-      console.error('Error fetching destinations:', error);
-      return [];
+      console.warn('Error fetching destinations, falling back to cache:', error);
+      const cached = readCache();
+      return Array.isArray(cached) ? cached : [];
     }
   },
 

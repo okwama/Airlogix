@@ -5,7 +5,14 @@
   import { Loader2, Search, Users, Info } from 'lucide-svelte';
   import { clickOutside } from '../../utils/clickOutside';
   import { slide } from 'svelte/transition';
+  import { flightService } from '$lib/services/flightService';
 
+  /**
+   * Destination shape returned from the API
+   * @typedef {{ code: string, name: string, city?: string, country?: string, destination_type?: string }} Destination
+   */
+
+  import { flightService } from '$lib/services/flightService';
   const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://impulsepromotions.co.ke/api/air';
 
   // Dynamic dates: today + 7 days
@@ -15,10 +22,10 @@
   const nextWeek = new Date(today);
   nextWeek.setDate(nextWeek.getDate() + 7);
 
-  let from = $state('NBO');
-  let fromLabel = $state('Nairobi');
-  let to = $state('MBA');
-  let toLabel = $state('Mombasa');
+  let from = $state('');
+  let fromLabel = $state('');
+  let to = $state('');
+  let toLabel = $state('');
   
   let date = $state(toDateStr(today));
   let isRoundTrip = $state(false);
@@ -40,19 +47,8 @@
   let cabinClassName = $derived(cabinClasses.find(c => c.id === cabinClassId)?.name || 'Economy');
 
   // ── Destinations (fetched from DB, with fallback) ───────────────────
-  const FALLBACK_DESTINATIONS = [
-    { code: 'NBO', name: 'Nairobi', city: 'Nairobi', country: 'Kenya' },
-    { code: 'MBA', name: 'Mombasa', city: 'Mombasa', country: 'Kenya' },
-    { code: 'KIS', name: 'Kisumu', city: 'Kisumu', country: 'Kenya' },
-    { code: 'DAR', name: 'Dar es Salaam', city: 'Dar es Salaam', country: 'Tanzania' },
-    { code: 'JRO', name: 'Kilimanjaro', city: 'Kilimanjaro', country: 'Tanzania' },
-    { code: 'ZNZ', name: 'Zanzibar', city: 'Zanzibar', country: 'Tanzania' },
-    { code: 'EBB', name: 'Entebbe', city: 'Entebbe', country: 'Uganda' },
-    { code: 'KGL', name: 'Kigali', city: 'Kigali', country: 'Rwanda' },
-    { code: 'ADD', name: 'Addis Ababa', city: 'Addis Ababa', country: 'Ethiopia' },
-    { code: 'BJM', name: 'Bujumbura', city: 'Bujumbura', country: 'Burundi' }
-  ];
-  let allDestinations = $state(FALLBACK_DESTINATIONS);
+  /** @type {Destination[]} */
+  let allDestinations = $state(/** @type {Destination[]} */([]));
   let isLoadingData = $state(true);
 
   let fromSearch = $state('');
@@ -77,7 +73,7 @@
     )
   );
 
-  /** @param {any} d */
+  /** @param {Destination} d */
   function selectFrom(d) {
     from = d.code;
     fromLabel = d.city || d.name;
@@ -86,6 +82,7 @@
   }
 
   /** @param {any} d */
+  /** @param {Destination} d */
   function selectTo(d) {
     to = d.code;
     toLabel = d.city || d.name;
@@ -118,19 +115,16 @@
   onMount(async () => {
     const fetchDestinations = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/destinations`);
-        if (res.ok) {
-          const result = await res.json();
-          if (result.status && Array.isArray(result.data) && result.data.length > 0) {
-            // @ts-ignore
-            allDestinations = result.data.map(d => ({
-              ...d,
-              code: d.code || '',
-              name: d.name || d.city || '',
-              city: d.city || d.name || '',
-              country: d.destination_type ? (d.destination_type.charAt(0).toUpperCase() + d.destination_type.slice(1)) : ''
-            }));
-          }
+        const data = await flightService.getDestinations();
+        if (Array.isArray(data) && data.length > 0) {
+          // @ts-ignore
+          allDestinations = data.map(d => ({
+            ...d,
+            code: d.code || '',
+            name: d.name || d.city || '',
+            city: d.city || d.name || '',
+            country: d.destination_type ? (d.destination_type.charAt(0).toUpperCase() + d.destination_type.slice(1)) : ''
+          }));
         }
       } catch (e) {
         console.warn('Failed to fetch destinations, using fallback', e);

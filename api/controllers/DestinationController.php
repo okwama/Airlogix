@@ -18,16 +18,28 @@ class DestinationController {
         if (!empty($search)) {
             $destinations = $this->destinationModel->search($search);
         } else {
-            // Cache full destinations list for a short period to reduce DB load.
+            // Primary: always read latest data from DB.
+            // If DB read fails, fall back to cached copy so UI keeps working when DB is unreachable.
             $cacheKey = 'destinations_all';
-            $cached = Cache::get($cacheKey);
-            if ($cached !== null) {
-                $destinations = $cached;
-            } else {
+            try {
                 $destinations = $this->destinationModel->getAll();
-                // Default TTL: 10 minutes (600s)
+                // Update server-side cache with fresh copy (TTL configurable)
                 $ttl = (int)env('DESTINATIONS_CACHE_TTL', 600);
-                Cache::set($cacheKey, $destinations, $ttl);
+                try {
+                    Cache::set($cacheKey, $destinations, $ttl);
+                } catch (Throwable $t) {
+                    // Best-effort: don't fail the request if cache write fails
+                    error_log('Failed to update destinations cache: ' . $t->getMessage());
+                }
+            } catch (Throwable $e) {
+                // DB failure: use cached data if available
+                $cached = Cache::get($cacheKey);
+                if ($cached !== null) {
+                    $destinations = $cached;
+                } else {
+                    // rethrow so caller sees failure with 500
+                    throw $e;
+                }
             }
         }
         
